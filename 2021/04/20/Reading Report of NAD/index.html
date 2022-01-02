@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NAD Reading Reports - Hexo</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="Reading Report of NADOriginal Paper: NEURAL ATTENTION DISTILLATION: ERASING BACK-DOOR TRIGGERS FROM DEEP NEURAL NETWORKS Published as a conference paper at ICLR 2021 Pre-Learning  Teacher-student netw">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NAD Reading Reports">
+<meta property="og:url" content="http://example.com/2021/04/20/Reading%20Report%20of%20NAD/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Reading Report of NADOriginal Paper: NEURAL ATTENTION DISTILLATION: ERASING BACK-DOOR TRIGGERS FROM DEEP NEURAL NETWORKS Published as a conference paper at ICLR 2021 Pre-Learning  Teacher-student netw">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418174553535.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418180702959.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418181022982.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418181355631.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210420153613925.png">
+<meta property="article:published_time" content="2021-04-20T12:39:24.000Z">
+<meta property="article:modified_time" content="2022-01-02T12:43:58.693Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="机器学习 网络安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418174553535.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641127477170">
+    
+        <link rel="stylesheet" href="/css/dark.css?v=1641127477170">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641127477170">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="John Doe" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="John Doe"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="John Doe">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="John Doe" alt="John Doe">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>2</div>
+        <div><span>Tags</span>1</div>
+        <div><span>Categories</span>0</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://jq.qq.com/?_wv=1027&k=5CfKHun" target="_blank" mdui-tooltip="{content: 'QQ群'}" style="color: rgb(249, 174, 8);background-color: rgba(249, 174, 8, .1);">
+            <i class="nexmoefont icon-QQ"></i>
+        </a><a class="mdui-ripple" href="https://space.bilibili.com/20238211" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/nexmoe/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">机器学习 网络安全</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 John Doe
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418174553535.png" data-sizes="auto" alt="NAD Reading Reports" class="lazyload">
+              <h1>NAD Reading Reports</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年04月20日</a>
+    <a><i class="nexmoefont icon-areachart"></i>541 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 3 分钟</a>
+</div>
+
+      
+
+      <h1 id="Reading-Report-of-NAD"><a href="#Reading-Report-of-NAD" class="headerlink" title="Reading Report of NAD"></a>Reading Report of NAD</h1><p>Original Paper: <em>NEURAL ATTENTION DISTILLATION: ERASING BACK-</em><br><em>DOOR TRIGGERS FROM DEEP NEURAL NETWORKS</em></p>
+<p>Published as a conference paper at ICLR 2021</p>
+<h2 id="Pre-Learning"><a href="#Pre-Learning" class="headerlink" title="Pre-Learning"></a>Pre-Learning</h2><p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418174553535.png" alt="image-20210418174553535" class="lazyload"></p>
+<ul>
+<li><p>Teacher-student network: How to use a pretrained network (teacher network) to train another narrow but deeper network (student network). Also known as a technique in transfer learning.</p>
+</li>
+<li><p>KD Algorithm (Knowledge Distillation): first proposed to compress a bigger or an ensemble of well-trained network(s) (teacher network) into a compact smaller network (student network). The algorithm helps the student network to learn more high-quality intermediate representations, leading to better performance.</p>
+</li>
+<li><p>Attention Transfer: Attention Model is used to select the useful information rather than all. </p>
+</li>
+</ul>
+<h2 id="NAD-Neuron-Attention-Distillation"><a href="#NAD-Neuron-Attention-Distillation" class="headerlink" title="NAD: Neuron Attention Distillation"></a>NAD: Neuron Attention Distillation</h2><p>The job of NAD is to align neurons that are more responsive to the trigger pattern with benign neurons that only responsible for meaningful representations. </p>
+<h3 id="Attention-Representation"><a href="#Attention-Representation" class="headerlink" title="Attention Representation"></a><strong>Attention Representation</strong></h3><p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418180702959.png" alt="image-20210418180702959" class="lazyload"></p>
+<p>Three formulations of the attention operator all generates from the 3D activation map of the i-th channel. They represent the following info:</p>
+<ul>
+<li><p>All activation regions;</p>
+</li>
+<li><p>Amplify the disparities between the backdoored neurons and the benign neurons by an order of p;</p>
+</li>
+<li><p>Aligns the activation center of the backdoored neurons with that of the benign neurons by taking the mean over all activation regions.</p>
+</li>
+</ul>
+<h3 id="Attention-Distillation-Loss"><a href="#Attention-Distillation-Loss" class="headerlink" title="Attention Distillation Loss"></a><strong>Attention Distillation Loss</strong></h3><p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418181022982.png" alt="image-20210418181022982" class="lazyload"></p>
+<p>The teacher network is kept fixed throughout the distillation process.</p>
+<h3 id="Overall-Training-Loss"><a href="#Overall-Training-Loss" class="headerlink" title="Overall Training Loss"></a><strong>Overall Training Loss</strong></h3><p>The combination of the CE loss and the sum of the NAD loss over all K residual groups:</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418181355631.png" alt="image-20210418181355631" class="lazyload"></p>
+<p>D is a subset of clean data used in finetuning. l is the index of the residual group, β is a hyperparameter controlling the strength.</p>
+<h2 id="NAD-Operation-Principle"><a href="#NAD-Operation-Principle" class="headerlink" title="NAD Operation Principle"></a>NAD Operation Principle</h2><h3 id="Workflow"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow</h3><p>The paper shows that NAD could use only 5% of clean training data and effectively erase the backdoor trigger. </p>
+<ol>
+<li>Two networks are initialized first.</li>
+<li>Initialize optimizer of momentum stochastic gradient descent.</li>
+<li>Define loss function with both cross entropy loss and attention transfer.</li>
+<li>Initialize training and testing data including poisoned data in testing data set.</li>
+<li>For each epoch, adjust the learning rate by supervising the learning turns.</li>
+<li>Three activation neurons and attention transfer loss are considered into the total loss. For each training step, activation function is operated to do the distillation.</li>
+</ol>
+<h3 id="Understand-the-Distillation"><a href="#Understand-the-Distillation" class="headerlink" title="Understand the Distillation"></a>Understand the Distillation</h3><p>Neuron distillation is a method to implement the transfer learning. </p>
+<p>Take the attention map function of the reference code as an example. It’s an AT model with sum of absolute values with power p:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AT</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, p</span>):</span></span><br><span class="line">		<span class="built_in">super</span>(AT, self).__init__()</span><br><span class="line">		self.p = p</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, fm_s, fm_t</span>):</span></span><br><span class="line">		loss = F.mse_loss(self.attention_map(fm_s), self.attention_map(fm_t))</span><br><span class="line">		<span class="keyword">return</span> loss</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">attention_map</span>(<span class="params">self, fm, eps=<span class="number">1e-6</span></span>):</span></span><br><span class="line">		am = torch.<span class="built_in">pow</span>(torch.<span class="built_in">abs</span>(fm), self.p)</span><br><span class="line">		am = torch.<span class="built_in">sum</span>(am, dim=<span class="number">1</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">		norm = torch.norm(am, dim=(<span class="number">2</span>,<span class="number">3</span>), keepdim=<span class="literal">True</span>)</span><br><span class="line">		am = torch.div(am, norm+eps)</span><br><span class="line">		<span class="keyword">return</span> am</span><br></pre></td></tr></table></figure>
+
+<p>It’s exactly the attention maps using the Ap sum attention operator. </p>
+<h2 id="Results-and-Evaluation"><a href="#Results-and-Evaluation" class="headerlink" title="Results and Evaluation"></a>Results and Evaluation</h2><p>The paper evaluate the performance of defense mechanisms with two metrics: attack success rate (<strong>ASR</strong>), which is the ratio of backdoored examples that are misclassified as the target label, and model’s accuracy on clean samples (<strong>ACC</strong>). The more the ASR drops and the less the ACC drops, the stronger the defense mechanism is.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210420153613925.png" alt="image-20210420153613925" class="lazyload"></p>
+<p>(TBC. More work and exploration will be done.)</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>John Doe<br>
+        <strong>Link：</strong><a href="http://example.com/2021/04/20/Reading%20Report%20of%20NAD/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;04&#x2F;20&#x2F;Reading%20Report%20of%20NAD&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;04&#x2F;20&#x2F;Reading%20Report%20of%20NAD&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag">机器学习 网络安全</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641127477171"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
