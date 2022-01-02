@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>HaptX系列触觉手套与VR中的触觉反馈技术 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="HaptX系列触觉手套与VR中的触觉反馈技术报告1. 概述在虚拟现实娱乐中，沉浸感和真实感是提高用户或玩家体验的重要因素。在一段时间以来，虚拟现实技术的发展和迭代集中在视觉方面的输出和反馈上。在真实感绘制、全景图生成、视角反馈等方面，已经有了非常成熟以及市场上普及的集成这些技术的硬件设施（如Oculus系列头盔、眼镜等）。 但是，当我们广泛地谈论“真实感”与人类的“感知”（sense）时，我们更多">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HaptX系列触觉手套与VR中的触觉反馈技术">
+<meta property="og:url" content="http://example.com/2021/06/06/HaptX%E7%B3%BB%E5%88%97%E8%A7%A6%E8%A7%89%E6%89%8B%E5%A5%97%E4%B8%8EVR%E4%B8%AD%E7%9A%84%E8%A7%A6%E8%A7%89%E5%8F%8D%E9%A6%88%E6%8A%80%E6%9C%AF/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="HaptX系列触觉手套与VR中的触觉反馈技术报告1. 概述在虚拟现实娱乐中，沉浸感和真实感是提高用户或玩家体验的重要因素。在一段时间以来，虚拟现实技术的发展和迭代集中在视觉方面的输出和反馈上。在真实感绘制、全景图生成、视角反馈等方面，已经有了非常成熟以及市场上普及的集成这些技术的硬件设施（如Oculus系列头盔、眼镜等）。 但是，当我们广泛地谈论“真实感”与人类的“感知”（sense）时，我们更多">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603205654989.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Comp_FullBody_MultiPlayer_2b-e1609462902100.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210601165219964.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210601170340327.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603210336207.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/5ee9d1fc29a74fa18c459147ad2ad013.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603225624146.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/778572-20160509105106109-513620046.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/%E6%B0%94%E5%8A%A8.png">
+<meta property="article:published_time" content="2021-06-06T13:29:59.000Z">
+<meta property="article:modified_time" content="2022-01-02T13:33:07.926Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="VR技术">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603205654989.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641130611537">
+    
+        <link rel="stylesheet" href="/css/dark.css?v=1641130611537">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641130611537">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>5</div>
+        <div><span>Tags</span>2</div>
+        <div><span>Categories</span>0</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://jq.qq.com/?_wv=1027&k=5CfKHun" target="_blank" mdui-tooltip="{content: 'QQ群'}" style="color: rgb(249, 174, 8);background-color: rgba(249, 174, 8, .1);">
+            <i class="nexmoefont icon-QQ"></i>
+        </a><a class="mdui-ripple" href="https://space.bilibili.com/20238211" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/nexmoe/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 10px;">VR技术</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">机器学习</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Comp_FullBody_MultiPlayer_2b-e1609462902100.jpg" data-sizes="auto" alt="HaptX系列触觉手套与VR中的触觉反馈技术" class="lazyload">
+              <h1>HaptX系列触觉手套与VR中的触觉反馈技术</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年06月06日</a>
+    <a><i class="nexmoefont icon-areachart"></i>4.7k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 19 分钟</a>
+</div>
+
+      
+
+      <h1 id="HaptX系列触觉手套与VR中的触觉反馈技术报告"><a href="#HaptX系列触觉手套与VR中的触觉反馈技术报告" class="headerlink" title="HaptX系列触觉手套与VR中的触觉反馈技术报告"></a>HaptX系列触觉手套与VR中的触觉反馈技术报告</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>在虚拟现实娱乐中，沉浸感和真实感是提高用户或玩家体验的重要因素。在一段时间以来，虚拟现实技术的发展和迭代集中在视觉方面的输出和反馈上。在真实感绘制、全景图生成、视角反馈等方面，已经有了非常成熟以及市场上普及的集成这些技术的硬件设施（如Oculus系列头盔、眼镜等）。</p>
+<p>但是，当我们广泛地谈论“真实感”与人类的“感知”（sense）时，我们更多地会借用亚里士多德所说的“五感”（Big Five）——视觉，听觉，触觉，味觉和嗅觉。大量的未能感知的信息依然存在于现有的VR设备与技术中。在传统VR技术所构建的虚拟环境中，用户所能够获得的感受是极其有限的，更不必谈论心理学中所说的“超越五感的感知”。我们期望的“多通道”感知，在后面几点是极度缺失的。</p>
+<p>下图中给出了人类使用者、设备接口与虚拟环境之间的人机交互逻辑。从中我们可以看出，触觉的控制与反馈需要经过至少三层的迭代和传递。在触感表达的时候，一个强大的计算平台以及有效的传导设备是重要的两个环节。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603205654989.png" alt="image-20210603205654989" class="lazyload">
+
+
+
+<p>本报告基于HaptX公司研发的一套辅助VR的触觉手套DK2进行产品分析和评价，并且探索现在VR技术中比较前沿的触觉反馈的技术。</p>
+<h2 id="2-HaptX-DK2介绍"><a href="#2-HaptX-DK2介绍" class="headerlink" title="2. HaptX DK2介绍"></a>2. HaptX DK2介绍</h2><h3 id="2-1-概述"><a href="#2-1-概述" class="headerlink" title="2.1 概述"></a>2.1 概述</h3><p>HaptX公司的宣传语称“虚拟现实从来没有如此现实过”（Virtual reality has never felt this real）。HaptX研发及推出的产品是一款具有真实触觉的VR手套。以型号2021年最新推出的一款手套DK2为例，HaptX推出了一套新的企业级VR解决方案，并且在工业级的触觉反馈方面申请了新的专利。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Comp_FullBody_MultiPlayer_2b-e1609462902100.jpg" alt="Comp FullBody Multiplayer" class="lazyload">
+
+
+
+<h3 id="2-2-HaptX-DK2-产品信息"><a href="#2-2-HaptX-DK2-产品信息" class="headerlink" title="2.2 HaptX DK2 产品信息"></a>2.2 HaptX DK2 产品信息</h3><p>HaptX DK2 于今年年初上市，主打触觉、力反馈和舒适度创新，并且在设计与扩展方面改进了可制造性。</p>
+<p>DK2的开发周期长达2年，从尺寸和重量方面做了精简，改善了合身性和人体工程学，实现了空间范围和规模内的虚拟现实支持，并添加了包括多用户网络在内的多种SDK功能，并增强了触觉保真度。</p>
+<p>DK2的气动触觉的空气控制器单元曾经重达180磅（约80千克），手套重量达数百克。经过精简的空气控制器被改造为可以背在用户背后的背包形态，重量缩减到了80磅（约36千克），体积也缩小了三倍。</p>
+<p>DK2的力反馈达到了比较强的级别，每只手的外伸肌可以施加高达40磅的动态力反馈系统，每根手指的反馈有8磅，即35牛顿。这样数量级的力反馈足以模拟一般VR游戏中的各种触感，并且增强了对虚拟物体的大小、形状、质量的感知。</p>
+<p>全身反向运动学技术（full-body IK）是DK2的全景漫游功能的核心技术。全身级别的VR动捕需要将玩家全身的骨骼进行模拟与捕捉，并按照反向动力学原理进行计算。HaptX的软件开发工具包（SDK）构造了触觉交互的物理模拟框架，可以利用各种游戏引擎中的插件（如Unity，Unreal Engine，SteamVR）进行开发，并且可以与机器人设备集成。</p>
+<p>HaptX开发团队称未来正在为虚拟现实触觉研发进行更多创新与研究。在下半身外骨骼的开发与热反馈系统方面的研究可能是其下一步的开发计划</p>
+<p>DK2的报价仍未公布，不过有业内人士称很可能会是一个高达五位数美元的天文数字。</p>
+<h3 id="2-3-HaptX-DK2-技术内核"><a href="#2-3-HaptX-DK2-技术内核" class="headerlink" title="2.3 HaptX DK2 技术内核"></a>2.3 HaptX DK2 技术内核</h3><p>虽然DK2的产品成本极高，但是这也对应着DK2在行业内的专业技术领先程度。大多数的触觉产品使用的技术为震动反馈，或者是使用力反馈外骨骼作为VR触觉交互的唯一反馈模式。HaptX推出的手套采用了触觉反馈，使用微流体技术提供不同于其他设备的真接触触觉。以DK2为例，触觉反馈、动态力反馈与亚毫米运动跟踪技术构成了这款产品。</p>
+<p><strong>微流体皮肤技术</strong>（microfluid skin）是DK2的核心技术之一。微流体指在一百纳米到几百微米数量级的通道内流动的流体，由表面张力、粘性耗散及流体阻力主导流动。微流体仿真皮肤可以在毫米级别对穿戴者施加物理压力，产生真实物体的物理触感。DK2的每只手的单个指尖的反馈超过133个离散的点，为触觉反馈性能树立了新基准。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210601165219964.png" alt="image-20210601165219964" class="lazyload"></p>
+<p><strong>气动学</strong>（pneumatic）以及精密气动元件是另一个产生触觉反馈的重要技术内核。这种空气控制器能够动态导通气流（也被称为“气流路由”），以获得精准的触觉性能。这种控制方法能够在不限制用户活动的情况下创建触觉刺激，通过充气与放气的方式改变可穿戴式设备中的压力，从而产生各种需要的触觉刺激。HaptX在传统气动反馈装置的基础上添加了桌面和背包型设置，在移动性和触觉精密性之间进行了权衡。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210601170340327.png" alt="image-20210601170340327" class="lazyload"></p>
+<h2 id="3-VR触觉反馈技术"><a href="#3-VR触觉反馈技术" class="headerlink" title="3. VR触觉反馈技术"></a>3. VR触觉反馈技术</h2><p>一个触觉渲染的管线可以入下图所示。传统的触觉反馈基于最基本的虚拟空间碰撞检测和实际的硬件触摸检测。经过如下循环检测和反馈逻辑，VR设备与编程方式可以实现基本的触觉反馈。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603210336207.png" alt="image-20210603210336207" class="lazyload">
+
+<h3 id="3-1-振动反馈技术"><a href="#3-1-振动反馈技术" class="headerlink" title="3.1 振动反馈技术"></a>3.1 振动反馈技术</h3><p>传统的VR触觉反馈局限在振动反馈和力反馈。振动反馈被普遍应用于普及VR手柄中，例如Oculus Touch。振动的频率和振幅可以被调整以区分不同的触觉。振动的时机取决于最基本的交互操作。例如，在VR交互中的刚体碰撞会以振动形式反馈，或者是当玩家手中所持有的“虚拟物体”（例如枪械）在某些操作时会产生振动以提示玩家。这种反馈被称为“脉冲触觉”（pulse haptic）。脉冲触觉的反馈取决于电压的驱动。</p>
+<p>另一种振动反馈操作是基于距离的振动（distance based haptic），例如当玩家与VR中的场景物体进行交互时，并没有实际接触而产生的振动。</p>
+<p>传统振动反馈的技术原理基于马达，分为两种拓扑结构。一种传统的技术是偏转质量传动器（Eccentric Rotating Mass, ERM），在它旋转的时候形成一种全方向振动以传遍整个设备。ERM技术的问题在于其形成的波形局限性很大，控制电压的组合有限而能够控制的变量很少。另一中较为新的技术是线性共振传动器（Linear Resonant Actuator, LRA），其原理基于电磁感应，传感器中的磁铁受到控制，以线性方式移动，最终达到共振频率，将振动的感觉传导到整个设备。LRA技术使得振幅调整变得更为容易，响应时间也更快。</p>
+<p>近年来的一种传感器技术也被广泛使用于振动反馈，叫做压电传动器（Piezo Disk）。压电传动的原理正如其名所说，是一种振动和电压的转换技术，设计复杂性低，且没有频率与振幅限制。多压电模块的组合可以使得振动反馈更加精密以至于达到触觉仿真的程度。多层压电传动器可以将系统的工作电压降低到50V（峰值），并将响应时间降低到2ms级。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/5ee9d1fc29a74fa18c459147ad2ad013.jpg" alt="img" class="lazyload"></p>
+<h3 id="3-2-力反馈技术"><a href="#3-2-力反馈技术" class="headerlink" title="3.2 力反馈技术"></a>3.2 力反馈技术</h3><p>力反馈在振动反馈的基础上再现人对于环境力学的感知。玩家在接触物体或者施加力的时候需要反作用力的反馈，比如位置或着力的信息。反作用力的模拟装置一方面获取这些信息，一方面利用反应被接触物体物理属性的参考模型计算在接触或产生形变是的反作用力，并产生力控信号。力反馈装置需要将利空信号通过计算机控制的机械装置来传导到感受终端。</p>
+<p>力反馈计算算法基于有限元模型与弹簧-质点模型。有限元模型把连续的几何结构离散成有限的单元，并在每个单元中设定有限个节点，将连续体看作仅在节点处相连的一组单元集合体。弹簧-质点系统则是对于物理现象的经典模拟，将力的反馈抽象成一系列的质点和胡克弹簧的组合。有限元模型负责求解真实的受力情况，能够将每个单元的受力进行精确的分析与计算；弹簧-质点系统模型可以简单地模拟整个物体的受力，平衡交互实时性。</p>
+<p>有限元分析的原理有利于VR设备的触觉交互设计与CAD软件、商用引擎等开发软件的无缝集成使用。有限元分析的基本过程包括分析对象离散化、有限元方程求解与后处理，其中离散化（网格化）的程度与质量极大程度地影响后续的结果。在人体受力分析上，几何划分采用自适应网格技术往往是一个常用的技术。Voronoi图一般是一种常用于人皮肤模拟与贴合的网格划分法，也常被用于可穿戴式人机交互设备的材料设计上。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210603225624146.png" alt="image-20210603225624146" class="lazyload"></p>
+<p>为了更加好地模拟受力情况，弹簧-质点系统常被拓展到弹簧-质点-阻尼系统。用该系统模拟受力时，更加切合人体对于受力的感受。事实上，弹簧-质点-阻尼系统不仅被用于触觉的受力分析，还应用于人的脸部形变监测、模拟与映射。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/778572-20160509105106109-513620046.jpg" alt="img" class="lazyload">
+
+<p>对于细微受力的反馈不仅仅时利用胡克定律的弹力来进行模拟，而是结合运动学的相关算法进行一定程度的处理再反映到力的变化上。以混合变形函数为例，一种结合了Sigmoid函数的思路而得到的混合函数常用来模拟人体皮肤受力：<br>$$<br>w=100-\frac{100}{1+\text{e}^{-500(m-0.12)}}<br>$$<br>其中m为测量参数。</p>
+<h3 id="3-3-基于气动学的力反馈"><a href="#3-3-基于气动学的力反馈" class="headerlink" title="3.3 基于气动学的力反馈"></a>3.3 基于气动学的力反馈</h3><p>基于气动人工肌肉的力反馈手套在一段时间内也是领先行业的一种触觉反馈技术。在DK2的产品原型中，我们甚至看到了占比非常大，质量和体积都不小的气动驱动仪。一套简单的基于气动力反馈数据手套的人机交互控制系统结构如下图所示：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/%E6%B0%94%E5%8A%A8.png" alt="气动" class="lazyload"></p>
+<p>人手与气动力反馈装置（手套）一起自由运动，传感器测量得到相应的数据经放大器放大，经过A/D转换由数据采集控制卡传递给PC机进行运动学计算，并将结果传递给虚拟场景下的虚拟手，再现人手的实时姿态。当虚拟手与场景物体接触或交互时，程序计算出虚拟手与虚拟物体之间的相互作用力，将力的信息经数据采集控制卡（data gathering control center）的D/A输出控制气动比例阀（proportional control valve）的开合程度，输出虚拟力所需要的供气压力；D/O输出控制继电器使得电磁开关阀开启气缸工期，活塞杆将力作用到人的手指，产生触感。同时，比例阀将供气压力传输给数据采集控制卡，得到实际作用力大小。</p>
+<h2 id="4-总结与思考"><a href="#4-总结与思考" class="headerlink" title="4. 总结与思考"></a>4. 总结与思考</h2><h3 id="4-1-HaptX-DK2-亮点"><a href="#4-1-HaptX-DK2-亮点" class="headerlink" title="4.1 HaptX DK2 亮点"></a>4.1 HaptX DK2 亮点</h3><p>正如上文对DK2的分析所提到的，DK2无论从硬件设备还是从软件技术行都在行业内处于领跑的状态。我们暂不从成本和价格方面来评价，DK2的出众点主要在于其前瞻性和高体验性。</p>
+<p>一方面，在触觉的感知与分析方面，DK2的精细程度与最小数量级达到了一个全新的高度。HaptX的设计团队对于触觉的反馈研究深入到了纳米级别的反馈结果上，将触觉的感知进行了离散化的分析，从多个设计好的刺激点对触觉感受进行模拟，尽可能将全局的触觉感受分布到各个点上，便于进行参数控制与曲线调整。同时，在指尖这种神经末梢分布广泛的地方，集中式的力传感点分布可以很好的帮助模拟比较细微的触觉反应。</p>
+<p>更加细节的地方在于，DK2对于力反馈的数量级以及力的大小有比较聪明的取舍。相比较一些常见的VR外骨骼配套设备的外作用力而言，DK2取消了外骨骼方面的控制力以及限制力，在涉及精细处决的手部、指部则使用了具有更大响应程度的力反馈。 </p>
+<h3 id="4-2-HaptX-DK2-局限性"><a href="#4-2-HaptX-DK2-局限性" class="headerlink" title="4.2 HaptX DK2 局限性"></a>4.2 HaptX DK2 局限性</h3><p>从人体工学和可穿戴式人机交互设备的设计原则来评判，DK2几乎是灾难性的——大量的电子元件设备、大小、重量、弹性以及贴合程度远不及一款平均分数的可穿戴设备。不仅如此，DK2以及几乎所有市面上的VR交互设备的通病就是“均码”。面向玩家群体的多样性的适配程度不好，很可能直接导致触觉反馈的效果大打折扣。另外，由于大量元器件和缆线的存在，手套的延展性受到了很大的限制。</p>
+<p>DK2复杂的技术使我对它在实时性计算的表现方面产生了一定的疑惑与怀疑。DK2的技术文档在硬件设备方面阐述了许多，包括其为之专门申请的专利，但是在软件细节上并没有过多阐述。我们可以假设如果采用其推出的微流体技术来进行压力模拟的话，对于流体通道的表面张力的计算相比较与弹力计算的开销要更大，而传导与间接控制所需要的计算时间也会比传统方式更加耗时（尽管这可能是一个很小的数量级的计算，但是相较于一些本来即时性就很差的传统方式可能并没有什么改善）。</p>
+<p>另外，在与其他现有VR触觉反馈产品的对比上，手势表现的最大优势并没有在这款产品中很明显地表现出来。</p>
+<h3 id="4-3-未来VR触觉反馈发展方向分析"><a href="#4-3-未来VR触觉反馈发展方向分析" class="headerlink" title="4.3 未来VR触觉反馈发展方向分析"></a>4.3 未来VR触觉反馈发展方向分析</h3><p>总览市面上的VR触觉反馈设备以及触觉反馈前沿算法，我们对未来VR触觉反馈的发展前景做一个分析与预测。</p>
+<p>曾有市场调研表明，VR手套设备的研发与销售方面，在过去的五年内复合年增长率达到80%，而这一点主要是得益于提升消费者体验的卖点。此外，VR手套也广泛地应用于医疗机构、军工部门等，其应用方向是广泛且值得关注的。从手柄到手套的进化之路是一个必然的趋势。</p>
+<p>从设备设计来看，删繁就简与高集成度可能是未来VR触控设备要着力解决的技术障碍。从用户体验和人机交互的优越性上来分析，硬件设备的更新换代是推动VR手套发展的重要动力。从真实有效的手感模拟，到未来顺畅精细的体验，这是VR手套跨出的巨大一步。同时，能够将VR手套制作成本与模块化加工进行发展与研究的话，对于扩大市场而言也是极其重要且有效的。</p>
+<p>从触觉反馈方法与算法来看，尽管提出了许多能够带来更高质量模拟效果的方法，但其硬件的依赖性与实现的复杂程度都是非常困难的。以DK2为例，其核心技术的微流体皮肤模拟技术能够带来与其他现有VR交互设备所不存在的真实感体验，但是其技术复杂程度与材料工学的精细程度都限制了其发展。诸如力反馈一类的算法在理论层面所能提供的未来一段时间内估计也会局限于即时性、高准确度的探索方向，而在实践方面，则需要多学科的交叉发展所提供的互相促进的作用。</p>
+<p>VR技术日益成熟与普及的大背景下，作为其辅助的交互技术，触觉反馈的革命性升级将会把VR技术的因应用热潮推向一个新的的巅峰，并甚至对所有电子设备的设计、制造方向造成巨大的影响。</p>
+<h2 id="参考文献与资料"><a href="#参考文献与资料" class="headerlink" title="参考文献与资料"></a>参考文献与资料</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://www.theverge.com/ad/22149169/virtual-reality-sixth-sense-oculus-quest-2-the-climb-proprioception">How does Virtual Reality tap into your sixth (or fifty third) sense? - The Verge</a></li>
+<li><a target="_blank" rel="noopener" href="https://haptx.com/">HaptX DK2</a></li>
+<li>Haptic display for virtual reality: progress and challenges - Virtual Reality &amp; Intelligent Hardware 2019</li>
+<li>Haptic-feedback smart glove as a creative human-machine interface (HMI) for virtual/augmented reality applications - Science Advances 2020</li>
+<li>气动力反馈数据手套设计与验证 - 计算机辅助设计与图形学学报 2012</li>
+</ol>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://example.com/2021/06/06/HaptX%E7%B3%BB%E5%88%97%E8%A7%A6%E8%A7%89%E6%89%8B%E5%A5%97%E4%B8%8EVR%E4%B8%AD%E7%9A%84%E8%A7%A6%E8%A7%89%E5%8F%8D%E9%A6%88%E6%8A%80%E6%9C%AF/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;06&#x2F;06&#x2F;HaptX%E7%B3%BB%E5%88%97%E8%A7%A6%E8%A7%89%E6%89%8B%E5%A5%97%E4%B8%8EVR%E4%B8%AD%E7%9A%84%E8%A7%A6%E8%A7%89%E5%8F%8D%E9%A6%88%E6%8A%80%E6%9C%AF&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;06&#x2F;06&#x2F;HaptX%E7%B3%BB%E5%88%97%E8%A7%A6%E8%A7%89%E6%89%8B%E5%A5%97%E4%B8%8EVR%E4%B8%AD%E7%9A%84%E8%A7%A6%E8%A7%89%E5%8F%8D%E9%A6%88%E6%8A%80%E6%9C%AF&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/VR%E6%8A%80%E6%9C%AF/" rel="tag">VR技术</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641130611537"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
