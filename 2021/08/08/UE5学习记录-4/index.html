@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>UE5学习记录#4 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="UE5学习记录(4)  8.2 之前用了两周的时间，学习了关于UE5中Nanite渲染部分剔除优化的方式。这周的学习计划两条线并行：  动手操作，在熟悉的引擎或者图形API中实现一些剔除方式 继续看Nanite中的光栅化内容  在这之前，有一个很有意思的实现层面的问题，那就是Nanite技术到底有没有用Mesh Shader？或者说，这样的一种技术与Mesh Shader的区别在哪里？Nanit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5学习记录#4">
+<meta property="og:url" content="http://example.com/2021/08/08/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-4/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="UE5学习记录(4)  8.2 之前用了两周的时间，学习了关于UE5中Nanite渲染部分剔除优化的方式。这周的学习计划两条线并行：  动手操作，在熟悉的引擎或者图形API中实现一些剔除方式 继续看Nanite中的光栅化内容  在这之前，有一个很有意思的实现层面的问题，那就是Nanite技术到底有没有用Mesh Shader？或者说，这样的一种技术与Mesh Shader的区别在哪里？Nanit">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210805094531067.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/VB.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807112252324.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807121024206.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807121044189.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807121103535.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807165005210.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210808122213441.png">
+<meta property="article:published_time" content="2021-08-08T13:56:16.000Z">
+<meta property="article:modified_time" content="2022-01-02T14:01:15.429Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="图形学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210805094531067.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641132512886">
+    
+        <link rel="stylesheet" href="/css/dark.css?v=1641132512886">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641132512886">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>15</div>
+        <div><span>Tags</span>3</div>
+        <div><span>Categories</span>2</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://jq.qq.com/?_wv=1027&k=5CfKHun" target="_blank" mdui-tooltip="{content: 'QQ群'}" style="color: rgb(249, 174, 8);background-color: rgba(249, 174, 8, .1);">
+            <i class="nexmoefont icon-QQ"></i>
+        </a><a class="mdui-ripple" href="https://space.bilibili.com/20238211" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/nexmoe/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 10px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">机器学习</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210808122213441.png" data-sizes="auto" alt="UE5学习记录#4" class="lazyload">
+              <h1>UE5学习记录#4</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年08月08日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.5k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 11 分钟</a>
+</div>
+
+      
+
+      <h1 id="ue5学习记录4"><a class="markdownIt-Anchor" href="#ue5学习记录4"></a> UE5学习记录(4)</h1>
+<h2 id="82"><a class="markdownIt-Anchor" href="#82"></a> 8.2</h2>
+<p>之前用了两周的时间，学习了关于UE5中Nanite渲染部分剔除优化的方式。这周的学习计划两条线并行：</p>
+<ul>
+<li>动手操作，在熟悉的引擎或者图形API中实现一些剔除方式</li>
+<li>继续看Nanite中的光栅化内容</li>
+</ul>
+<p>在这之前，有一个很有意思的实现层面的问题，那就是Nanite技术到底有没有用Mesh Shader？或者说，这样的一种技术与Mesh Shader的区别在哪里？Nanite的动态LOD又是基于什么方式实现的？</p>
+<p>先了解了一下Mesh Shader，这是NVIDIA启用的一条新的渲染管线，将光栅化阶段前的阶段整合为两步——task、mesh，并使用这两个阶段替代了原来的顶点——细分——着色器管线。用这样的方法， 可以获得更高的扩展性，减少数据传送的带宽，并且增加了灵活处理的能力。Mesh Shader的剔除步骤也包括了视锥剔除、HZB遮挡剔除等等，这些步骤在Amplification Shader阶段进行，是在GPU上完成的。LOD的选取也还是根据包围盒屏幕空间大小。</p>
+<p>同样是解决高面数精细模型的渲染问题，Nanite给出了一种纯软件的实现。这也符合EPIC官方所说的“无需光追硬件”的特点，而只需要一块支持计算着色器的GPU以及满足一定带宽的硬件即可。简单来说，就是用Compute Shader解决了三角形剔除的工作。</p>
+<p>另外，在所谓“动态LOD”的表现方面，我们可以看到Nanite是自动处理的。这一点借助于其工作流程中的Cluster分层结构。模型导入的时候拆分成了由三角形组构成的层次化集群，姑且称之为Cluster Mips，类似于纹理的mipmap层级，或者就是传统的LOD。根据这个层次，可以用于处理LOD切换。</p>
+<p><em>8.3补充：看到一位博主将其称为Cluster LOD，觉得比较合适。</em></p>
+<h2 id="83"><a class="markdownIt-Anchor" href="#83"></a> 8.3</h2>
+<h3 id="rasterization-1"><a class="markdownIt-Anchor" href="#rasterization-1"></a> Rasterization #1</h3>
+<p>开始研究Nanite光栅化的代码。Nanite中光栅化是在ClusterCull流程中进行的。简单来说，光栅化部分的任务有以下几点：</p>
+<ul>
+<li>确定集群是否需要光栅化（渲染）</li>
+<li>确定集群的光栅化模式（硬光栅or软光栅）</li>
+<li>确定集群的LOD</li>
+<li>确定像素比例</li>
+<li>进行光栅化</li>
+</ul>
+<p>今天先研究前置的一些问题。</p>
+<p>集群的渲染先决条件（可见性），在<code>ClusterCull()</code>函数中被调用，判断函数如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">SmallEnoughToDraw</span><span class="params">( FNaniteView NaniteView, FInstanceSceneData InstanceData, FInstanceDynamicData DynamicData, float4 LODBounds, <span class="keyword">float</span> LODError, <span class="keyword">float</span> EdgeLength, inout <span class="keyword">bool</span> bUseHWRaster )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 获取包围盒的投影缩放比例</span></span><br><span class="line">	<span class="keyword">float</span> ProjectedEdgeScale = <span class="built_in">GetProjectedEdgeScales</span>( NaniteView, InstanceData, DynamicData, LODBounds ).x;</span><br><span class="line">	<span class="keyword">float</span> UniformScale = <span class="built_in">min3</span>( InstanceData.NonUniformScale.x, InstanceData.NonUniformScale.y, InstanceData.NonUniformScale.z );</span><br><span class="line">    <span class="comment">// 结合缩放以及LOD误差系数确定是否可见</span></span><br><span class="line">    <span class="comment">// 重要变量：NaniteView.LODScale</span></span><br><span class="line">	<span class="keyword">bool</span> bVisible = ProjectedEdgeScale &gt; UniformScale * LODError * NaniteView.LODScale;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (RenderFlags &amp; RENDER_FLAG_FORCE_HW_RASTER)</span><br><span class="line">	&#123;</span><br><span class="line">		bUseHWRaster = <span class="literal">true</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">        <span class="comment">// 决定光栅化的模式</span></span><br><span class="line">		bUseHWRaster = ProjectedEdgeScale &lt; InstanceData.NonUniformScale.w * <span class="built_in">abs</span>( EdgeLength ) * NaniteView.LODScaleHW; <span class="comment">// <span class="doctag">TODO:</span> EdgeLength shouldn&#x27;t have sign</span></span><br><span class="line">        <span class="comment">// InstanceData.NonUniformScale.w是三个方向缩放的最大值</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> bVisible;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么这个LOD缩放比例是怎么算的？继续查NaniteView.LODScale：先看看FNaniteView的数据结构。这是一个包含了Nanite多边形网格体渲染所需要的内容的结构。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FNaniteView</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	float4x4	TranslatedWorldToView;</span><br><span class="line">	float4x4	TranslatedWorldToClip;</span><br><span class="line">	float4x4	ViewToClip;</span><br><span class="line">	float4x4	ClipToWorld;</span><br><span class="line">	</span><br><span class="line">	float4x4	PrevTranslatedWorldToView;</span><br><span class="line">	float4x4	PrevTranslatedWorldToClip;</span><br><span class="line">	float4x4	PrevViewToClip;</span><br><span class="line">	float4x4	PrevClipToWorld;</span><br><span class="line"></span><br><span class="line">	int4		ViewRect;</span><br><span class="line">	float4		ViewSizeAndInvSize;</span><br><span class="line">	float4		ClipSpaceScaleOffset;</span><br><span class="line">	float3		PreViewTranslation;</span><br><span class="line">	float3		PrevPreViewTranslation;</span><br><span class="line">	float3		WorldCameraOrigin;</span><br><span class="line">	float3		ViewForward;</span><br><span class="line">	<span class="keyword">float</span>		NearPlane;</span><br><span class="line">	<span class="keyword">float</span>		LODScale;</span><br><span class="line">	<span class="keyword">float</span>		LODScaleHW;</span><br><span class="line">	<span class="keyword">float</span>		MinBoundsRadiusSq;</span><br><span class="line">	uint		StreamingPriorityCategory;</span><br><span class="line">    uint		Flags;</span><br><span class="line">	<span class="keyword">int</span>			TargetLayerIndex;</span><br><span class="line">	<span class="keyword">int</span>			TargetMipLevel;</span><br><span class="line">	<span class="keyword">int</span>			TargetNumMipLevels;</span><br><span class="line">	<span class="keyword">int</span>			TargetPrevLayerIndex;</span><br><span class="line">	int4		HZBTestViewRect;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>对于LODScale的计算，原理如下：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210805094531067.png" alt="image-20210805094531067" class="lazyload"></p>
+<p>然后是光栅化模式（硬光栅or软光栅），看到这一句：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bUseHWRaster = ProjectedEdgeScale &lt; InstanceData.NonUniformScale.w * <span class="built_in">abs</span>( EdgeLength ) * NaniteView.LODScaleHW;</span><br><span class="line"><span class="comment">// EdgeLength是每个集群中所有三角形边长中的最大值，相当于一个Bound</span></span><br><span class="line"><span class="comment">// 也就是用这个Bound值来进行投影比例缩放和判断</span></span><br><span class="line"><span class="comment">// NaniteView.LODScaleHW是判断是否硬光栅的系数，计算原理和LODScale类似，设定一个硬光栅的最小的像素阈值，当成像像素数大于该与之则使用硬光栅，否则使用软光栅</span></span><br></pre></td></tr></table></figure>
+<h2 id="84"><a class="markdownIt-Anchor" href="#84"></a> 8.4</h2>
+<h3 id="rasterization-2"><a class="markdownIt-Anchor" href="#rasterization-2"></a> Rasterization #2</h3>
+<p>接下来要确定集群的LOD。在Culling时，需要先决定BVH Node对应的LOD，然后确定数据传输的优先级。函数入口如下，可以看到与确定LODScale的思路类似：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">ShouldVisitChild</span><span class="params">( FNaniteView NaniteView, FInstanceSceneData InstanceData, FInstanceDynamicData DynamicData, float4 LODBounds, <span class="keyword">float</span> MinLODError, <span class="keyword">float</span> MaxParentLODError, inout <span class="keyword">float</span> Priority )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	float2 ProjectedEdgeScales = <span class="built_in">GetProjectedEdgeScales</span>(NaniteView, InstanceData, DynamicData, LODBounds);</span><br><span class="line">	<span class="keyword">float</span> UniformScale = <span class="built_in">min3</span>( InstanceData.NonUniformScale.x, InstanceData.NonUniformScale.y, InstanceData.NonUniformScale.z );</span><br><span class="line">	<span class="keyword">float</span> Threshold = NaniteView.LODScale * UniformScale * MaxParentLODError;</span><br><span class="line">	<span class="keyword">if</span>( ProjectedEdgeScales.x &lt;= Threshold )</span><br><span class="line">	&#123;</span><br><span class="line">		Priority = Threshold / ProjectedEdgeScales.x;	<span class="comment">// <span class="doctag">TODO:</span> Experiment with better priority</span></span><br><span class="line">		<span class="comment">// return (ProjectedEdgeScales.y &gt;= NaniteView.LODScale * UniformScale * MinLODError); //<span class="doctag">TODO:</span> Doesn&#x27;t currently work with streaming. MinLODError needs to also reflect leafness caused by streaming cut.</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中计算包围体在屏幕上的投影面积比例的函数<code>GetProjectedEdgeScales()</code>函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">float2 <span class="title">GetProjectedEdgeScales</span><span class="params">(FNaniteView NaniteView, FInstanceSceneData InstanceData, FInstanceDynamicData DynamicData, float4 Bounds)</span>	<span class="comment">// float2(min, max)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>( NaniteView.ViewToClip[ <span class="number">3</span> ][ <span class="number">3</span> ] &gt;= <span class="number">1.0f</span> )</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// Ortho</span></span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">float2</span>( <span class="number">1</span>, <span class="number">1</span> );</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 局部坐标系中Camera方向</span></span><br><span class="line">	float3 ViewForward = DynamicData.ViewForwardScaledLocal;</span><br><span class="line">    <span class="comment">// Cluster Bound中心点到视点的向量</span></span><br><span class="line">	float3 ViewToCluster = Bounds.xyz * InstanceData.NonUniformScale.xyz - DynamicData.ViewPosScaledLocal;</span><br><span class="line">	<span class="keyword">float</span> Radius = Bounds.w * InstanceData.NonUniformScale.w;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 近截面</span></span><br><span class="line">	<span class="keyword">float</span> ZNear = NaniteView.NearPlane;</span><br><span class="line">	<span class="keyword">float</span> DistToClusterSq = <span class="built_in">dot</span>( ViewToCluster, ViewToCluster );</span><br><span class="line">	<span class="keyword">float</span> DistToCluster = <span class="built_in">sqrt</span>( DistToClusterSq );</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// ViewToCluster在ViewForward上的投影距离Z</span></span><br><span class="line">	<span class="keyword">float</span> Z = <span class="built_in">dot</span>( ViewForward, ViewToCluster );</span><br><span class="line">	<span class="keyword">float</span> XSq = DistToClusterSq - Z * Z;</span><br><span class="line">	<span class="keyword">float</span> X = <span class="built_in">sqrt</span>( <span class="built_in">max</span>(<span class="number">0.0f</span>, XSq) );</span><br><span class="line">	<span class="keyword">float</span> DistToTSq = DistToClusterSq - Radius * Radius;</span><br><span class="line">	<span class="keyword">float</span> DistToT = <span class="built_in">sqrt</span>( <span class="built_in">max</span>(<span class="number">0.0f</span>, DistToTSq) );</span><br><span class="line">	<span class="keyword">float</span> ScaledCosTheta = DistToT;</span><br><span class="line">	<span class="keyword">float</span> ScaledSinTheta = Radius;</span><br><span class="line">	<span class="keyword">float</span> ScaleToUnit = <span class="built_in">rcp</span>( DistToClusterSq );</span><br><span class="line">	<span class="keyword">float</span> By = (  ScaledSinTheta * X + ScaledCosTheta * Z ) * ScaleToUnit;</span><br><span class="line">	<span class="keyword">float</span> Ty = ( -ScaledSinTheta * X + ScaledCosTheta * Z ) * ScaleToUnit;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">float</span> H = ZNear - Z;</span><br><span class="line">	<span class="keyword">if</span>( DistToTSq &lt; <span class="number">0.0f</span> || By * DistToT &lt; ZNear )</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">float</span> Bx = <span class="built_in">max</span>( X - <span class="built_in">sqrt</span>( Radius * Radius - H * H ), <span class="number">0.0f</span> );</span><br><span class="line">		By = ZNear * <span class="built_in">rsqrt</span>( Bx * Bx + ZNear * ZNear );</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>( DistToTSq &lt; <span class="number">0.0f</span> || Ty * DistToT &lt; ZNear )</span><br><span class="line">	&#123;	</span><br><span class="line">		<span class="keyword">float</span> Tx = X + <span class="built_in">sqrt</span>( Radius * Radius - H * H );</span><br><span class="line">		Ty = ZNear * <span class="built_in">rsqrt</span>( Tx * Tx + ZNear * ZNear );</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">float</span> MinZ = <span class="built_in">max</span>( Z - Radius, ZNear );</span><br><span class="line">	<span class="keyword">float</span> MaxZ = <span class="built_in">max</span>( Z + Radius, ZNear );</span><br><span class="line">	<span class="keyword">float</span> MinCosAngle = Ty;</span><br><span class="line">	<span class="keyword">float</span> MaxCosAngle = By;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(Z + Radius &gt; ZNear)</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">float2</span>( MinZ * MinCosAngle, MaxZ * MaxCosAngle );</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">float2</span>( <span class="number">0.0f</span>, <span class="number">0.0f</span> );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="85~86"><a class="markdownIt-Anchor" href="#85~86"></a> 8.5~8.6</h2>
+<h3 id="rasterization-3"><a class="markdownIt-Anchor" href="#rasterization-3"></a> Rasterization #3</h3>
+<blockquote>
+<p>整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个单独的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon到Shared Memory，而后CS中的每个线程读取对应三角形的Index Buffer和变换后的Vertex Position，根据Vertex Position计算出三角形的边，执行背面剔除和小三角形（小于一个像素）剔除，然后利用原子操作完成Z-Test，并将数据写进Visibility Buffer。<strong>值得一提的是，为了保证整个软光栅化逻辑的简洁高效，Nanite Mesh不支持带有骨骼动画、材质中包含顶点变换或者Mask的模型。</strong></p>
+</blockquote>
+<p>光栅化相关部分在<code>Rasterizer.usf</code>里。我们分硬件光栅化和软件光栅化的实现来看。硬光栅是传统的GPU渲染管线，因此以实例绘制的方式嵌入到Nanite的流程里就好了。当然，使用的是间接绘制。在ClusterCulling中，最后得到了间接渲染所需要的Buffer<code>VisibleClustersArgsSWHW</code>，直接绘制其中的内容。</p>
+<p>Nanite最出名的特点之一就是可见性缓冲Visibility Buffer【引用】。它是一个R32G32_UINT纹理，包含每个像素的三角形和深度信息。使用这个数据结构的特点在于——延迟渲染几何体与材质分离，使得每个像素的材质都被精确评估一次，并且不会访问之后被遮挡的纹理、缓冲区或资源。Visibility Buffer编码如下：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/VB.jpg" alt="" class="lazyload"></p>
+<p>硬光栅的流程如下：</p>
+<p>数据定义：顶点着色器的输出</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VSOut</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	noperspective  <span class="keyword">float</span> DeviceZ			: TEXCOORD0;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> PIXEL_VALUE</span></span><br><span class="line">	nointerpolation uint PixelValue			: TEXCOORD1;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> NANITE_MULTI_VIEW</span></span><br><span class="line">	nointerpolation int4 ViewRect			: TEXCOORD2;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> VISUALIZE</span></span><br><span class="line">	nointerpolation uint2 VisualizeValues	: TEXCOORD3;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> VIRTUAL_TEXTURE_TARGET</span></span><br><span class="line">	nointerpolation <span class="keyword">int</span> ViewId				: TEXCOORD4;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> VERTEX_TO_TRIANGLE_MASKS</span></span><br><span class="line">	CUSTOM_INTERPOLATION uint4 ToTriangleMasks	: TEXCOORD5;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">	float4 Position							: SV_Position;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>硬光栅：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">VSOut <span class="title">HWRasterizeVS</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">	uint VertexID		: SV_VertexID,</span></span></span><br><span class="line"><span class="params"><span class="function">	uint VisibleIndex	: SV_InstanceID</span></span></span><br><span class="line"><span class="params"><span class="function">	)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> HAS_PREV_DRAW_DATA</span></span><br><span class="line">	VisibleIndex += InTotalPrevDrawClusters[<span class="number">0</span>].y;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ADD_CLUSTER_OFFSET</span></span><br><span class="line">    <span class="comment">// 如果是Post Culling Pass，经过了HZB遮挡剔除</span></span><br><span class="line">    <span class="comment">// 需要在VisibleIndex加上Main Pass的偏移</span></span><br><span class="line">	VisibleIndex += InClusterOffsetSWHW[<span class="built_in">GetHWClusterCounterIndex</span>(RenderFlags)];</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    </span><br><span class="line">	VisibleIndex = (MaxVisibleClusters - <span class="number">1</span>) - VisibleIndex;</span><br><span class="line">	<span class="comment">// 根据VertexID计算TriangleID以及三角形内的VertexID</span></span><br><span class="line">	uint TriIndex = VertexID / <span class="number">3</span>;</span><br><span class="line">	VertexID = VertexID - TriIndex * <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">	VSOut Out;</span><br><span class="line">	Out.Position = <span class="built_in">float4</span>(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>);</span><br><span class="line">	Out.DeviceZ = <span class="number">0.0f</span>;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 内部读取可见Cluster存储并解包</span></span><br><span class="line">	FVisibleCluster VisibleCluster = <span class="built_in">GetVisibleCluster</span>( VisibleIndex, VIRTUAL_TEXTURE_TARGET );</span><br><span class="line">    <span class="comment">// 根据InstanceID获取InstanceData</span></span><br><span class="line">	FInstanceSceneData InstanceData = <span class="built_in">GetInstanceData</span>( VisibleCluster.InstanceId );</span><br><span class="line">	<span class="comment">// 获取FNaniteView，FCluster</span></span><br><span class="line">	FNaniteView NaniteView = <span class="built_in">GetNaniteView</span>( VisibleCluster.ViewId );</span><br><span class="line">	FCluster Cluster = <span class="built_in">GetCluster</span>(VisibleCluster.PageIndex, VisibleCluster.ClusterIndex);</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 根据TriIndex获取三角形三个顶点的索引数据</span></span><br><span class="line">	<span class="keyword">if</span>( TriIndex &lt; Cluster.NumTris )</span><br><span class="line">	&#123;</span><br><span class="line">		uint3 TriangleIndices = <span class="built_in">ReadTriangleIndices</span>( Cluster, TriIndex );</span><br><span class="line">        <span class="comment">// 获取顶点顺序</span></span><br><span class="line">		<span class="keyword">if</span>( <span class="built_in">ReverseWindingOrder</span>( InstanceData ) )</span><br><span class="line">		&#123;</span><br><span class="line">			TriangleIndices = <span class="built_in">uint3</span>( TriangleIndices.x, TriangleIndices.z, TriangleIndices.y );</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 每个Cluster内的所有顶点的索引</span></span><br><span class="line">		uint VertIndex = TriangleIndices[ VertexID ];</span><br><span class="line">		float4 PointClipNoScaling;</span><br><span class="line">        <span class="comment">// 进行硬光栅顶点处理</span></span><br><span class="line">		Out = <span class="built_in">CommonRasterizerVS</span>(NaniteView, InstanceData, VisibleCluster, Cluster, VertIndex, PointClipNoScaling);</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span> PIXEL_VALUE</span></span><br><span class="line">        <span class="comment">// 当输出为Depth Only时禁用该宏</span></span><br><span class="line">        <span class="comment">// 将VisibileIndex和TriIndex压缩到32位整数</span></span><br><span class="line">        <span class="comment">// TriIndex有7位，即每个Cluster最多128个三角形</span></span><br><span class="line">		Out.PixelValue  = ((VisibleIndex + <span class="number">1</span>) &lt;&lt; <span class="number">7</span>) | TriIndex;</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> Out;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="87~88"><a class="markdownIt-Anchor" href="#87~88"></a> 8.7~8.8</h2>
+<h3 id="基于unity引擎的间接渲染与剔除算法实现练习"><a class="markdownIt-Anchor" href="#基于unity引擎的间接渲染与剔除算法实现练习"></a> 基于Unity引擎的间接渲染与剔除算法实现练习</h3>
+<p>动手实操，打算使用熟悉的Unity引擎，在GPU端实现一些之前学习研究遇到的剔除算法。</p>
+<p>性能优化方面，首先是对于各种剔除算法的理解。一般来说最常见的性能优化与剔除方法是背面剔除、视锥剔除和遮挡剔除。在游戏引擎中，视锥剔除和遮挡剔除是优化性能效果最好的。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807112252324.png" alt="image-20210807112252324" class="lazyload"></p>
+<p>Unity的GPU运算方面和UE一样，使用的是基于DX11的计算着色器Compute Shader。</p>
+<p>考虑到视锥剔除对我而言比较熟悉，只需要对视锥体的六个面和渲染目标物体的包围盒求交计算即可判断其可见性，因此先从视锥剔除开始，熟悉GPU编程。</p>
+<p>在进行了视锥剔除后，FPS可以从30左右上升到200~300，绘制的调用次数DrawCall也大幅度减少。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807121024206.png" alt="image-20210807121024206" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807121044189.png" alt="image-20210807121044189" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807121103535.png" alt="image-20210807121103535" class="lazyload"></p>
+<p><em>8.7 Update：更换材质与视图以方便查看，并为下一步遮挡剔除准备</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210807165005210.png" alt="image-20210807165005210" class="lazyload"></p>
+<p><em>8.8 Update1：测试深度与Hi-Z Buffer</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210808122213441.png" alt="image-20210808122213441" class="lazyload"></p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://example.com/2021/08/08/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-4/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;08&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-4&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;08&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-4&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/UE5%E5%AD%A6%E4%B9%A0/">UE5学习</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" rel="tag">图形学</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641132512887"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>

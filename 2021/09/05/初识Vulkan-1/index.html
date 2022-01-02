@@ -4,7 +4,7 @@
 
 <head>
     
-    <title>A Study on Neural Attention Distillation - RUiN&#39;s Blog</title>
+    <title>初识Vulkan#1 - RUiN&#39;s Blog</title>
     <meta charset="UTF-8">
     <meta name="keywords" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
@@ -12,23 +12,29 @@
     
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <meta property="og:type" content="article">
-<meta property="og:title" content="A Study on Neural Attention Distillation">
-<meta property="og:url" content="http://example.com/2021/07/05/A-Study-on-Neural-Attention-Distillation/index.html">
+    <meta name="description" content="初识Vulkan(1)  Validation Layers Vulkan API的设计核心是尽量最小化驱动程序的额外开销，所谓额外开销更多的是指向渲染以外的运算。其中一个具体的表现就是默认条件下，Vulkan API的错误检查的支持非常有限。即使遍历不正确的值或者将需要的参数传递为空指针，也不会有明确的处理逻辑，并且直接导致崩溃或者未定义的异常行为。之所以这样，是因为Vulkan要求每一个步骤">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识Vulkan#1">
+<meta property="og:url" content="http://example.com/2021/09/05/%E5%88%9D%E8%AF%86Vulkan-1/index.html">
 <meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="初识Vulkan(1)  Validation Layers Vulkan API的设计核心是尽量最小化驱动程序的额外开销，所谓额外开销更多的是指向渲染以外的运算。其中一个具体的表现就是默认条件下，Vulkan API的错误检查的支持非常有限。即使遍历不正确的值或者将需要的参数传递为空指针，也不会有明确的处理逻辑，并且直接导致崩溃或者未定义的异常行为。之所以这样，是因为Vulkan要求每一个步骤">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2021-07-05T12:53:31.000Z">
-<meta property="article:modified_time" content="2022-01-02T13:01:07.100Z">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20200407120549998.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/1600268-20200206112558378-936932584.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/vulkan_simplified_pipeline.svg">
+<meta property="article:published_time" content="2021-09-05T14:00:39.000Z">
+<meta property="article:modified_time" content="2022-01-02T14:06:48.252Z">
 <meta property="article:author" content="RUiN">
-<meta property="article:tag" content="机器学习">
+<meta property="article:tag" content="图形学">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20200407120549998.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641132512892">
+    <link rel="stylesheet" href="/css/style.css?v=1641132512878">
     
-        <link rel="stylesheet" href="/css/dark.css?v=1641132512892">
+        <link rel="stylesheet" href="/css/dark.css?v=1641132512878">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641132512892">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641132512878">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -165,26 +171,62 @@
   <article>
       
           <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
-              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/d33078fa9879378f9df0ed1fbb8bf75d.png" data-sizes="auto" alt="A Study on Neural Attention Distillation" class="lazyload">
-              <h1>A Study on Neural Attention Distillation</h1>
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/1600268-20200206112558378-936932584.png" data-sizes="auto" alt="初识Vulkan#1" class="lazyload">
+              <h1>初识Vulkan#1</h1>
           </div>
       
       
       <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
-    <a><i class="nexmoefont icon-calendar-fill"></i>2021年07月05日</a>
-    <a><i class="nexmoefont icon-areachart"></i>0 字</a>
-    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年09月05日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.1k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 4 分钟</a>
 </div>
 
       
 
-      
-
-	<div class="row">
-    <embed src="A-Study-on-Neural-Attention-Distillation.pdf" width="100%" height="550" type="application/pdf">
-	</div>
-
-
+      <h1 id="初识vulkan1"><a class="markdownIt-Anchor" href="#初识vulkan1"></a> 初识Vulkan(1)</h1>
+<h2 id="validation-layers"><a class="markdownIt-Anchor" href="#validation-layers"></a> Validation Layers</h2>
+<p>Vulkan API的设计核心是尽量最小化驱动程序的额外开销，所谓额外开销更多的是指向渲染以外的运算。其中一个具体的表现就是默认条件下，Vulkan API的错误检查的支持非常有限。即使遍历不正确的值或者将需要的参数传递为空指针，也不会有明确的处理逻辑，并且直接导致崩溃或者未定义的异常行为。之所以这样，是因为Vulkan要求每一个步骤定义都非常明确，导致很容易造成小错误，例如使用新的GPU功能，但是忘记了逻辑设备创建时请求它。</p>
+<p>但是，这并不意味着这些检查不能添加到具体的API中。Vulkan推出了一个优化的系统，这个系统称之为Validation layers。Validation layers是可选组件，可以挂载到Vulkan函数中调用，以回调其他的操作。</p>
+<ul>
+<li>根据规范检查参数数值，最终确认是否存与预期不符的情况</li>
+<li>跟踪对象的创建和销毁，以查找是否存在资源的泄漏</li>
+<li>跟踪线程的调用链，确认线程执行过程中的安全性</li>
+<li>将每次函数调用所使用的参数记录到标准的输出中，进行初步的Vulkan概要分析</li>
+</ul>
+<h2 id="queue-family"><a class="markdownIt-Anchor" href="#queue-family"></a> Queue family</h2>
+<p>与其他图形api不同，Vulkan将设备队列暴露给程序员，这样程序员就可以决定要使用多少队列以及要使用什么样的队列。队列是用来向硬件提交命令的抽象机制。稍后您将看到一个Vulkan应用程序如何构建一个充满命令的命令缓冲区，然后将它们提交到一个队列中，以便由GPU硬件进行异步处理。</p>
+<p>Vulkan将队列按照它们的类型排列成队列家族。为了找到您感兴趣的队列的类型和特征，您可以从物理设备查询QueueFamilyProperties：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20200407120549998.png" alt="img" class="lazyload"></p>
+<h2 id="swap-chain"><a class="markdownIt-Anchor" href="#swap-chain"></a> Swap chain</h2>
+<p>交换链是一系列最终会展示给用户的图像的集合。本质上，这是一个图像缓冲区列表。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/1600268-20200206112558378-936932584.png" alt="img" class="lazyload">
+<p><strong>查询交换链支持的细节</strong></p>
+<ul>
+<li>SurfaceCapabilities：表面功能。确定支持功能以及指定的Vk物理扩展</li>
+<li>SurfaceFormats：表面格式。确保向量调整以保持所有可用格式</li>
+<li>PresentModes：展示模式的工作方式</li>
+</ul>
+<p><strong>为交换链选择正确的设置</strong></p>
+<ul>
+<li>SurfaceFormat：包括指定颜色通道、类型、颜色空间</li>
+<li>PresentMode：向屏幕显示图像的实际条件
+<ul>
+<li><code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>： 您的申请提交的图像立即传输到屏幕上，这可能会导致撕裂。</li>
+<li><code>VK_PRESENT_MODE_FIFO_KHR</code>： 交换链是一个队列，当显示器被刷新并程序插入队列背面的渲染图像时，显示屏从队列的前面接收图像。如果队列已满，则程序必须等待。这最类似于现代游戏中的垂直同步。显示器刷新的那一刻称为&quot;垂直空白&quot;。</li>
+<li><code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>：此模式仅在应用程序延迟且最后垂直空白处队列为空时与上一种模式不同。图像在最终到达时会立即传输，而不是等待下一个垂直空白。这可能会导致可见的撕裂。</li>
+<li><code>VK_PRESENT_MODE_MAILBOX_KHR</code>：这是第二种模式的另一种变体。已排队的图像只需替换为较新的图像，即可在队列满员时阻止应用程序。此模式可用于尽可能快地渲染帧，同时还能避免撕裂，因此延迟问题比标准垂直同步要少。这通常被称为&quot;三重缓冲&quot;，尽管仅存在三个缓冲器并不一定意味着帧速率已解锁。</li>
+</ul>
+</li>
+<li>SwapExtent：交换范围，指的是交换链图像的分辨率，基本上等同于像素窗口分辨率</li>
+</ul>
+<h2 id="window-surface"><a class="markdownIt-Anchor" href="#window-surface"></a> Window surface</h2>
+<p>Vulkan是平台不可知的图形API，因此无法直接与窗口系统系统进行交互。Vulkan 将window相关的操作和图形核心的API隔离；窗口使用对应的扩展，KHR 代表了这是一种Khronos Extension。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">VkSurfaceKHR surface;</span><br></pre></td></tr></table></figure>
+<p>VkSurfaceKHR代表一种抽象类型，用以呈现渲染图象。surface可以被认为是Vulkan和窗体系统的桥梁。</p>
+<p>因此需要设置一个Present Queue Family。Present操作指将一个swap chain image传给物理显示器的过程。</p>
+<h2 id="vulkan渲染管线"><a class="markdownIt-Anchor" href="#vulkan渲染管线"></a> Vulkan渲染管线</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/vulkan_simplified_pipeline.svg" alt="img" class="lazyload"></p>
 
   </article>
 
@@ -192,7 +234,7 @@
       
     <div class="nexmoe-post-copyright">
         <strong>Author：</strong>RUiN<br>
-        <strong>Link：</strong><a href="http://example.com/2021/07/05/A-Study-on-Neural-Attention-Distillation/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;07&#x2F;05&#x2F;A-Study-on-Neural-Attention-Distillation&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;07&#x2F;05&#x2F;A-Study-on-Neural-Attention-Distillation&#x2F;</a><br>
+        <strong>Link：</strong><a href="http://example.com/2021/09/05/%E5%88%9D%E8%AF%86Vulkan-1/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;09&#x2F;05&#x2F;%E5%88%9D%E8%AF%86Vulkan-1&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;09&#x2F;05&#x2F;%E5%88%9D%E8%AF%86Vulkan-1&#x2F;</a><br>
         
             <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
         
@@ -203,8 +245,10 @@
   
   <div class="nexmoe-post-meta nexmoe-rainbow">
     
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/Vulkan/">Vulkan</a>
     
-        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a>
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" rel="tag">图形学</a>
     
 </div>
 
@@ -260,7 +304,7 @@
 
  
 
-<script async src="/js/app.js?v=1641132512893"></script>
+<script async src="/js/app.js?v=1641132512879"></script>
 
 
 

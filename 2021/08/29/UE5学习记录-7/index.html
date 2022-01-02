@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>UE5学习记录#7 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="UE5学习记录(7)  8.23~8.24  开始动手基于CS的软光栅 &amp; 学习  8.25  UE5渲染管线的重大更改 之前进展一直比较缓慢。但是最近在查看UE5最新的版本更迭的时候，发现他们把光栅化的流程进行了一个更改，那就是加入了对于Mesh Shader使用的判断，并且在Rasterize的shader里做了进一步的判断。 查看了UE5仓库的commit记录，我发现工程师们从8月">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5学习记录#7">
+<meta property="og:url" content="http://example.com/2021/08/29/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="UE5学习记录(7)  8.23~8.24  开始动手基于CS的软光栅 &amp; 学习  8.25  UE5渲染管线的重大更改 之前进展一直比较缓慢。但是最近在查看UE5最新的版本更迭的时候，发现他们把光栅化的流程进行了一个更改，那就是加入了对于Mesh Shader使用的判断，并且在Rasterize的shader里做了进一步的判断。 查看了UE5仓库的commit记录，我发现工程师们从8月">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825093427875.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825190357516.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825190734646.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825190744142.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191028077.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191041277.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191053724.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191124779.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191133219.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/682975-20190809024037326-1582206357.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/682975-20190809005128757-1117829500.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/94e0f86a50d587aa360098311f18e4ed.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210826145639306.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210829092925995.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210829094737104.png">
+<meta property="article:published_time" content="2021-08-29T13:59:30.000Z">
+<meta property="article:modified_time" content="2022-01-02T14:01:05.774Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="图形学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825093427875.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641132512881">
+    
+        <link rel="stylesheet" href="/css/dark.css?v=1641132512881">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641132512881">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>15</div>
+        <div><span>Tags</span>3</div>
+        <div><span>Categories</span>2</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://jq.qq.com/?_wv=1027&k=5CfKHun" target="_blank" mdui-tooltip="{content: 'QQ群'}" style="color: rgb(249, 174, 8);background-color: rgba(249, 174, 8, .1);">
+            <i class="nexmoefont icon-QQ"></i>
+        </a><a class="mdui-ripple" href="https://space.bilibili.com/20238211" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/nexmoe/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 10px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">机器学习</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191133219.png" data-sizes="auto" alt="UE5学习记录#7" class="lazyload">
+              <h1>UE5学习记录#7</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年08月29日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.2k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 10 分钟</a>
+</div>
+
+      
+
+      <h1 id="ue5学习记录7"><a class="markdownIt-Anchor" href="#ue5学习记录7"></a> UE5学习记录(7)</h1>
+<h2 id="823~824"><a class="markdownIt-Anchor" href="#823~824"></a> 8.23~8.24</h2>
+<h3 id="开始动手基于cs的软光栅-学习"><a class="markdownIt-Anchor" href="#开始动手基于cs的软光栅-学习"></a> 开始动手基于CS的软光栅 &amp; 学习</h3>
+<h2 id="825"><a class="markdownIt-Anchor" href="#825"></a> 8.25</h2>
+<h3 id="ue5渲染管线的重大更改"><a class="markdownIt-Anchor" href="#ue5渲染管线的重大更改"></a> UE5渲染管线的重大更改</h3>
+<p>之前进展一直比较缓慢。但是最近在查看UE5最新的版本更迭的时候，发现他们把光栅化的流程进行了<strong>一个更改</strong>，那就是加入了对于Mesh Shader使用的判断，并且在Rasterize的shader里做了进一步的判断。</p>
+<p>查看了UE5仓库的commit记录，我发现工程师们从8月开始，就着手开始更改Nanite光栅化的逻辑，开始尝试在DX12 Mesh Shader的基础上实现Nanite。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825093427875.png" alt="image-20210825093427875" class="lazyload"></p>
+<p>这无疑是一个重大的更新，虽然目前在他们的记录中显示，使用Nanite mesh shader默认是关闭的（考虑到DX12库的适配性和不广泛应用），但是如果使用Mesh Shader的话，这将是另一层效果上的优化与提高。同时这也说明了UE5的发展正向着Mesh Shader兼容的方向去。</p>
+<p>可以大胆推测<strong>正式发行版中的Nanite将融合大部分DX12的接口并且在大多数平台支持Mesh Shader实现</strong>。</p>
+<p>是时候开始学习Mesh Shader编程了！</p>
+<h3 id="mesh-shader初体验"><a class="markdownIt-Anchor" href="#mesh-shader初体验"></a> Mesh Shader初体验</h3>
+<p>下载了D3D12的官方Mesh Shader demo，包括了meshlet生成、meshlet渲染器、基于meshlet的culling以及动态LOD等功能。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825190357516.png" alt="image-20210825190357516" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825190734646.png" alt="image-20210825190734646" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825190744142.png" alt="image-20210825190744142" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191028077.png" alt="image-20210825191028077" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191041277.png" alt="image-20210825191041277" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191053724.png" alt="image-20210825191053724" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191124779.png" alt="image-20210825191124779" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825191133219.png" alt="image-20210825191133219" class="lazyload"></p>
+<p>看着这些效果我陷入了沉思——这和Nanite的特性是如此的雷同。。。开始怀疑人生。。。那么开始从这些demo的结构入手，试着写一个基于Mesh Shader的软光栅吧</p>
+<h2 id="d3d12学习"><a class="markdownIt-Anchor" href="#d3d12学习"></a> D3D12学习</h2>
+<ul>
+<li>
+<p>交换链：前后缓冲区，接口<code>IDXGISwapChain</code>。此接口存储前后缓冲区纹理(the front and back buffer textures)，并提供调整缓冲区大小（<code>IDXGISwapChain :: ResizeBuffers</code>）和呈现（<code>IDXGISwapChain :: Present</code>）的方法。<br />
+使用两个缓冲区（前缓冲区和后缓冲区）称为双重缓冲。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/682975-20190809024037326-1582206357.png" alt="img" class="lazyload"></p>
+</li>
+<li>
+<p>命令队列：GPU有一个命令队列，CPU通过Direct3D API将命令提交到队列里来使用命令列表(command lists)。由接口<code>ID3D12CommandQueue</code>来表示。它是通过填充<code>D3D12_COMMAND_QUEUE_DESC</code>结构来描述队列，然后调用<code>ID3D12Device::CreateCommandQueue</code>来创建的。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/682975-20190809005128757-1117829500.png" alt="img" class="lazyload">
+</li>
+<li>
+<p>命令分配器：用于在GPU上位要执行的命令分配内存，在命令队列上调用execute并提供包含要执行的命令的命令列表。接口<code>ID3D12CommandAllocator</code>。可以使用设备接口的<code>CreateCommandAllocator()</code>方法创建。</p>
+</li>
+<li>
+<p>虚拟适配器：用于运行渲染和创建资源，接口<code>ID3D12Device</code>。简单来说就是显卡？可以创建一个设备接口。</p>
+</li>
+<li>
+<p>资源：接口<code>ID3D12Resource</code>，概括了CPU和GPU在物理记忆或堆中读写的通用能力。</p>
+</li>
+<li>
+<p>根签名：为了整体上统一集中管理之前在D3D11中分散在各个资源创建函数参数中的存储Slot和对应寄存器序号的对象。在D3D12中我们不用在创建某个资源时单独在其参数中指定对应哪个Slot（暂时翻译为存储槽）和寄存器及序号了，而是统一在D3D12中用一个根签名就将这些描述清楚。接口<code>ID3D12RootSignature</code>。用<code>CD3DX12_ROOT_SIGNATURE_DESC</code>来定义一个根签名的结构。</p>
+</li>
+<li>
+<p>描述符堆：用于内存管理。*D3D12中凡是套用了堆（Heap）这个概念的对象，目前应当将他们理解为固定大小的数组对象，而不是真正意义上可以管理任意大小内存块并能够自动伸缩大小的内存堆栈。*描述符堆是一个保存渲染对象的地方。可以用<code>D3D12_DESCRIPTOR_HEAP_DESC</code>来定义描述符堆。着色器将会访问堆中的描述符。更多相关参考<a target="_blank" rel="noopener" href="https://docs.microsoft.com/zh-cn/windows/win32/direct3d12/non-shader-visible-descriptor-heaps">非着色器可见描述符堆 - Win32 apps | Microsoft Docs</a></p>
+</li>
+<li>
+<p>渲染管线状态：渲染管线状态就是把原来的Rasterizer State（光栅化状态）、Depth Stencil State（深度、蜡板状态）、Blend State（输出alpha混合状态）、各阶段Shader程序（VS、HS、DS、GS、PS、CS），以及输入数据模型（Input Layout）等组合在一个对象中，从而形成一个完整的可重用的Pipeline State Object（PSO 渲染管线状态对象）（<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014038143/article/details/82730776%EF%BC%89%E6%8E%A5%E5%8F%A3">https://blog.csdn.net/u014038143/article/details/82730776）接口</a><code>ID3D12PipelineState</code>。</p>
+</li>
+<li>
+<p>命令列表：异步渲染的重要概念，简而言之就是记录CPU给GPU发送的图形命令。在D3D12中所有的图形命令函数即ID3D12GraphicsCommandList的接口方法都是异步的，就是说一调用就返回，甚至很多方法连返回值都没有，调用时不能判定函数调用是否正确，因为调用的时候函数并没有真正执行，仅是被记录（录制Record）。接口<code>ID3D12GraphicsCommandList</code>。</p>
+</li>
+<li>
+<p>围栏：控制CPU和GPU同步工作的同步对象。接口<code>ID3D12Fence</code>。</p>
+</li>
+<li>
+<p>D3D12渲染流程：</p>
+</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/94e0f86a50d587aa360098311f18e4ed.png" alt="Direct3D 12 Lifecycle" class="lazyload"></p>
+<p><strong>MyFirstD3D12App</strong></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210826145639306.png" alt="image-20210826145639306" class="lazyload"></p>
+<p>很复杂！但是是有套路的。</p>
+<h2 id="csrasterization-学习"><a class="markdownIt-Anchor" href="#csrasterization-学习"></a> CSRasterization 学习</h2>
+<p>fork from <a target="_blank" rel="noopener" href="https://github.com/StarsX/ComputeRaster">StarsX/ComputeRaster</a></p>
+<p>参考这位大大的计算光栅化流程，基于这位大大自己封装的DX12库，包括顶点处理阶段（IA和顶点着色器）、面元光栅化、平铺光栅化（粗光栅化）和像素光栅化（细光栅化）。</p>
+<blockquote>
+<p>The execution of the tile rasterization pass adaptively depends on the primitive areas accordingly. In bin rasterization pass, if the primitive area is greater then 4x4 tile sizes, the bin rasterization will be triggered; otherwise, the bin rasterization pass will directly output to the tile space instead, and skip processing the corresponding primitive in the tile rasterization pass.</p>
+</blockquote>
+<p>这一套优化流程真的太厉害了啊，而且这个思想和Nanite的硬软光栅结合很相似。首先是顶点处理，调用VS来读取顶点数据，接下来在片元光栅化（bin rasterization）中进行背面剔除、屏幕空间转换等，将符合4x4大小的结果保留到平铺空间（tile space），更小的情况传递给像素光栅化阶段。基于大面片的“平铺光栅化”（tile rasterization），使用了一个自适应的方式，限定在primitive的区域，执行保守光栅化。像素光栅阿虎（pixel rasterization）的过程就很像Nanite里的微多边形光栅化了，使用三角形重心+深度测试。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210829092925995.png" alt="image-20210829092925995" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210829094737104.png" alt="image-20210829094737104" class="lazyload"></p>
+<h3 id="mesh-shader例程"><a class="markdownIt-Anchor" href="#mesh-shader例程"></a> Mesh Shader例程</h3>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Shader programs typically require resources as input (constant buffers,</span></span><br><span class="line"><span class="comment">// textures, samplers).  The root signature defines the resources the shader</span></span><br><span class="line"><span class="comment">// programs expect.  If we think of the shader programs as a function, and</span></span><br><span class="line"><span class="comment">// the input resources as function parameters, then the root signature can be</span></span><br><span class="line"><span class="comment">// thought of as defining the function signature.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Root parameter can be a table, root descriptor or root constants.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 简单理解，根签名声明了这个Shader需要用到的资源</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义根签名</span></span><br><span class="line"><span class="meta">#define ROOT_SIG &quot;CBV(b0), \</span></span><br><span class="line">                  RootConstants(b1, num32bitconstants=<span class="number">2</span>), \</span><br><span class="line">                  SRV(t0), \</span><br><span class="line">                  SRV(t1), \</span><br><span class="line">                  SRV(t2), \</span><br><span class="line">                  SRV(t3)&quot;</span><br><span class="line"></span><br><span class="line">struct Constants</span><br><span class="line">&#123;</span><br><span class="line">    float4x4 World;</span><br><span class="line">    float4x4 WorldView;</span><br><span class="line">    float4x4 WorldViewProj;</span><br><span class="line">    <span class="type">uint</span>     DrawMeshlets;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct MeshInfo</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">uint</span> IndexBytes;</span><br><span class="line">    <span class="type">uint</span> MeshletOffset;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct Vertex</span><br><span class="line">&#123;</span><br><span class="line">    float3 Position;</span><br><span class="line">    float3 Normal;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 渲染的顶点的数据结构（具体信息）</span></span><br><span class="line">struct VertexOut</span><br><span class="line">&#123;</span><br><span class="line">    float4 PositionHS   : SV_Position;</span><br><span class="line">    float3 PositionVS   : POSITION0;</span><br><span class="line">    float3 Normal       : NORMAL0;</span><br><span class="line">    <span class="type">uint</span>   MeshletIndex : COLOR0;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Meshlet的数据结构</span></span><br><span class="line">struct Meshlet</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">uint</span> VertCount;</span><br><span class="line">    <span class="type">uint</span> VertOffset;</span><br><span class="line">    <span class="type">uint</span> PrimCount;</span><br><span class="line">    <span class="type">uint</span> PrimOffset;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 绑定根签名（正式声明）</span></span><br><span class="line">ConstantBuffer&lt;Constants&gt; Globals             : register(b0);</span><br><span class="line"><span class="comment">// 这里是全局变量的CBuffer，从定义可以看出是每个渲染中物体共有的。passregister(b0)表明该数组占用space0下的虚拟寄存器b0上</span></span><br><span class="line">ConstantBuffer&lt;MeshInfo&gt;  MeshInfo            : register(b1);</span><br><span class="line"><span class="comment">// 这里是网格体信息的CBuffer，register(b1)表明该数组占用space0下的虚拟寄存器b1上</span></span><br><span class="line"></span><br><span class="line">StructuredBuffer&lt;Vertex&gt;  Vertices            : register(t0);</span><br><span class="line"><span class="comment">// 材质数据SBuffer，储存顶点信息，register(t0)表明占用space0下的逻辑寄存器空间t0</span></span><br><span class="line">StructuredBuffer&lt;Meshlet&gt; Meshlets            : register(t1); </span><br><span class="line"><span class="comment">// 材质数据SBuffer，储存meshlet信息</span></span><br><span class="line">ByteAddressBuffer         UniqueVertexIndices : register(t2);</span><br><span class="line"><span class="comment">// 地址数据Buffer，存储顶点索引信息</span></span><br><span class="line">StructuredBuffer&lt;<span class="type">uint</span>&gt;    PrimitiveIndices    : register(t3);</span><br><span class="line"><span class="comment">// 材质数据SBuffer，存储实例索引信息</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/////</span></span><br><span class="line"><span class="comment">// Data Loaders</span></span><br><span class="line"></span><br><span class="line">uint3 UnpackPrimitive(<span class="type">uint</span> primitive)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// Unpacks a 10 bits per index triangle from a 32-bit uint.</span></span><br><span class="line">    <span class="comment">// 从32位的uint（实例primitive对象）中解压出每个索引三角形（10位）</span></span><br><span class="line">    <span class="keyword">return</span> uint3(primitive &amp; <span class="number">0x3FF</span>, (primitive &gt;&gt; <span class="number">10</span>) &amp; <span class="number">0x3FF</span>, (primitive &gt;&gt; <span class="number">20</span>) &amp; <span class="number">0x3FF</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint3 GetPrimitive(Meshlet m, <span class="type">uint</span> <span class="keyword">index</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> UnpackPrimitive(PrimitiveIndices[m.PrimOffset + <span class="keyword">index</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">uint</span> GetVertexIndex(Meshlet m, <span class="type">uint</span> localIndex)</span><br><span class="line">&#123;</span><br><span class="line">    localIndex = m.VertOffset + localIndex;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (MeshInfo.IndexBytes == <span class="number">4</span>) <span class="comment">// 32-bit Vertex Indices</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> UniqueVertexIndices.Load(localIndex * <span class="number">4</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="comment">// 16-bit Vertex Indices</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// Byte address must be 4-byte aligned.</span></span><br><span class="line">        <span class="type">uint</span> wordOffset = (localIndex &amp; <span class="number">0x1</span>);</span><br><span class="line">        <span class="type">uint</span> byteOffset = (localIndex / <span class="number">2</span>) * <span class="number">4</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Grab the pair of 16-bit indices, shift &amp; mask off proper 16-bits.</span></span><br><span class="line">        <span class="type">uint</span> indexPair = UniqueVertexIndices.Load(byteOffset);</span><br><span class="line">        <span class="type">uint</span> <span class="keyword">index</span> = (indexPair &gt;&gt; (wordOffset * <span class="number">16</span>)) &amp; <span class="number">0xffff</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">index</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回要渲染的顶点信息</span></span><br><span class="line">VertexOut GetVertexAttributes(<span class="type">uint</span> meshletIndex, <span class="type">uint</span> vertexIndex)</span><br><span class="line">&#123;</span><br><span class="line">    Vertex v = Vertices[vertexIndex];</span><br><span class="line"></span><br><span class="line">    VertexOut vout;</span><br><span class="line">    vout.PositionVS = mul(float4(v.Position, <span class="number">1</span>), Globals.WorldView).xyz;</span><br><span class="line">    vout.PositionHS = mul(float4(v.Position, <span class="number">1</span>), Globals.WorldViewProj);</span><br><span class="line">    vout.Normal = mul(float4(v.Normal, <span class="number">0</span>), Globals.World).xyz;</span><br><span class="line">    vout.MeshletIndex = meshletIndex;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> vout;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面内容中，numthread是必须的，outputtopology是必须的。numthread要求x*y*z&lt;=128</span></span><br><span class="line"><span class="comment">// outputtopology指定mesh shader的输出基本体的拓扑格式是线或三角形</span></span><br><span class="line">[RootSignature(ROOT_SIG)]</span><br><span class="line">[NumThreads(<span class="number">128</span>, <span class="number">1</span>, <span class="number">1</span>)]</span><br><span class="line">[OutputTopology(&quot;triangle&quot;)]</span><br><span class="line"><span class="type">void</span> main(</span><br><span class="line">    <span class="type">uint</span> gtid : SV_GroupThreadID,</span><br><span class="line">    <span class="type">uint</span> gid : SV_GroupID,</span><br><span class="line">    <span class="keyword">out</span> indices uint3 tris[<span class="number">126</span>],</span><br><span class="line">    <span class="keyword">out</span> <span class="keyword">vertices</span> VertexOut verts[<span class="number">64</span>]</span><br><span class="line">)</span><br><span class="line">&#123;</span><br><span class="line">    Meshlet m = Meshlets[MeshInfo.MeshletOffset + gid];</span><br><span class="line"></span><br><span class="line">    SetMeshOutputCounts(m.VertCount, m.PrimCount);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (gtid &lt; m.PrimCount)</span><br><span class="line">    &#123;</span><br><span class="line">        tris[gtid] = GetPrimitive(m, gtid);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (gtid &lt; m.VertCount)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">uint</span> vertexIndex = GetVertexIndex(m, gtid);</span><br><span class="line">        verts[gtid] = GetVertexAttributes(gid, vertexIndex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://example.com/2021/08/29/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;29&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;29&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/UE5%E5%AD%A6%E4%B9%A0/">UE5学习</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" rel="tag">图形学</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641132512882"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>

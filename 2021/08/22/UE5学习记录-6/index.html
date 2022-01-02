@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>UE5学习记录#6 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="UE5学习记录(6)  8.16  关于光栅化的动手操作 上周看了关于光栅化的shader代码。在老师的提示下，这周可以针对软件光栅化进行研究与实践。 梳理一下Nanite光栅化的思路：  整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个独自的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5学习记录#6">
+<meta property="og:url" content="http://example.com/2021/08/22/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="UE5学习记录(6)  8.16  关于光栅化的动手操作 上周看了关于光栅化的shader代码。在老师的提示下，这周可以针对软件光栅化进行研究与实践。 梳理一下Nanite光栅化的思路：  整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个独自的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_bunny.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_pipeline.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210819144252936.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820091959428.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820092332470.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820153214426.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820153436835.png">
+<meta property="article:published_time" content="2021-08-22T13:58:33.000Z">
+<meta property="article:modified_time" content="2022-01-02T14:01:08.989Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="图形学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_bunny.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641132512883">
+    
+        <link rel="stylesheet" href="/css/dark.css?v=1641132512883">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641132512883">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>15</div>
+        <div><span>Tags</span>3</div>
+        <div><span>Categories</span>2</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://jq.qq.com/?_wv=1027&k=5CfKHun" target="_blank" mdui-tooltip="{content: 'QQ群'}" style="color: rgb(249, 174, 8);background-color: rgba(249, 174, 8, .1);">
+            <i class="nexmoefont icon-QQ"></i>
+        </a><a class="mdui-ripple" href="https://space.bilibili.com/20238211" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/nexmoe/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 10px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">机器学习</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_bunny.png" data-sizes="auto" alt="UE5学习记录#6" class="lazyload">
+              <h1>UE5学习记录#6</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年08月22日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.9k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 8 分钟</a>
+</div>
+
+      
+
+      <h1 id="ue5学习记录6"><a class="markdownIt-Anchor" href="#ue5学习记录6"></a> UE5学习记录(6)</h1>
+<h2 id="816"><a class="markdownIt-Anchor" href="#816"></a> 8.16</h2>
+<h3 id="关于光栅化的动手操作"><a class="markdownIt-Anchor" href="#关于光栅化的动手操作"></a> 关于光栅化的动手操作</h3>
+<p>上周看了关于光栅化的shader代码。在老师的提示下，这周可以针对软件光栅化进行研究与实践。</p>
+<p>梳理一下Nanite光栅化的思路：</p>
+<blockquote>
+<p>整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个独自的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon到Shared Memory，而后CS中的每个线程读取对应三角形的Index Buffer和变换后的Vertex Position，依据Vertex Position计算出三角形的边，执行反面剔除和小三角形（小于一个像素）剔除，而后利用原子操作实现Z-Test，并将数据写进Visibility Buffer。<strong>值得一提的是，为了保障整个软光栅化逻辑的简洁高效，Nanite Mesh不反对带有骨骼动画、材质中蕴含顶点变换或者Mask的模型</strong>。</p>
+</blockquote>
+<p>因此，希望做到的有几点：</p>
+<ul>
+<li>最基础的硬光栅</li>
+<li>基于CS的扫描线光栅算法的基本实现</li>
+</ul>
+<p>考虑到Nanite Mesh的数据结构构建过于庞大与复杂，可能没有办法自己完成，所以软光栅的效率会低一些。</p>
+<h2 id="817"><a class="markdownIt-Anchor" href="#817"></a> 8.17</h2>
+<p>。。。。。。。很烦，没有进展。</p>
+<h2 id="818~819"><a class="markdownIt-Anchor" href="#818~819"></a> 8.18~8.19</h2>
+<h3 id="关于mesh-shader的一些思考"><a class="markdownIt-Anchor" href="#关于mesh-shader的一些思考"></a> 关于Mesh Shader的一些思考</h3>
+<p>在研究光栅化的过程中，我查阅了很多关于DX12的网格着色器Mesh Shader相关的探讨和研究。因为Mesh Shader的提出和UE5的Nanite Mesh的出发点非常相似——那就是基于经典的GPU Driven Pipeline，突破一些传统的预设，能够针对多面数的复杂几何体做即时的渲染。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_bunny.png" alt="img" class="lazyload"></p>
+<p>在NVIDIA关于Mesh Shader的介绍中，我们可以看出，使用这个管线与传统的VS-T-GS-R管线完全不同。Mesh Shading管线中通过“网格生成”与“网格着色”步骤，将某种网格细分的数据格式“Meshlet”发送给光栅化器的CS（计算着色器）。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_pipeline.png" alt="img" class="lazyload"></p>
+<p>可以想象，这个Mesh Shader结合了之前GPU流程中VS、曲面细分和GS的功能，并且和CS结合起来一起使用。在之前自己动手写代码的一些过程中，也明白了CS这个东西的好处。CS具有更丰富的底层特性，方便算法的优化。可以猜测，这个Mesh Shader的本质和CS一样。</p>
+<p>不出所料，在NVIDIA的官方说明中看到了这个图，证实了我的猜测：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210819144252936.png" alt="image-20210819144252936" class="lazyload"></p>
+<p>需要注意的是，<strong>Nanite并未使用Mesh Shader</strong>，究其原因，一方面是因为Mesh Shader的支持尚未普及；另一方面是由于Nanite使用软光栅化，Mesh Shader的输出仍要写回GPU Buffer再用于软光栅化输入，因此相较于CS的方案并没有太多带宽的节省。</p>
+<p>所以，本质上Nanite Mesh的渲染是从软件出发的，从剔除到光栅化，都是在传统GPU Driven Pipeline的基础上，结合CS完成。剔除是CS，软光栅也是CS（大三角形和非Nanite Mesh仍然使用硬光栅）。</p>
+<p>试着在Unity里实现光栅化的过程，将三维mesh渲染到平面上。因为没有用compute shader做并行优化，所以FPS比较低。</p>
+<p>另外，用OpenGL手撸一个软光栅吧。就当练手。</p>
+<h2 id="820~822-撸代码分析"><a class="markdownIt-Anchor" href="#820~822-撸代码分析"></a> 8.20~8.22 撸代码&amp;分析</h2>
+<p>操作实践中，我注意到了UE5在测试软光栅时的一些细节。对于像素级的micropoly，使用传统的硬光栅流程（VS+PS，裁剪），将会大大浪费空间。想要并行化的关键就在于<strong>在三角形级别运行</strong>，而非像素级别。以下图中的三角形为例，显然在像素空间级运行需要遍历4x4的像素格，这会造成浪费。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820091959428.png" alt="image-20210820091959428" class="lazyload"></p>
+<p>因此我发现他们在软光栅的时候并没有使用ZBuffer，而是用了64字节的原子共享存储——VBuffer（Visibility Buffer），这既可以达成深度测试的目的，又可以减少空间，加速运行。<em>这一点我之前忽略了，但是后来发现这个trick可能是Nanite即时光栅化的根本所在。</em> <strong>这可能也是我的demo运行速度奇慢无比的原因所在。</strong></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820092332470.png" alt="image-20210820092332470" class="lazyload"></p>
+<p>接下来就是并行化。128个三角形的cluster对应128个线程组。每个顶点对应一个线程，每个三角形对应一个线程。在第一阶段中，线程从集群的顶点缓冲区映射到顶点获取顶点位置，对其进行变换，并存储在groupshared共享内存中。如果有128个以上的顶点，则获取并转换另一个顶点，以支持多达256个顶点cluster。然后在第二阶段切换到映射到每个三角形的线程，最大值为128每簇三角形。获取此三角形的索引。</p>
+<p>在查阅许多资料与拓展内容的时候，我查到了另一种对于微几何形光栅化的解决方案，也是之前比较流行的——Reyes渲染架构。Reyes渲染系统的剔除就是用于复杂图像的快速高质量渲染的“架构”，将参数曲面分割成<strong>微多边形</strong>（小于单像素），使用简单的并行处理机制来逼近光滑曲面，并可以做到运动模糊（motion-blur）以及景深效果。这一方法也在《Data-Parallel Rasterization of Micropolygons with Defocus and Motion Blur》这篇论文中提到，也是UE5 Nanite参考的一篇引用文献。</p>
+<blockquote>
+<p>Second, we produce a data-parallel implementation of an existing stochastic rasterization algorithm by Pixar, which is able to produce motion blur and depth-of-field effects.</p>
+</blockquote>
+<p>Reyes的渲染原理也基于微多边形（micro-polygon）。但是事实上正如UE5的开发人员所说的，这个方法并没有想象中那么优越。我也按照Reyes算法做了个简单的渲染器demo来测试。事实上，对于稍微复杂的模型，这个算法的渲染速度依然很慢。我渲染了一帧结合了运动模糊的图像，花费了将近7分钟。。很难想象这样的结果如果要用到引擎的实时渲染会卡成什么样。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820153214426.png" alt="image-20210820153214426" class="lazyload"></p>
+<p>（就是上图的渲染，总共320x240的像素，花费了7分钟）。</p>
+<p>这张不加运动模糊的渲染，花费了45秒。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210820153436835.png" alt="image-20210820153436835" class="lazyload"></p>
+<p>Reyes的光栅化基本原理来自于扫描线算法。但是扫描线算法也限制了Reyes的效率。我相信这一点是启发了Nanite的，因为在Nanite软光栅的扫描线算法里，我看到了一些他们做出的优化。原始的扫描线光栅化需要扫描每一个像素来确定它是否被填充，而Nanite软光栅的思想则是——<strong>只确定待渲染图像经过哪些x区间，然后再这个区间里迭代</strong>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">float3 Edge012 = &#123; Edge01.y, Edge12.y, Edge20.y &#125;;</span><br><span class="line">bool3 bOpenEdge = Edge012 &lt; <span class="number">0</span>;</span><br><span class="line">float3 InvEdge012 = Edge012 == <span class="number">0</span> ? <span class="number">1e8</span> : <span class="built_in">rcp</span>( Edge012 );</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> y = MinPixel.y;</span><br><span class="line"><span class="keyword">while</span>( <span class="literal">true</span> )</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//float CX0 = CY0 - Edge01.y * (x - MinPixel.x);</span></span><br><span class="line">    <span class="comment">// Edge01.y * (x - MinPixel.x) &lt;= CY0;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    if( Edge01.y &gt; 0 )</span></span><br><span class="line"><span class="comment">    x &lt;= CY0 / Edge01.y + MinPixel.x;	// Closing edge</span></span><br><span class="line"><span class="comment">    else</span></span><br><span class="line"><span class="comment">    x &gt;= CY0 / Edge01.y + MinPixel.x;	// Opening edge</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// No longer fixed point</span></span><br><span class="line">    float3 CrossX = <span class="built_in">float3</span>( CY0, CY1, CY2 ) * InvEdge012;</span><br><span class="line"></span><br><span class="line">    float3 MinX = bOpenEdge ? CrossX : <span class="number">0</span>;</span><br><span class="line">    float3 MaxX = bOpenEdge ? MaxPixel.x - MinPixel.x : CrossX;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x0 = <span class="built_in">ceil</span>( <span class="built_in">max3</span>( MinX.x, MinX.y, MinX.z ) );</span><br><span class="line">    <span class="keyword">float</span> x1 = <span class="built_in">min3</span>( MaxX.x, MaxX.y, MaxX.z );</span><br><span class="line">    <span class="keyword">float</span> ZX = ZY + GradZ.x * x0;</span><br><span class="line"></span><br><span class="line">    x0 += MinPixel.x;</span><br><span class="line">    x1 += MinPixel.x;</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">float</span> x = x0; x &lt;= x1; x++ )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">WritePixel</span>(OutVisBuffer64, PixelValue, <span class="built_in">uint2</span>(x,y), ZX, NaniteView, bUsePageTable);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> VISUALIZE</span></span><br><span class="line">    	<span class="built_in">WritePixel</span>(OutDbgBuffer64, VisualizeValues.x, <span class="built_in">uint2</span>(x,y), ZX, NaniteView, bUsePageTable);</span><br><span class="line">    	<span class="built_in">InterlockedAdd</span>(OutDbgBuffer32[<span class="built_in">uint2</span>(x,y)], VisualizeValues.y);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    	ZX += GradZ.x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>( y &gt;= MaxPixel.y )</span><br><span class="line">    	<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    CY0 += Edge01.x;</span><br><span class="line">    CY1 += Edge12.x;</span><br><span class="line">    CY2 += Edge20.x;</span><br><span class="line">    ZY += GradZ.y;</span><br><span class="line">    y++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>另外本周学习了一些cuda编程的内容，比较复杂，进展比较慢。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://example.com/2021/08/22/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;22&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;22&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/UE5%E5%AD%A6%E4%B9%A0/">UE5学习</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" rel="tag">图形学</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641132512884"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>

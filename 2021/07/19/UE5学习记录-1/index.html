@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>UE5学习记录#1 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="UE5学习记录(1)  7.12  下载UE5及源代码（120G） 下载古代山谷demo（100G）  古代山谷中的所有资产都使用了Nanite（高度表面细分！）   初步尝试与体验   7.13  编译UE5源码，计划从Nanite特性切入，研究其实现原理 Nanite相关功能的源码位置：Engine&#x2F;Shaders&#x2F;Private&#x2F;Nanite  1usf文件：UE引擎识别的shader文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5学习记录#1">
+<meta property="og:url" content="http://example.com/2021/07/19/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-1/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="UE5学习记录(1)  7.12  下载UE5及源代码（120G） 下载古代山谷demo（100G）  古代山谷中的所有资产都使用了Nanite（高度表面细分！）   初步尝试与体验   7.13  编译UE5源码，计划从Nanite特性切入，研究其实现原理 Nanite相关功能的源码位置：Engine&#x2F;Shaders&#x2F;Private&#x2F;Nanite  1usf文件：UE引擎识别的shader文件">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715111113801.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715111504970.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715112337517.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715112444204.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715114023092.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715144237276.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165423319.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165717217.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165804957.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719170013133.png">
+<meta property="article:published_time" content="2021-07-19T13:50:47.000Z">
+<meta property="article:modified_time" content="2022-01-02T13:52:45.443Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="图形学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715111113801.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641132512891">
+    
+        <link rel="stylesheet" href="/css/dark.css?v=1641132512891">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641132512891">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>15</div>
+        <div><span>Tags</span>3</div>
+        <div><span>Categories</span>2</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://jq.qq.com/?_wv=1027&k=5CfKHun" target="_blank" mdui-tooltip="{content: 'QQ群'}" style="color: rgb(249, 174, 8);background-color: rgba(249, 174, 8, .1);">
+            <i class="nexmoefont icon-QQ"></i>
+        </a><a class="mdui-ripple" href="https://space.bilibili.com/20238211" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/nexmoe/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 10px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">机器学习</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715112337517.png" data-sizes="auto" alt="UE5学习记录#1" class="lazyload">
+              <h1>UE5学习记录#1</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年07月19日</a>
+    <a><i class="nexmoefont icon-areachart"></i>3.3k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 13 分钟</a>
+</div>
+
+      
+
+      <h1 id="ue5学习记录1"><a class="markdownIt-Anchor" href="#ue5学习记录1"></a> UE5学习记录(1)</h1>
+<h2 id="712"><a class="markdownIt-Anchor" href="#712"></a> 7.12</h2>
+<ul>
+<li>下载UE5及源代码（120G）</li>
+<li>下载古代山谷demo（100G）
+<ul>
+<li>古代山谷中的所有资产都使用了Nanite（高度表面细分！）</li>
+</ul>
+</li>
+<li>初步尝试与体验</li>
+</ul>
+<h2 id="713"><a class="markdownIt-Anchor" href="#713"></a> 7.13</h2>
+<ul>
+<li>编译UE5源码，计划从Nanite特性切入，研究其实现原理</li>
+<li>Nanite相关功能的源码位置：<code>Engine/Shaders/Private/Nanite</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usf文件：UE引擎识别的shader文件</span><br></pre></td></tr></table></figure>
+<p><em>Nanite遵循的设计理念是——三角形的绘制数量超过像素数量就是一种浪费。</em></p>
+<p>可以看到Nanite是<strong>基于GPU渲染管线</strong>编写的。GPU Driven Pipeline把模型的顶点数据进一步切分为更细粒度的单位<strong>Cluster</strong>。每个Cluster的精细度可以更好地适应顶点处理阶段的Cache大小，并进行各类剔除<strong>Culling</strong>。</p>
+<h2 id="714"><a class="markdownIt-Anchor" href="#714"></a> 7.14</h2>
+<p>打算从官方Nanite的直播视频里学习知识，顺便体验一波在UE5中使用Nanite功能的内容~</p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Vy4y1g7zH">英文直播]Nanite探讨 | Nanite(官方字幕)_哔哩哔哩_bilibili</a></p>
+<p>先从效果来看：</p>
+<ul>
+<li>160亿三角形，实际只需要3000万三角形内存占用
+<ul>
+<li>GPU开销只有4.5ms</li>
+<li>内存占用只有768M</li>
+<li>可以流畅应用于60帧游戏</li>
+</ul>
+</li>
+<li>适用于非透明的刚性物体</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://docs.unrealengine.com/5.0/zh-CN/RenderingFeatures/Nanite/">Nanite虚拟几何体 | 虚幻引擎文档 (unrealengine.com)</a></p>
+<p>官方的文档中提出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Nanite能与现有的引擎工作流程无缝结合，但使用了全新的方法来存储和渲染网格体数据。</span><br><span class="line"></span><br><span class="line">- 导入期间：分析网格体，并将其拆分成由三角形组构成的层级化群集。</span><br><span class="line">- 渲染期间：群集会根据摄像机视图，在运行时动态地切换细节级别，并且可以在不破坏同一对象中相邻群集的情况下完美衔接。数据会根据需求流送，因此只有可见细节才会保存在内存中。Nanite在自己的渲染通道中运行，该通道完全绕过了传统的绘制调用。你可以使用可视化模式来检视Nanite管线。</span><br></pre></td></tr></table></figure>
+<h2 id="715~717"><a class="markdownIt-Anchor" href="#715~717"></a> 7.15~7.17</h2>
+<p>观看Nanite的官方直播</p>
+<p><strong>Nanite虚拟几何体系统</strong>：系统只会流送绘制画面必须的数据，只有这些会存在内存里。换言之只需要渲染你可以看见的物体，不会绘制看不见的部分。</p>
+<p>前向工作：<em>虚拟纹理系统</em></p>
+<ul>
+<li>古代山谷demo中的任意一个megascans资产，都不会使用独特的法线贴图和粗糙度贴图。使用了电影级的高品质主网格体（cinematic high master mesh），借助Quixel Bridge拖进UE中。
+<ul>
+<li>每个资产使用的是细节平铺的方式（detail tiling）</li>
+<li>Nanite的普适性</li>
+<li>扫描技术的提高，不需要法线贴图来驱动细节</li>
+</ul>
+</li>
+<li>Nanite技术是一个备选项。资产的精细程度可以自己决定。</li>
+<li>正在构建中的一种资产类型：Mega Assemblies，通过将megascan资产组合成更大的资产，用于快速布置于构建场景。</li>
+</ul>
+<p><strong>使用Nanite构建相较于地形构建的优点</strong>：</p>
+<ul>
+<li>三角形密度</li>
+<li>静态网格体——不仅仅是高度图height map可以解决的问题
+<ul>
+<li>像素深度偏移的问题？不需要使用，因为资产本身就是高度细分，结合非常好，不需要soft blend</li>
+<li>原因：<strong>很好地做到遮蔽剔除</strong>fine grain occlusion culling，并且不占用资源</li>
+</ul>
+</li>
+<li>多边形数量的预算、绘制调用的预算、网格体相关内存预算都可以不用考虑。不需要一系列复杂的资源和质量的平衡。</li>
+</ul>
+<hr />
+<h3 id="探究1nanite在资产上的应用"><a class="markdownIt-Anchor" href="#探究1nanite在资产上的应用"></a> 探究1：Nanite在资产上的应用</h3>
+<p>我们打开古代山谷demo的主游戏界面AncientWorld.umap，查看这个由众多岩石啊构造而成的世界。</p>
+<p>首先对其中一个资产进行观察：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715111113801.png" alt="image-20210715111113801" class="lazyload"></p>
+<p>这个资产有1999个三角面，没有LOD设置，Nanite的代理三角形百分比为0.01</p>
+<p>如果禁用Nanite的话，我们可以看到这个资产原始的成分：它有将近两百万个三角面</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715111504970.png" alt="image-20210715111504970" class="lazyload"></p>
+<h3 id="探究2过度绘制overdraw"><a class="markdownIt-Anchor" href="#探究2过度绘制overdraw"></a> 探究2：过度绘制Overdraw</h3>
+<p>在Nanite可视化界面中打开Overdraw可视化，可以看到Nanite在剔除方面做的努力。在这个热度图中，颜色越亮的地方，Nanite尝试绘制的次数越多，颜色越暗的地方，Nanite做的剔除越多，过度绘制也就越少。</p>
+<p>可以看到在这几个资产重合的地方，进行了大量的剔除优化工作，使得接缝处的过度绘制大大减少</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715112337517.png" alt="image-20210715112337517" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715112444204.png" alt="image-20210715112444204" class="lazyload"></p>
+<p>过度绘制发生的很大的情况是，表面彼此之间非常接近（堆叠问题），比如地面附近。这会导致很大的开销。</p>
+<p><strong>遮挡剔除的工作流程</strong>：找到几何体边界的资产、三角形的群集（cluster），然后测试是否课件。如果是在掠射角（glancing angle）的情况下，这些几何体的堆叠构成表面。这些几何体因为比较平坦（如地面部分的资产），因而在堆叠起来的时候表面之间的距离非常近。在从掠射角观察的角度来看，Nanite很难判断这个几何体是不是位于另一个表面之下。这在高空视角下非常严重。</p>
+<p>（左图在地面上，右图在高空中）</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715114023092.png" alt="image-20210715114023092" class="lazyload"></p>
+<hr />
+<h3 id="nanite原理讲解"><a class="markdownIt-Anchor" href="#nanite原理讲解"></a> Nanite原理讲解</h3>
+<p><em>几何体比纹理要复杂的多。</em></p>
+<p>需求：不会大幅度地修改原有的CG制作流程。支持导入任何mesh，仍然有UV和平铺的细节map，不会对纹理、材质、工具进行替换</p>
+<p>入手点：三角形Triangles——图形学的一切基础</p>
+<p><strong>Nanite is a completely GPU driven pipeline.</strong></p>
+<ul>
+<li>Renderer now <em>RETAINED</em> mode. 在GPU内存中会有这个场景的完整版本。不会每帧上传，只有上传到GPU的数据才会被更改。所有的顶点、索引数据都会存储在单个资源中。</li>
+<li>每次在GPU上进行GPU实例剔除（GPU instance culling）和三角形光栅化（Triangle rasterization）</li>
+<li>可以在一次间接绘制调用中绘制只通过整个场景的深度，不用为每个物体做剔除。</li>
+</ul>
+<p><strong>三角形集群剔除Triangle cluster culling</strong></p>
+<ul>
+<li>一组三角形面片构成集群cluster（如128个）。构建边界数据，让每个集群有一个边界框bounding</li>
+<li>基于边界框剔除集群。可以基于视锥或基于遮挡。</li>
+</ul>
+<p><strong>技术：从材质中分离可见性Decouple visibility from material</strong></p>
+<p><em>理解：决定每个像素的可见性，这也是深度缓冲光栅化所做的。因为光栅化的过程中切换着色器开销很大。</em></p>
+<p>需要解决的问题：</p>
+<ul>
+<li>光栅化时尽量不要切换着色器</li>
+<li>不要针对材质进行大量的过度绘制</li>
+<li>使用深度预处理避免过度绘制</li>
+<li>稠密mesh中像素块pixel quad的低效</li>
+</ul>
+<p><strong>延迟材质Deferred material</strong></p>
+<ul>
+<li>材质通道写到<strong>GBuffer</strong></li>
+<li>对于非透明刚体，只需要一次绘制
+<ul>
+<li>全GPU驱动</li>
+<li>不只是一个深度与通道</li>
+<li>每次只光栅化一个三角形，因为只有单个几何体通道</li>
+</ul>
+</li>
+</ul>
+<p><strong>集群层次Cluster hierarchy</strong></p>
+<p>通过层级化的cluster，可以定义LOD</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715144237276.png" alt="image-20210715144237276" class="lazyload"></p>
+<p><strong>像素缩放细节Pixel scale detail</strong></p>
+<ul>
+<li>问题：三角形面片要多小来降低错误？</li>
+<li>需求：像素级大小的特点需要像素级大小的三角形来表示，才不会出现可见的错误</li>
+</ul>
+<p>小三角形（像素大小）的问题：不适合通常的（硬件）光栅工具，因为高度平行，大量像素</p>
+<p><strong>软件光栅化可以达到3x速度</strong></p>
+<p>在这个demo中，大量的三角形是通过软件光栅化实现的。剩下的部分，比如较大的三角形，使用硬件光栅化工具。所以根据每个集群cluster来选择使用硬件光栅化或软件光栅化。</p>
+<p><strong>Nanite性能</strong>：上采样之前达到1400p，2.5ms剔除和光栅化，2ms基础通道，CPU时间几乎为0。在绘制材质时有极少的CPU开销，因为每次都有一次绘制调用。</p>
+<p><strong>Nanite数据</strong>：需要压缩。demo的Nanite数据最终的占用空间为6.14GB。（大量的数据是纹理素材）1M的三角面几何体在硬盘上的存储大约13.8MB（小于一个4K的法线贴图占用的空间）。每个三角大约占14.4B。</p>
+<p><strong>虚拟阴影贴图技术Virtual Shadow Map</strong></p>
+<ul>
+<li>所有的虚拟阴影贴图都是16k*16k。这样一个纹理元素就会大致对应屏幕上的一个像素。使用VSM技术可以将纹理（要渲染的阴影）之渲染到屏幕上可见的阴影贴图像素上。Nanite会进行剔除，将LOD降低到需要的水平。同时支持缓存，避免过度绘制。</li>
+<li>支持多视图渲染，可以渲染每个光照和场景的阴影贴图。一次渲染场景中所有虚拟化的mipmap。可以做到硬影。使用SMRT滤波可以获得基于物理的混合阴影。</li>
+</ul>
+<p><strong>使用性</strong></p>
+<ul>
+<li>首先聚焦于刚体几何体以及刚体的变形</li>
+<li>不支持非刚体物体及变形</li>
+<li>不支持骨骼动画</li>
+<li>不支持世界场景位置偏移</li>
+<li>不支持半透明或遮罩材质</li>
+<li>不支持曲面细分和置换</li>
+<li>不适合整合类的几何体：许多小型资产组合成一个多孔的体积，如树叶</li>
+</ul>
+<h3 id="探究3动态集群划分"><a class="markdownIt-Anchor" href="#探究3动态集群划分"></a> 探究3：动态集群划分</h3>
+<p>在控制台输入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nanitestats</span><br></pre></td></tr></table></figure>
+<p>可以在右侧显示数据，显示Nanite实际的绘制情况。不管是什么视角，实际绘制的三角形个数都大概不会超过2000万个。这就是所谓“根据屏幕分辨率调整”，无论放置什么资源，开销都差不多大，保持了实时传输与绘制的需求。</p>
+<p>下面这张图是cluster的可视化，可以看到不管是在近视角还是远视角，cluster的大小都差不多，因此实际绘制的三角形数目也差不多。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165423319.png" alt="image-20210719165423319" class="lazyload"></p>
+<p>下面我们对数据进行分析。这是对同一个部位不同缩放视角进行的数据统计，在右侧total一栏中可以看到，集群的数目、三角面的数目都没有太大的变化。这一点应该也是Nanite的优势所在。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165717217.png" alt="image-20210719165717217" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165804957.png" alt="image-20210719165804957" class="lazyload"></p>
+<p>我们选择一个渲染物体比较多的俯视角，可以看到三角面的数量也保持在1300万左右。在古代山谷这样一个自然景观的大型地图中，三角面的渲染个数基本上维持在一个比较可控的范围。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719170013133.png" alt="image-20210719170013133" class="lazyload"></p>
+<h2 id="718"><a class="markdownIt-Anchor" href="#718"></a> 7.18</h2>
+<p>补充学习一些针对于前几天视频上提到的内容</p>
+<h3 id="硬件光栅化与软件光栅化"><a class="markdownIt-Anchor" href="#硬件光栅化与软件光栅化"></a> 硬件光栅化与软件光栅化</h3>
+<ul>
+<li>
+<p>硬件光栅化：层次式Hierarchical。默认输入的三角形大小远远大于一个像素。</p>
+<ul>
+<li>第一步coarse raster，以一个三角形为输入，以8x8像素作为一个“块”，将三角形光栅化为若干个块。使用低分辨率的ZBuffer进行一次遮挡剔除。</li>
+<li>第二部fine raster，用来生成用于着色计算的像素，输出2x2的像素块pixel quad，以便于mipmap采样计算。</li>
+</ul>
+</li>
+<li>
+<p>软件光栅化：基于compute shader，适用于像素级的小三角形。</p>
+</li>
+</ul>
+<h3 id="visibility-buffer渲染管线"><a class="markdownIt-Anchor" href="#visibility-buffer渲染管线"></a> Visibility Buffer渲染管线</h3>
+<p>简单来讲是为了解决重绘问题。不再单独产生GBuffer，而是用带宽开销更低的Visibility Buffer来解决问题。</p>
+<p>VBuffer的数据结构：（每个像素总共只需要存储8~12B）</p>
+<ul>
+<li>InstanceID：像素所属实例</li>
+<li>PrimitiveID：像素所属三角形</li>
+<li>BarycentricCoord：像素所处三角形内的位置，用中心坐标表示</li>
+<li>DepthBuffer：像素深度</li>
+<li>MaterialID：像素所属材质</li>
+</ul>
+<p>VBuffer渲染流程：</p>
+<ul>
+<li>Visibility Pass：场景光栅化</li>
+<li>Worklist Pass：屏幕划分，构建索引</li>
+<li>Shading Pass：对材质ID进行软光栅，获取顶点属性并插值，进行表面着色</li>
+</ul>
+<h3 id="nanite流程"><a class="markdownIt-Anchor" href="#nanite流程"></a> Nanite流程</h3>
+<ul>
+<li>streaming：传输，根据从上一帧回读的cluster page request数据，异步上传cluster渲染数据</li>
+<li>init：初始化</li>
+<li>cull：剔除
+<ul>
+<li><strong>Instance Cull</strong>：实例化剔除</li>
+<li><strong>Persistent Cull</strong>：BVH和Cluster剔除，输出Cluster Buffer与Indirect参数</li>
+</ul>
+</li>
+<li>rasterize：光栅化
+<ul>
+<li>硬件光栅化：使用vertex shader或primitive shader</li>
+<li>软件光栅化：使用compute shader，生成VBuffer</li>
+</ul>
+</li>
+<li>Post Persistent Cull</li>
+<li>Post Rasterization</li>
+<li>Emit Targets：生成渲染所需的深度相关数据与Buffer</li>
+<li>Base Pass：根据VBuffer与Cluster相关Buffer生成延迟渲染所需GBuffer</li>
+<li>生成阴影所需深度</li>
+<li>回读在PersistentCull中产生的cluster page request</li>
+</ul>
+<h2 id="下周学习计划719~725"><a class="markdownIt-Anchor" href="#下周学习计划719~725"></a> 下周学习计划（7.19~7.25）</h2>
+<p>由于电脑的内存比较小，要完整运行demo有些困难，可能无法进入第二个战斗关卡。但是可以运行第一个世界关卡，也可以查看第二个关卡的资产、数据等。</p>
+<ul>
+<li>阅读Nanite部分的源码，理清结构框架</li>
+<li>从Culling剔除部分学习起步，顺便学习UE的shader编写方式</li>
+<li>试着在demo场景中放置几何体资产，体会Nanite的特性</li>
+<li>补课，学习相关不熟悉的知识</li>
+</ul>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://example.com/2021/07/19/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-1/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;07&#x2F;19&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-1&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;07&#x2F;19&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-1&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/UE5%E5%AD%A6%E4%B9%A0/">UE5学习</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" rel="tag">图形学</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641132512892"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
