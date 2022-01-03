@@ -35,10 +35,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210330074834643.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641199685662">
+    <link rel="stylesheet" href="/css/style.css?v=1641200303575">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641199685662">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641200303575">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -315,19 +315,19 @@ to as region proposals);</li>
   
       <div class="nexmoe-post-footer">
           <section class="nexmoe-comment">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
-<div id="gitalk"></div>
-<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-    var gitalk = new Gitalk({
-        clientID: 'f107122b036187b34c98',
-        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
-        id: window.location.pathname,
-        repo: 'RUiN-jiarun.github.io',
-        owner: 'RUiN-jiarun',
-        admin: 'RUiN-jiarun'
-    })
-    gitalk.render('gitalk')
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
 </script>
 </section>
       </div>
@@ -337,6 +337,18 @@ to as region proposals);</li>
               <div class="nexmoe-fixed">
                   <div class="nexmoe-tool"> 
                     
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#reading-report-of-badnets"><span class="toc-number">1.</span> <span class="toc-text"> Reading Report of BadNets</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#basic-architecture-and-importance"><span class="toc-number">1.1.</span> <span class="toc-text"> Basic Architecture and Importance</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#background"><span class="toc-number">1.2.</span> <span class="toc-text"> Background</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#dnn-deep-neural-networks"><span class="toc-number">1.2.1.</span> <span class="toc-text"> DNN (Deep Neural Networks)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dnn-training"><span class="toc-number">1.2.2.</span> <span class="toc-text"> DNN Training</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#transfer-learning-%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.2.3.</span> <span class="toc-text"> Transfer Learning 迁移学习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#threat-model"><span class="toc-number">1.3.</span> <span class="toc-text"> Threat Model</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#outsourced-training-attack-%E5%A4%96%E6%BA%90%E8%AE%AD%E7%BB%83%E6%94%BB%E5%87%BB"><span class="toc-number">1.3.1.</span> <span class="toc-text"> Outsourced Training Attack 外源训练攻击</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#transfer-learning-attack-%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0%E6%94%BB%E5%87%BB"><span class="toc-number">1.3.2.</span> <span class="toc-text"> Transfer Learning Attack 迁移学习攻击</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mnist-case"><span class="toc-number">1.4.</span> <span class="toc-text"> MNIST Case</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#traffic-sign-detection-case"><span class="toc-number">1.5.</span> <span class="toc-text"> Traffic Sign Detection Case</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#original-network"><span class="toc-number">1.5.1.</span> <span class="toc-text"> Original Network</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#outsourced-training-attack"><span class="toc-number">1.5.2.</span> <span class="toc-text"> Outsourced Training Attack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#transfer-learning-attack"><span class="toc-number">1.5.3.</span> <span class="toc-text"> Transfer Learning Attack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#conclusion"><span class="toc-number">1.5.4.</span> <span class="toc-text"> Conclusion</span></a></li></ol></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
                       
                     
                       <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
@@ -364,10 +376,10 @@ to as region proposals);</li>
 
  
 
-<script async src="/js/app.js?v=1641199685663"></script>
+<script async src="/js/app.js?v=1641200303578"></script>
 
 
-	<script async src="/js/search.js?v=1641199685663"></script>
+	<script async src="/js/search.js?v=1641200303578"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>

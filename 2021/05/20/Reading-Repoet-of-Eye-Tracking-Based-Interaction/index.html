@@ -35,10 +35,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210311151856456.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641199685663">
+    <link rel="stylesheet" href="/css/style.css?v=1641200303580">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641199685663">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641200303580">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -309,19 +309,19 @@ element of an interface that is sized below the accuracy limit of an eye trackin
   
       <div class="nexmoe-post-footer">
           <section class="nexmoe-comment">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
-<div id="gitalk"></div>
-<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-    var gitalk = new Gitalk({
-        clientID: 'f107122b036187b34c98',
-        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
-        id: window.location.pathname,
-        repo: 'RUiN-jiarun.github.io',
-        owner: 'RUiN-jiarun',
-        admin: 'RUiN-jiarun'
-    })
-    gitalk.render('gitalk')
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
 </script>
 </section>
       </div>
@@ -331,6 +331,18 @@ element of an interface that is sized below the accuracy limit of an eye trackin
               <div class="nexmoe-fixed">
                   <div class="nexmoe-tool"> 
                     
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#reading-report-of-eye-tracking-based-interaction"><span class="toc-number">1.</span> <span class="toc-text"> Reading Report of Eye Tracking Based Interaction</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#why-do-i-choose-this-paper"><span class="toc-number">1.1.</span> <span class="toc-text"> Why Do I Choose This Paper?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#eye-tracking-technology-and-application"><span class="toc-number">1.2.</span> <span class="toc-text"> Eye Tracking Technology and Application</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gazetheweb"><span class="toc-number">1.3.</span> <span class="toc-text"> GazeTheWeb</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#eye-gaze-input"><span class="toc-number">1.3.1.</span> <span class="toc-text"> Eye Gaze Input</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#emulation-approach"><span class="toc-number">1.3.2.</span> <span class="toc-text"> Emulation Approach</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#improvement"><span class="toc-number">1.3.3.</span> <span class="toc-text"> Improvement</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#interface-introspection"><span class="toc-number">1.4.</span> <span class="toc-text"> Interface Introspection</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#interface-semantics"><span class="toc-number">1.4.1.</span> <span class="toc-text"> Interface Semantics</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#interface-adaptation"><span class="toc-number">1.4.2.</span> <span class="toc-text"> Interface Adaptation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#evaluation"><span class="toc-number">1.5.</span> <span class="toc-text"> Evaluation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#comparison-with-emulation-approach"><span class="toc-number">1.5.1.</span> <span class="toc-text"> Comparison with Emulation Approach</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#feasibility"><span class="toc-number">1.5.2.</span> <span class="toc-text"> Feasibility</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#personal-conclusion-and-review"><span class="toc-number">1.6.</span> <span class="toc-text"> Personal Conclusion and Review</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#what-do-i-gain-from-the-paper"><span class="toc-number">1.6.1.</span> <span class="toc-text"> What Do I Gain from the Paper</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#drawbacks-and-challenges"><span class="toc-number">1.6.2.</span> <span class="toc-text"> Drawbacks and Challenges</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#brainstorm-and-ideas"><span class="toc-number">1.6.3.</span> <span class="toc-text"> Brainstorm and Ideas</span></a></li></ol></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
                       
                     
                       <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
@@ -358,10 +370,10 @@ element of an interface that is sized below the accuracy limit of an eye trackin
 
  
 
-<script async src="/js/app.js?v=1641199685664"></script>
+<script async src="/js/app.js?v=1641200303581"></script>
 
 
-	<script async src="/js/search.js?v=1641199685664"></script>
+	<script async src="/js/search.js?v=1641200303581"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>

@@ -30,10 +30,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/02cf010412f93460e58c67ea9e0015fe_1440w.jpg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641199685635">
+    <link rel="stylesheet" href="/css/style.css?v=1641200303503">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641199685635">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641200303503">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -268,19 +268,19 @@
   
       <div class="nexmoe-post-footer">
           <section class="nexmoe-comment">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
-<div id="gitalk"></div>
-<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-    var gitalk = new Gitalk({
-        clientID: 'f107122b036187b34c98',
-        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
-        id: window.location.pathname,
-        repo: 'RUiN-jiarun.github.io',
-        owner: 'RUiN-jiarun',
-        admin: 'RUiN-jiarun'
-    })
-    gitalk.render('gitalk')
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
 </script>
 </section>
       </div>
@@ -290,6 +290,18 @@
               <div class="nexmoe-fixed">
                   <div class="nexmoe-tool"> 
                     
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%9D%E8%AF%86vulkan3"><span class="toc-number">1.</span> <span class="toc-text"> 初识Vulkan(3)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E5%B7%A5%E4%BD%9C%E7%BB%A7%E7%BB%ADmesh-shader%E5%92%8Cvulkan%E7%9A%84%E6%8E%A2%E7%B4%A2%E4%B8%8E%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.1.</span> <span class="toc-text"> 主要工作：继续Mesh Shader和Vulkan的探索与学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#shader%E7%9D%80%E8%89%B2%E5%99%A8"><span class="toc-number">1.1.1.</span> <span class="toc-text"> Shader着色器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pipeline%E7%AE%A1%E7%BA%BF"><span class="toc-number">1.1.2.</span> <span class="toc-text"> Pipeline管线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#buffer%E7%BC%93%E5%86%B2%E5%99%A8"><span class="toc-number">1.1.3.</span> <span class="toc-text"> Buffer缓冲器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#synchronization%E5%90%8C%E6%AD%A5"><span class="toc-number">1.1.4.</span> <span class="toc-text"> Synchronization同步</span></a></li></ol></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
                       
                     
                       <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
@@ -317,10 +329,10 @@
 
  
 
-<script async src="/js/app.js?v=1641199685636"></script>
+<script async src="/js/app.js?v=1641200303511"></script>
 
 
-	<script async src="/js/search.js?v=1641199685636"></script>
+	<script async src="/js/search.js?v=1641200303511"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>

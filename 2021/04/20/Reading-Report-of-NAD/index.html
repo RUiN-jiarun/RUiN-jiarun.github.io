@@ -31,10 +31,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418174553535.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641199685672">
+    <link rel="stylesheet" href="/css/style.css?v=1641200303594">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641199685672">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641200303594">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -284,19 +284,19 @@
   
       <div class="nexmoe-post-footer">
           <section class="nexmoe-comment">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
-<div id="gitalk"></div>
-<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-    var gitalk = new Gitalk({
-        clientID: 'f107122b036187b34c98',
-        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
-        id: window.location.pathname,
-        repo: 'RUiN-jiarun.github.io',
-        owner: 'RUiN-jiarun',
-        admin: 'RUiN-jiarun'
-    })
-    gitalk.render('gitalk')
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
 </script>
 </section>
       </div>
@@ -306,6 +306,18 @@
               <div class="nexmoe-fixed">
                   <div class="nexmoe-tool"> 
                     
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#reading-report-of-nad"><span class="toc-number">1.</span> <span class="toc-text"> Reading Report of NAD</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pre-learning"><span class="toc-number">1.1.</span> <span class="toc-text"> Pre-Learning</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nad-neuron-attention-distillation"><span class="toc-number">1.2.</span> <span class="toc-text"> NAD: Neuron Attention Distillation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#attention-representation"><span class="toc-number">1.2.1.</span> <span class="toc-text"> Attention Representation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#attention-distillation-loss"><span class="toc-number">1.2.2.</span> <span class="toc-text"> Attention Distillation Loss</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#overall-training-loss"><span class="toc-number">1.2.3.</span> <span class="toc-text"> Overall Training Loss</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nad-operation-principle"><span class="toc-number">1.3.</span> <span class="toc-text"> NAD Operation Principle</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#workflow"><span class="toc-number">1.3.1.</span> <span class="toc-text"> Workflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#understand-the-distillation"><span class="toc-number">1.3.2.</span> <span class="toc-text"> Understand the Distillation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#results-and-evaluation"><span class="toc-number">1.4.</span> <span class="toc-text"> Results and Evaluation</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
                       
                     
                       <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
@@ -333,10 +345,10 @@
 
  
 
-<script async src="/js/app.js?v=1641199685672"></script>
+<script async src="/js/app.js?v=1641200303596"></script>
 
 
-	<script async src="/js/search.js?v=1641199685672"></script>
+	<script async src="/js/search.js?v=1641200303596"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
