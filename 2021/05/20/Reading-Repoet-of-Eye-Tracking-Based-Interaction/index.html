@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>Reading Report of Eye Tracking Based Interaction - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="Reading Report of Eye Tracking Based Interaction Original paper: 《Improving User Experience of Eye Tracking-Based Interaction: Introspecting and Adapting Interfaces》 Publication: ACM Transactions on">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Reading Report of Eye Tracking Based Interaction">
+<meta property="og:url" content="http://ruin.net.cn/2021/05/20/Reading-Repoet-of-Eye-Tracking-Based-Interaction/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="Reading Report of Eye Tracking Based Interaction Original paper: 《Improving User Experience of Eye Tracking-Based Interaction: Introspecting and Adapting Interfaces》 Publication: ACM Transactions on">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210311151856456.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314144112242.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314144240382.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314152055556.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314152116088.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314152901530.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314153634438.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314173711077.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314174454394.png">
+<meta property="article:published_time" content="2021-05-20T13:30:37.000Z">
+<meta property="article:modified_time" content="2022-01-03T08:19:28.182Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="HCI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210311151856456.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641198474368">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641198474368">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>21</div>
+        <div><span>Tags</span>7</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314144112242.png" data-sizes="auto" alt="Reading Report of Eye Tracking Based Interaction" class="lazyload">
+              <h1>Reading Report of Eye Tracking Based Interaction</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年05月20日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.5k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 9 分钟</a>
+</div>
+
+      
+
+      <h1 id="reading-report-of-eye-tracking-based-interaction"><a class="markdownIt-Anchor" href="#reading-report-of-eye-tracking-based-interaction"></a> Reading Report of Eye Tracking Based Interaction</h1>
+<p>Original paper: <a target="_blank" rel="noopener" href="https://dl.acm.org/doi/pdf/10.1145/3338844">《Improving User Experience of Eye Tracking-Based Interaction: Introspecting and Adapting Interfaces》</a></p>
+<p>Publication: <a target="_blank" rel="noopener" href="https://dl.acm.org/journal/tochi">ACM Transactions on Computer-Human Interaction</a> November 2019</p>
+<p>Field:</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210311151856456.png" alt="image-20210311151856456" class="lazyload">
+<h2 id="why-do-i-choose-this-paper"><a class="markdownIt-Anchor" href="#why-do-i-choose-this-paper"></a> Why Do I Choose This Paper?</h2>
+<p>The topic which the paper focuses on is about the application of eye tracking devices. The mix of eye tracking technology and GUI design has become a hot-spot research field of HCI and various of systems and tools have been designed according to this technology.</p>
+<p>On the other hand, eye tracking could be a special input device and collect a bunch of data which can not be get from earlier input devices. Studying on those collected data could be a great improvement to many fields such as IoT or WWW.</p>
+<p>Furthermore, studying on this paper is a beginning on learning HCI. I hope to find out the research methods and how to raise the awareness of interaction during a system design progress.</p>
+<h2 id="eye-tracking-technology-and-application"><a class="markdownIt-Anchor" href="#eye-tracking-technology-and-application"></a> Eye Tracking Technology and Application</h2>
+<p>The paper discussed the possibility to involve eye tracking technology to our daily life. In most situations, eye tracking is considered as a replacement of the regular input device. The paper mentioned the gaze-based pointing and typing methods and the emulation of mouse and keyboard. Both of the previous methods have been evaluated in many ways and put into application.</p>
+<p>What’s more, the paper use the analysis method of <strong>INSTROPECTION</strong>, which requires the rethink of the interface of a gaze-based interaction product. The paper discussed several aspects that eye tracking HCI, such as the improvement of pointing performance, the approaches that users can perceive the interface and inspect options with eyes.</p>
+<p>The author focus on enhancing web accessibility with gaze-based interaction and developed a web browser called <a target="_blank" rel="noopener" href="https://github.com/MAMEM/GazeTheWeb">GazeTheWeb</a>. The product provides accessible web browsing and gaze-controlled web browsing.</p>
+<h2 id="gazetheweb"><a class="markdownIt-Anchor" href="#gazetheweb"></a> <em>GazeTheWeb</em></h2>
+<p>To complete this project, the author’s team discuss the technology and properties related to this work.</p>
+<h3 id="eye-gaze-input"><a class="markdownIt-Anchor" href="#eye-gaze-input"></a> Eye Gaze Input</h3>
+<p><strong>Precision</strong> and <strong>accuracy</strong> are two basic properties that gaze interaction need to hold. Many factors should be taken into consideration and need to be checked during evaluation. Research in the field of design and interaction has proposed adaptive designs like enlarged and screen-centered interface elements or visual feedback, to compensate for accuracy issues when it is crucial to determine the attention on a certain<br />
+element of an interface that is sized below the accuracy limit of an eye tracking device.</p>
+<p>What’s more, eyes play double <strong>roles</strong> in such a web access progress: as a controller and an observer as well. This is one of the major challenges for gaze-controlled interaction.</p>
+<h3 id="emulation-approach"><a class="markdownIt-Anchor" href="#emulation-approach"></a> Emulation Approach</h3>
+<p>To replace pointing and typing with eye gazing is extremely difficult to achieved. Thus, it must be considered thoroughly how to joint the emulation of different devices together.</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314144112242.png" alt="image-20210314144112242" class="lazyload">
+<p>Take searching a web page as an example.  There’re at least two different emulation types (mouse and key board), and the user need to change between the two situations. And there’re several action types as well (button. pointing and typing). The whole process is rather complex.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314144240382.png" alt="image-20210314144240382" class="lazyload"></p>
+<h3 id="improvement"><a class="markdownIt-Anchor" href="#improvement"></a> Improvement</h3>
+<p>To improve the gaze interaction experience, the paper argued for a seamless integration of eye gaze input in the application ecosystem.</p>
+<ul>
+<li>Reduce the input action overhead by lessening the interpretation gap between the user intention and the interaction elements.</li>
+<li>Reduce the inspection overhead. Understanding of semantics of interaction elements, we may reduce the time needed for reducing visual search during inspection prior a selection. Both pre-select inspection and post-select inspection need the understanding of semantics.</li>
+</ul>
+<h2 id="interface-introspection"><a class="markdownIt-Anchor" href="#interface-introspection"></a> Interface Introspection</h2>
+<p>Furthermore, to augmenting the web page interaction, the paper applied the method of interface introspection.</p>
+<h3 id="interface-semantics"><a class="markdownIt-Anchor" href="#interface-semantics"></a> Interface Semantics</h3>
+<p>As mentioned above, to understand the interface semantics is critically important to reduce the inspection overhead. Considering the dynamics in the modern web pages, the web page interface semantics include <strong>retrieval</strong>, <strong>classification</strong>, the <strong>tracking</strong> of interaction elements as well as the <strong>browser control</strong>.</p>
+<h3 id="interface-adaptation"><a class="markdownIt-Anchor" href="#interface-adaptation"></a> Interface Adaptation</h3>
+<p>An example of adaptation is using gaze-sensitive icons to combine different interaction elements on a single web page.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314152055556.png" alt="image-20210314152055556" class="lazyload"></p>
+<p>Similarly, gaze-sensitive icons on a web page are associated with gaze-controlled interface modes for sophisticated gaze-based interaction.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314152116088.png" alt="image-20210314152116088" class="lazyload"></p>
+<p>Another method is to adapt the simple web page interaction elements. In some situations, a gaze-sensitive icon is not suitable considering the page space and the ambiguous interpretation. In the following example, the simple web page interaction elements are highlighted and a red point is displayed over their center.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314152901530.png" alt="image-20210314152901530" class="lazyload"></p>
+<p>What’s more, the adaptation of the web browser is considered necessarily. Various of interface mode need to be implemented in this project to adjust to different situations.</p>
+<h2 id="evaluation"><a class="markdownIt-Anchor" href="#evaluation"></a> Evaluation</h2>
+<h3 id="comparison-with-emulation-approach"><a class="markdownIt-Anchor" href="#comparison-with-emulation-approach"></a> Comparison with Emulation Approach</h3>
+<p>The paper compared <em>GazeTheWeb</em> with <em>OptiKey</em>, an indirect gaze control  software. The results show that GTW plays a better result in searching, scrolling, back navigation and bookmark editing. It proves that  GTW works faster and reduces lots of redundant computation.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314153634438.png" alt="image-20210314153634438" class="lazyload"></p>
+<h3 id="feasibility"><a class="markdownIt-Anchor" href="#feasibility"></a> Feasibility</h3>
+<p>The researchers also made some efforts on the proof of the feasibility of <em>GTW</em>. Both lab study and field study were included in this part.</p>
+<p>Several <strong>TASKS</strong> (e-mail, photo, social media and video) were distributed to different kinds of users (gender, age and disability). The result indicated that <em>GTW</em> allowed the participants to successfully perform the real-world tasks on modern web pages with eye tracking as input method.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314173711077.png" alt="image-20210314173711077" class="lazyload"></p>
+<p>As for the field study, the daily use of <em>GTW</em> was supervised by the researchers. The data during a system run-time of 186.24 hours was considered. It shows that the frequent usage of GTW during the field study including the visits of various web sites, pages and activities indicated that users were able to adapt to <em>GTW</em>.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210314174454394.png" alt="image-20210314174454394" class="lazyload"></p>
+<p>However, some problems were found. For example, some interaction websites such as online game website were not suitable for <em>GTW</em> system.</p>
+<h2 id="personal-conclusion-and-review"><a class="markdownIt-Anchor" href="#personal-conclusion-and-review"></a> Personal Conclusion and Review</h2>
+<h3 id="what-do-i-gain-from-the-paper"><a class="markdownIt-Anchor" href="#what-do-i-gain-from-the-paper"></a> What Do I Gain from the Paper</h3>
+<p>The project is open-sourced and is published on <a target="_blank" rel="noopener" href="https://github.com/MAMEM/GazeTheWeb">github</a>. Besides the technics of the project, the researching methods that the paper involved is meaningful for a starter like me.</p>
+<ul>
+<li>Lab study and field study.</li>
+<li>Introspection of a certain topic.</li>
+<li>The proper design of the tasks.</li>
+</ul>
+<p>From these aspects, I think that the paper truly DID some effort, but NOT ENOUGH. For example, during the evaluation part, the tasks are not wide enough. Although some daily tasks and easy tasks are set, more complex tasks and tasks required multi input channels and input devices may be tested and considered. Thus I’m going to talk about the drawbacks and some challenges of this project.</p>
+<h3 id="drawbacks-and-challenges"><a class="markdownIt-Anchor" href="#drawbacks-and-challenges"></a> Drawbacks and Challenges</h3>
+<p>It’s a great challenge for users to adapt to a new form of web browsing method. <em>GTW</em> does a good job in adapting to different situations as is shown in the paper. However, I believe that some aspects still need to be considered for <em>GTW</em> and the further development of eye tracking application.</p>
+<ul>
+<li><strong>The fitting of  well-designed website</strong>. It is known that many popular websites require additional interaction elements and the design of the web pages are rather complex and more interactive. To fit these website engages more consideration of design.</li>
+<li><strong>Facing more popular users</strong>. Gaze-based interaction is mainly used as a substitution of regular interaction for the disabled. Although <em>GTW</em> might be an important step towards general use of eye tracking in everyday applications, it is still not a good choice for most people, or in another words, NOT USEFUL. From the view of users, a good gaze-based interaction should be a helper rather than a main tool.</li>
+<li><strong>Not for long-time using</strong>. The evaluation results shown in the paper prove that <em>GTW</em> performs good in many aspects, however the evaluation tests  were only set in a small range of time (only several tasks, last for no more than 10 mins). It takes more energy to focus on the operation while viewing the web content. For those users who need to use web browser for a long time, <em>GTW</em> may easily lead to tired and distraction.</li>
+<li><strong>Hardware devices support</strong>. Up to now the paper and the project focus on the software development and browser improvement. Another challenge for gaze-based interaction is the support of the devices. Head-wear eye tracker and peripheral eye tracker are totally different in user experience. Thus, different API should be design for different kind of devices.</li>
+<li><strong>Security</strong>. Eye tracking information should be considered as private information. The leak of tracking records could be dangerous for users.</li>
+</ul>
+<h3 id="brainstorm-and-ideas"><a class="markdownIt-Anchor" href="#brainstorm-and-ideas"></a> Brainstorm and Ideas</h3>
+<p>During the reading and studying process, I came up with several ideas. Some of them may be unrealistic or impractical, but some of them may become a good way to improve this technology.</p>
+<ul>
+<li>
+<p><strong>More feedbacks</strong>. Visual feedback is not enough since the eyes are already act as a signal sender. The sound may act as an additional feedback. Multichannel output and senses may be helpful.</p>
+</li>
+<li>
+<p><strong>Any methods to accelerate typing?</strong> Up to now, the typing of gazing-input is still very slow and inconvenient. We hope that some other input devices and methods could be act as an add-on helper. Deep learning based behavior recognitions may be a useful tool.</p>
+</li>
+</ul>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2021/05/20/Reading-Repoet-of-Eye-Tracking-Based-Interaction/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;05&#x2F;20&#x2F;Reading-Repoet-of-Eye-Tracking-Based-Interaction&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;05&#x2F;20&#x2F;Reading-Repoet-of-Eye-Tracking-Based-Interaction&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/HCI/" rel="tag">HCI</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641198474369"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>

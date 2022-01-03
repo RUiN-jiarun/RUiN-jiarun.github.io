@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>计算机动画提纲 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="计算机动画提纲 （基于计算机动画课程的内容进行梳理）  运动路径控制  物体的运动路径，可以直线也可以曲线，用样条曲线表示 指定物体运动速度，换算用多少幅画面表现运动速度。  中间位置的确定——插值 弯曲路径的控制：使用样条曲线插值  Hermite三次多项式   Catmull-Rom曲线算法 思想：用前一个点和后一个点的物理位置之差的方向作为中间点的方向的2倍   Cardinal样条曲线">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机动画提纲">
+<meta property="og:url" content="http://ruin.net.cn/2021/06/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB%E6%8F%90%E7%BA%B2/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="计算机动画提纲 （基于计算机动画课程的内容进行梳理）  运动路径控制  物体的运动路径，可以直线也可以曲线，用样条曲线表示 指定物体运动速度，换算用多少幅画面表现运动速度。  中间位置的确定——插值 弯曲路径的控制：使用样条曲线插值  Hermite三次多项式   Catmull-Rom曲线算法 思想：用前一个点和后一个点的物理位置之差的方向作为中间点的方向的2倍   Cardinal样条曲线">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415204525738.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001-1618490779852.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415204655235.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001-1618491390091.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001-1618491551217.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210134124.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210512678.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210522499.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210535758.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117185113738.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119094246680.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123162406858?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123162415609?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201217220547948.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image003.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112354067.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112412392.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112519550.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112708528.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112723538.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112744044.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112759829.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117185340830.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117190022337.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180122214555860?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201501710.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201517909.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201532011.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201408530.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201855011.png">
+<meta property="og:image" content="f:%5CTypora-image%5Cimage-20210118201908311.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118202016388.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118202051728.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201218100952729.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201218103253086.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201218110416482.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123001014677?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123001021859?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123103653083?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20170109165441600">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117190406114.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123112653241?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123135716469?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123135723270?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/726c6ae833ed79df3fed855ffd020b65.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113114933925.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113114953124.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123144402429?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123144609772?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123144723288?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113090222718.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113091015220.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113091345132.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113091719452.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113092401357.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210115100745252.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210115101226937.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123160348634?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210115103249007.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123160806602?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123160815427?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119101421853.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123161648458?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="https://img-blog.csdn.net/20180123161819607?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="article:published_time" content="2021-06-20T13:30:37.000Z">
+<meta property="article:modified_time" content="2022-01-03T08:26:37.151Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机动画">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415204525738.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641198474361">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641198474361">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>21</div>
+        <div><span>Tags</span>7</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119101421853.png" data-sizes="auto" alt="计算机动画提纲" class="lazyload">
+              <h1>计算机动画提纲</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年06月20日</a>
+    <a><i class="nexmoefont icon-areachart"></i>9.4k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 38 分钟</a>
+</div>
+
+      
+
+      <h1 id="计算机动画提纲"><a class="markdownIt-Anchor" href="#计算机动画提纲"></a> 计算机动画提纲</h1>
+<p>（基于计算机动画课程的内容进行梳理）</p>
+<h2 id="运动路径控制"><a class="markdownIt-Anchor" href="#运动路径控制"></a> 运动路径控制</h2>
+<ol>
+<li>物体的运动路径，可以直线也可以曲线，用样条曲线表示</li>
+<li>指定物体运动速度，换算用多少幅画面表现运动速度。</li>
+</ol>
+<p>中间位置的确定——插值</p>
+<p>弯曲路径的控制：使用样条曲线插值</p>
+<h3 id="hermite三次多项式"><a class="markdownIt-Anchor" href="#hermite三次多项式"></a> Hermite三次多项式</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415204525738.png" alt="image-20210415204525738" class="lazyload"></p>
+<h3 id="catmull-rom曲线算法"><a class="markdownIt-Anchor" href="#catmull-rom曲线算法"></a> Catmull-Rom曲线算法</h3>
+<p>思想：用前一个点和后一个点的物理位置之差的方向作为中间点的方向的2倍</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001-1618490779852.png" alt="0200 " class="lazyload">
+<h3 id="cardinal样条曲线"><a class="markdownIt-Anchor" href="#cardinal样条曲线"></a> Cardinal样条曲线</h3>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415204655235.png" alt="image-20210415204655235" class="lazyload">
+<p>τ的意义：值越大，曲线越弯曲，反之则接近直线</p>
+<h3 id="弧长参数化"><a class="markdownIt-Anchor" href="#弧长参数化"></a> 弧长参数化</h3>
+<p>意义：均匀采样</p>
+<p>确定曲线上的距离和参数的关系，使得曲线弧度更加自然、平滑</p>
+<h2 id="动作建模"><a class="markdownIt-Anchor" href="#动作建模"></a> 动作建模</h2>
+<h3 id="走路动画建模"><a class="markdownIt-Anchor" href="#走路动画建模"></a> 走路动画建模</h3>
+<ul>
+<li>根据关键帧图片提取关节点数据并保存为文件</li>
+<li>载入数据，取相邻两帧做线性插值</li>
+<li>对于插值两帧对应的骨骼，分别计算重点位移和转动角度</li>
+<li>对位移和旋转分别做quaternion插值</li>
+<li>计算插值中每一个关键时刻角色各个关节的顶点数据</li>
+<li>根据角色位置和运动方向对顶点数据做坐标变换</li>
+<li>根据视点位置再做坐标变换，投影，显示结果</li>
+</ul>
+<h3 id="三维头像构造"><a class="markdownIt-Anchor" href="#三维头像构造"></a> 三维头像构造</h3>
+<p>选取眼睛中心为参考点，计算高度h与该高度上头的侧面宽度w</p>
+<p>取头后部w/3，过该点的垂直轴为y，将侧面头像的下巴置于xOz平面</p>
+<p>正面头像中心轴与y平行，画像所在平面与xOy平行，下巴置于z=w/5处</p>
+<p>每个切面与曲线相交，平行于xOz平面，得到特征点，用样条曲线插值</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001-1618491390091.png" alt="img" class="lazyload"></p>
+<h3 id="25d卡通动画"><a class="markdownIt-Anchor" href="#25d卡通动画"></a> 2.5D卡通动画</h3>
+<p>层位2D，但包含有深度信息</p>
+<p>将平面卡通物体带入3D，模拟3D旋转并在一个新的时浇上生成较为合理的卡通物体</p>
+<h2 id="四元数quaternion"><a class="markdownIt-Anchor" href="#四元数quaternion"></a> 四元数Quaternion</h2>
+<p>四元数通常被用来描述旋转的参数</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001-1618491551217.png" alt="设 Q 是 实 数 域 上 的 四 维 向 量 空 间 ， 其 正 交 基 底 （ 1 ， 0 ， 0 ， 0 ） ，  （ 0 ， 1 ， 0 ， 0 ） ， （ 0 ， 0 ， 1 ， 0 ） ， （ 0 ， 0 ， 0 ， 1) 分 别 用 e ， 苟 ， 々 表 示 ， 则 Q 中 的 元  素 q 可 以 写 成  q=[S,V]=aoe + ali +a2j+ a3 々  这 里 s ： 是 标 量 部 分 （ 实 部 ） ， v ： ali + a2j + a3k 矢 量 部 分 （ 虚 部 ） ， " class="lazyload"></p>
+<p>利用四元数可以进行变形与弧形插值（与线性插值不同）</p>
+<p>思想：把四边形的每个边看做一个向量，在三维空间对四个边的长度和角度进行插值</p>
+<h2 id="过程流体"><a class="markdownIt-Anchor" href="#过程流体"></a> 过程流体</h2>
+<h3 id="三维噪声"><a class="markdownIt-Anchor" href="#三维噪声"></a> 三维噪声</h3>
+<p>噪声函数：一种过程纹理函数，以三维空间点作为输入，以一个标量作为输出</p>
+<p>性质：旋转统计不变性，平移统计不变性，频率带宽很窄</p>
+<h3 id="柏林噪声"><a class="markdownIt-Anchor" href="#柏林噪声"></a> 柏林噪声</h3>
+<p><strong>柏林噪声</strong>：用种子控制的随机数生成器，光滑差值得到一个以非整数为参数的连续函数</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210134124.png" alt="image-20210415210134124" class="lazyload"></p>
+<p>幅度：随机数最大值和最小值的差</p>
+<p>波长：从一个随机点到另一个随机点的横轴距离</p>
+<p>频率：波长的倒数</p>
+<p>取多个这种连续函数进行叠加，便可生成柏林噪声</p>
+<p><strong>二维柏林噪声</strong>：在每个小方格上随机生成灰度值，用二线性插值得到，生成一系列二维噪声并叠加</p>
+<p>应用：云彩动画，湍流动画，地形生成等</p>
+<h2 id="水波纹理"><a class="markdownIt-Anchor" href="#水波纹理"></a> 水波纹理</h2>
+<h3 id="平行水波"><a class="markdownIt-Anchor" href="#平行水波"></a> 平行水波</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210512678.png" alt="image-20210415210512678" class="lazyload"></p>
+<h3 id="同心扩散水波"><a class="markdownIt-Anchor" href="#同心扩散水波"></a> 同心扩散水波</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210522499.png" alt="image-20210415210522499" class="lazyload"></p>
+<h3 id="卡通风格水波"><a class="markdownIt-Anchor" href="#卡通风格水波"></a> 卡通风格水波</h3>
+<p>对正弦波峰进行风格化处理，形成“Ballistic Arc”</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415210535758.png" alt="image-20210415210535758" class="lazyload"></p>
+<p>对波峰的白浪形状、巨大的浪花进行建模</p>
+<h2 id="三维动画原则"><a class="markdownIt-Anchor" href="#三维动画原则"></a> 三维动画原则</h2>
+<h3 id="动画形成的视觉原理"><a class="markdownIt-Anchor" href="#动画形成的视觉原理"></a> 动画形成的视觉原理</h3>
+<p>所谓动画，就是指通过每秒若干帧的速度顺序地播放静止图像帧以产生运动错觉的艺术。</p>
+<p>动画利用了人的<strong>视觉残留</strong>这一特点，即上个画面的残留还未消失，下一个画面又进入视觉，这样循环往复，在人的眼中形成动态的画面。</p>
+<h3 id="传统动画应用于三维计算机动画的基本原则"><a class="markdownIt-Anchor" href="#传统动画应用于三维计算机动画的基本原则"></a> 传统动画应用于三维计算机动画的基本原则</h3>
+<ul>
+<li>**Squash and stretch：**挤压和伸展</li>
+<li>**Timing：**掌握时序</li>
+<li>**Anticipation：**预期性</li>
+<li>**Staging：**布局</li>
+<li>**Follow-through and overlapping action：**跟随动作与重叠动作</li>
+<li>**Straight-ahead action and pose-to-pose action：**连贯动作法与关键动作法</li>
+<li>**Slow in and slow out：**慢入和慢出</li>
+<li>**Arcs：**弧形动作</li>
+<li>**Exaggeration：**夸张</li>
+<li>**Secondary action：**附属动作</li>
+<li>**Appeal：**吸引力</li>
+<li>**Solid drawing：**手绘技巧？</li>
+<li>**Depth of field：**景深</li>
+<li>**Balance and weight：**平衡及重量感</li>
+</ul>
+<h2 id="2d-blending"><a class="markdownIt-Anchor" href="#2d-blending"></a> 2D Blending</h2>
+<h3 id="两个子问题"><a class="markdownIt-Anchor" href="#两个子问题"></a> 两个子问题</h3>
+<ul>
+<li>顶点的对应关系问题</li>
+<li>顶点的插值问题</li>
+</ul>
+<h3 id="基于内在形状插值的多边形渐变方法的基本思想与数学原理"><a class="markdownIt-Anchor" href="#基于内在形状插值的多边形渐变方法的基本思想与数学原理"></a> 基于内在形状插值的多边形渐变方法的基本思想与数学原理</h3>
+<p><strong>乌龟几何 + 拉格朗日乘数法</strong>优化</p>
+<ul>
+<li>
+<p>乌龟几何：通过顶点处的边长和有向角来定义多边形</p>
+<p>涉及的参数：锚点P，起始旋转角α，一组边长L，一组旋转角θ</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117185113738.png" alt="image-20210117185113738" class="lazyload">
+<p>通过对关键帧多边形的<strong>边长和顶点角进行插值</strong>来产生比线性插值更好的效果。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119094246680.png" alt="image-20210119094246680" class="lazyload"></p>
+</li>
+<li>
+<p>拉格朗日乘数法优化用于处理插值后起始点和终止点不在同一位置的问题。</p>
+</li>
+<li>
+<p><strong>优点</strong>：简单，避免了收缩扭结</p>
+</li>
+<li>
+<p><strong>缺点</strong>：不能灵活地处理线条形状，短边方向不稳定，中间帧多边形可能发生畸变</p>
+</li>
+</ul>
+<h3 id="edge-tweaking的思想"><a class="markdownIt-Anchor" href="#edge-tweaking的思想"></a> Edge Tweaking的思想</h3>
+<p>解决中间多边形不封闭的问题，一个解决方法为保持插值的顶点角不变，适当<strong>调整插值得到的边长</strong></p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123162406858?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<img src="https://img-blog.csdn.net/20180123162415609?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" style="zoom:67%;" > 
+<p>这是一个具有约束条件的极值问题，可以用拉格朗日乘数法求解。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201217220547948.png" alt="image-20201217220547948" class="lazyload"></p>
+<h3 id="基于模糊数学的二维多边形形状渐变"><a class="markdownIt-Anchor" href="#基于模糊数学的二维多边形形状渐变"></a> 基于模糊数学的二维多边形形状渐变</h3>
+<p>优点：能处理具有不同位置、方向、大小、形状的多边形</p>
+<p>基于模糊数学的顶点对应关系建立：用目标多边形建立一个与给定源多边形相似的模糊多边形集，然后在模糊集中查找多边形相似函数最大的多边形</p>
+<p>三角形相似函数</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image001.png" alt="4 " class="lazyload">
+<p>&lt;img src=“F:\Typora-image\clip_image002.png” alt=&quot;04 一 el × 因  smt=wl style=“zoom:67%;” &gt;&lt;(l—  4 × 4 + ell × ， 0  360  其 ． 中 0 &lt; ， 吗 &lt; 1  ， 且 + 一 1 。 通 常 ， 我 们 可 设 一 一 0 巧 &quot; /&gt;</p>
+<p>多边形相似函数</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/clip_image003.png" alt="img" class="lazyload"></p>
+<p>相似函数的取值为[0,1]，完全相似则值为1，相似度越大，相似函数的值越大</p>
+<p>模糊集：多边形集P和多边形相似函数Simp构成了模糊集</p>
+<p>图论求解：在模糊集中求多边形P使得相应的隶属函数值最大</p>
+<p><strong>仿射变换</strong></p>
+<p>仿射变换选取：把原多边形变换到目标多边形</p>
+<p>好的放射变换——基于一堆对应多边形角的好坏函数smooth</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112354067.png" alt="image-20210119112354067" class="lazyload">
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112412392.png" alt="image-20210119112412392" class="lazyload">
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112519550.png" alt="image-20210119112519550" class="lazyload">
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112708528.png" alt="image-20210119112708528" class="lazyload">
+<p>仿射变换插值：线性插值+旋转部分单独抽取处理</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112723538.png" alt="image-20210119112723538" class="lazyload">
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112744044.png" alt="image-20210119112744044" class="lazyload">
+<p>插值计算中间帧多边形</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119112759829.png" alt="image-20210119112759829" class="lazyload">
+<h2 id="2d-morphing"><a class="markdownIt-Anchor" href="#2d-morphing"></a> 2D Morphing</h2>
+<h3 id="图像morphing的原理"><a class="markdownIt-Anchor" href="#图像morphing的原理"></a> 图像morphing的原理</h3>
+<p>几何元对应（warping）——得到几何变换——构建满射——颜色插值</p>
+<p>首先用简单的几何元建立图像特征之间的对应关系，然后由这些特征对应关系计算出morphing所需的几何变换，几何变换定义了两幅图像上点之间的几何对应关系。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117185340830.png" alt="image-20210117185340830" class="lazyload">
+<p>满射C0把第一幅图像的几何形状映射为第二幅图像的几何形状，满射C1则反过来。需要两个映射的原因是图像点与点之间的对应关系不一定是一一对应。</p>
+<p>图像变形对齐后再对颜色进行插值，得到中间帧图像。</p>
+<h3 id="基于网格的图象morphing-原理"><a class="markdownIt-Anchor" href="#基于网格的图象morphing-原理"></a> 基于网格的图象morphing 原理</h3>
+<p>在源图像中，放置曲面网格Ms，Ms指定了控制顶点的坐标。在目标图像中，放置网格Md，Md指定了Ms在目标图像的对应点。</p>
+<p>注意：Ms和Md是同拓扑的</p>
+<p>曲面Ms和Md用来定义把源图像的所有点映射到目标图像的空间变换，它们的拓扑关系相同。</p>
+<p>中间帧的图像生成步骤：</p>
+<ol>
+<li>线性插值网格Ms和Md，得到网格M</li>
+<li>应用由网格Ms和M定义的变换，使源图像Is扭曲变形到I0</li>
+<li>应用由网格Md和M定义的变换，使目标图像Id变形到I1</li>
+<li>对图像I0和I1进行线性插值，得到中间帧图像</li>
+</ol>
+<h3 id="基于线对的图象morphing方法"><a class="markdownIt-Anchor" href="#基于线对的图象morphing方法"></a> 基于线对的图象morphing方法</h3>
+<p>正向映射：逐个扫描原图像素，拷贝到目标图像的适当位置</p>
+<p><strong>逆向映射</strong>：逐个扫描目标图像像素，根据其位置采样源图像——一定能够有对应</p>
+<p>在源图像中定义一条有向线段，再在目标图像中定义一条有向线段，则<strong>映射把一条直线映射为另一条直线</strong>。</p>
+<p><strong>基本步骤</strong></p>
+<ol>
+<li>
+<p>设两幅图像分别为Is和Id，先在两幅图像中定义控制变形的对应直线对，通过插值得到中间图像I的直线。</p>
+</li>
+<li>
+<p>插值：线性插值或对中点、长度、朝向等进行插值</p>
+</li>
+<li>
+<p>由Is-&gt;I的直线对变换可以得到一副变形图I1，由Id-&gt;I的直线对变换可以得到I2。对交溶参数作动画，把I1和I2进行交溶处理可以得到中间的变形图像I。</p>
+</li>
+</ol>
+<p><strong>优点</strong>是直观，<strong>缺点</strong>是可能生成一些意料之外的图像。</p>
+<ul>
+<li>
+<p>单对直线：本质是旋转、平移、比例变换的复合变换</p>
+</li>
+<li>
+<p>多对直线：对所有的偏移量进行加权平均，其中权重因子可以由直线长度、点到直线距离等因素以及若干参数共同决定</p>
+</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117190022337.png" alt="image-20210117190022337" class="lazyload"></p>
+<h2 id="3d-morphing"><a class="markdownIt-Anchor" href="#3d-morphing"></a> 3D Morphing</h2>
+<h3 id="2d与3dmorphing的优缺点"><a class="markdownIt-Anchor" href="#2d与3dmorphing的优缺点"></a> 2D与3Dmorphing的优缺点</h3>
+<ul>
+<li>
+<p><strong>二维</strong></p>
+<p>**优点：**是一种达到特殊视觉效果的有效方法；可以让人产生神奇的三维形状改变的错觉，可以避免复杂的三维造型过程。</p>
+<p>**缺点：**可能生成一些意料之外的图像（线对特征法）；物体没有三维几何信息，不能进行几何变换。</p>
+</li>
+<li>
+<p><strong>三维</strong></p>
+<p>**优点：**能生成更逼真和生动的特技效果，且得到的中间帧是物体的模型而不是图像，运用范围更广。</p>
+<p>**缺点：**物体之间的对应关系很难建立，而且该方法对物体的几何表示也相当苛刻。</p>
+</li>
+</ul>
+<h3 id="基于星形物体的多面体morphing方法"><a class="markdownIt-Anchor" href="#基于星形物体的多面体morphing方法"></a> 基于星形物体的多面体morphing方法</h3>
+<p>合并一对三维多面体物体模型的拓扑结构，使它们拥有相同的顶点，边，面网络结构，然后对相应的顶点进行插值。</p>
+<p>通过合并拓扑结构将一个物体的形状变换为另一个物体的形状可以分为两步：</p>
+<ol>
+<li>建立源物体与目标物体上的点的对应关系（对应问题）</li>
+<li>插值对应的点（插值问题）</li>
+</ol>
+<p><strong>同构/拓扑等价</strong>：两个物体表面上的点存在一个连续、可逆的一一映射。</p>
+<p>对于亏格为零的两个多面体，它们都同构于球。把它们都投影到单位球面上，然后将投影在单位球面上的两个拓扑结构合并在一起构成一个新的拓扑结构，再将新的拓扑结构映射回原来的两个多面体，即建立好了相应的点对关系。</p>
+  <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180122214555860?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<p>采用线性插值或Hermite插值来插值相应顶点。</p>
+<h3 id="基于体表示的三维morphing方法"><a class="markdownIt-Anchor" href="#基于体表示的三维morphing方法"></a> 基于体表示的三维morphing方法</h3>
+<p>**思想：**给定源物体S和目标物体T，首先根据指定的对应特征生成一个空间变换，该变换使给定的两个体扭曲变形，达到几何对齐的目的；然后对得到的两个扭曲变形体进行混合。</p>
+<p>**几何对齐：**指定特征元素对，将位置和朝向编码为一个包含四个向量的局部坐标系</p>
+<p>**warping：**插值局部坐标系和比例缩放因子，通过逆向映射得到S‘、T’</p>
+<p>**混合方法：**对两个体素的颜色和不透明度进行交溶处理，然后对混合后的体素进行绘制。</p>
+<p>**优点：**与物体的几何和拓扑结构无关；提供了一种统一的处理方法（几何表示的物体都可以转化成体表示）。</p>
+<p>**缺点：**走样现象严重，精度没有基于几何表示的好；几何模型转换为体素表示的计算时间较费。</p>
+<h2 id="粒子系统"><a class="markdownIt-Anchor" href="#粒子系统"></a> 粒子系统</h2>
+<h3 id="粒子系统的作用"><a class="markdownIt-Anchor" href="#粒子系统的作用"></a> 粒子系统的作用</h3>
+<p>模拟不规则的自然景物。</p>
+<h3 id="粒子系统基于的假设"><a class="markdownIt-Anchor" href="#粒子系统基于的假设"></a> 粒子系统基于的假设</h3>
+<ol>
+<li>粒子一般不与其它粒子碰撞</li>
+<li>除非处于聚集状态，粒子不向其它粒子投影</li>
+<li>粒子只向其它环境投影</li>
+<li>粒子不反射光</li>
+<li>粒子通常有有限的生命周期</li>
+</ol>
+<h3 id="粒子系统的基本思想"><a class="markdownIt-Anchor" href="#粒子系统的基本思想"></a> 粒子系统的基本思想</h3>
+<p>将许多简单形状的微小粒子作为基本元素聚集起来形成一个<strong>不规则模糊物体</strong>。每个粒子均经历出生，成长，衰老和死亡的过程。</p>
+<p>生成粒子系统的<strong>某一帧画面</strong>的基本步骤是：</p>
+<ol>
+<li>
+<p>生成新的粒子并加入系统中</p>
+</li>
+<li>
+<p>赋予新粒子一定的属性</p>
+</li>
+<li>
+<p>删除已经超过生命周期的粒子</p>
+</li>
+<li>
+<p>根据粒子的动态属性对粒子进行移动和变换</p>
+</li>
+<li>
+<p>绘制并显示由有生命的粒子组成的图形</p>
+</li>
+</ol>
+<p><strong>粒子的生成</strong></p>
+<p>对于每一帧，根据一个控制的随机过程生成粒子：用户可以控制每帧的平均粒子数和其概率分布；粒子数可以是时间的函数。</p>
+<p><strong>粒子的属性</strong>：位置，速度，大小，周期，质量，力加速器，生命周期，绘制属性……</p>
+<p><strong>粒子生命周期</strong>：使用一个计时器，在每一个新帧，更新粒子生命周期（TTL）</p>
+<p><strong>粒子消亡</strong>：生命周期结束/淡出/移出视野</p>
+<h3 id="粒子动力学"><a class="markdownIt-Anchor" href="#粒子动力学"></a> 粒子动力学</h3>
+<p><strong>粒子动画</strong>：位置、速度、绘制属性</p>
+<p><strong>粒子上的力</strong>：一元力（重力、粘性阻力、场力等）、粒子的偶力（弹簧阻尼）、环境力</p>
+<p>软约束条件</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201501710.png" alt="image-20210118201501710" class="lazyload">
+<p>能量方程：使得约束能量函数E最小化</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201517909.png" alt="image-20210118201517909" class="lazyload"></p>
+<p>从而得到一个作用在粒子上的力使得满足约束条件</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201532011.png" alt="image-20210118201532011" class="lazyload">
+<p><strong>粒子绘制方法</strong>：点光源、带纹理的广告牌（billboard）、元球</p>
+<p>碰撞响应与检测</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201408530.png" alt="image-20210118201408530" class="lazyload">
+<p><strong>粒子运动方程的求解</strong>：微分方程a=f/m，通常用数值求解方法</p>
+<p>常微分方程求解的问题：步长越大误差越大、精度低、不稳定</p>
+<p>欧拉法：x(t+h)=x(t)+h*f(x,t)——（一阶泰勒展开得到）</p>
+<p><strong>Verlet积分法</strong></p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118201855011.png" alt="image-20210118201855011" class="lazyload">
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="F:%5CTypora-image%5Cimage-20210118201908311.png" alt="image-20210118201908311" class="lazyload"></p>
+<p>优点：易于实现、储存小</p>
+<p>缺点：精度会有影响（h的大小）</p>
+<p>改进：蛙跳Verlet积分</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118202016388.png" alt="image-20210118202016388" class="lazyload">
+<p>实际实现的细节：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210118202051728.png" alt="image-20210118202051728" class="lazyload">
+<h2 id="群组动画"><a class="markdownIt-Anchor" href="#群组动画"></a> 群组动画</h2>
+<h3 id="boids模型"><a class="markdownIt-Anchor" href="#boids模型"></a> Boids模型</h3>
+<p>Boid是一个模拟的类似于鸟一样的物体。</p>
+<p><strong>优先级递减的群体模拟三大原则：</strong></p>
+<p>**1. 碰撞避免原则：**避免与相邻的群体成员相碰</p>
+<p>**2. 速度匹配原则：**尽量保持与周围邻居群体成员的速度匹配</p>
+<p>**3. 群体合群原则：**群体成员尽量靠近</p>
+<h3 id="reynolds导航方法"><a class="markdownIt-Anchor" href="#reynolds导航方法"></a> Reynolds导航方法</h3>
+<p>简单的车辆模型：SVM</p>
+<ul>
+<li>追逐和躲避</li>
+<li>障碍避免：在该角色前面有一个假想的圆柱自由空间</li>
+<li>路径跟随：动态根据投影距离（从预测位置到最近路径点位置）调整导航方向，进行seeking行为</li>
+<li>流场跟随行为：导航方向为期望速度和当前速度的差</li>
+<li>跟随领导：前方进行躲避，后方进行跟随，跟随成员采用分离行为避免相互拥挤</li>
+</ul>
+<h3 id="helbing基于社会力模型的群体行为模拟方法的基本原理"><a class="markdownIt-Anchor" href="#helbing基于社会力模型的群体行为模拟方法的基本原理"></a> Helbing基于社会力模型的群体行为模拟方法的基本原理</h3>
+<p>人：自我驱动的质点</p>
+<p>社会力模型以牛顿动力学为基础，由各个力的表达式来体现行人不同的动机和影响。在社会力模型中，由于对影响个体的因素考虑得比较全面，对个体行为的建模比较合理，该模型可以逼真地模拟人群的疏散过程。</p>
+<p>个体的实际行为受<strong>主观意识</strong>，<strong>其它个体</strong>及<strong>障碍物</strong>三方面因素的影响，均可等效为力在个体上的作用。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201218100952729.png" alt="image-20201218100952729" class="lazyload">
+<ul>
+<li>
+<p>个体i的自身驱动力：主观意识对个体行为的影响，体现了行人以期望的速度运动到目的地的动机。m为行人质量，vi为期望速度，ei为期望运动方向（由此刻的位置和目标位置综合得出），τi为特征时间</p>
+</li>
+<li>
+<p>个体j对合体i产生的力：心理学力（距离越近心理学力越大，且指数增长）+身体力（阻止两人身体接触的斥力，当接触时系数很大，否则为0）+防止人滑到的滑动摩擦力</p>
+</li>
+<li>
+<p>环境力：边界和障碍物对人的影响</p>
+</li>
+<li>
+<p>羊群效应：恐慌人群的行为=羊群效应+个体行为的综合</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201218103253086.png" alt="image-20201218103253086" class="lazyload">
+</li>
+</ul>
+<h3 id="相互速度障碍物rvo原理"><a class="markdownIt-Anchor" href="#相互速度障碍物rvo原理"></a> 相互速度障碍物(RVO)原理</h3>
+<p>解决的问题：碰撞避免+个体运动能力、心理、外界环境等因素的复合因素</p>
+<ul>
+<li>
+<p>假设个体以<strong>匀速前进</strong></p>
+</li>
+<li>
+<p>每个个体在保持与周围个体相对运动的同时，<strong>在速度域中计算出可能导致碰撞的速度集合</strong>，并对自身速度进行必要的调整。在调整过程中，碰撞避免的任务<strong>同时分配给</strong>相关的个体，使它们<strong>相互协调完成</strong>碰撞避免任务。</p>
+</li>
+</ul>
+<p><strong>多智能体导航问题</strong>：N个智能体共享一个环境，每个智能体从起始点运动到目标点，相互之间不发生碰撞且避开障碍物</p>
+<p>方法：解耦处理法（每个智能体同时自主导航，全局规划路径，局部碰撞避免）、集中处理法（在复合配置空间进行路径规划）</p>
+<p><strong>速度障碍物(VO)</strong>：在某一时刻将与障碍物B碰撞的智能体A的所有可能的速度的集合，具有对称性和平移不变性</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20201218110416482.png" alt="image-20201218110416482" class="lazyload">
+<p>应用：移动物体导航——在每个规划周期内，智能体选择一个位于以动物体速度障碍物之外的速度，一般选择“最合适的速度”</p>
+<p>问题：两个智能体相互之间做出反应，产生振荡</p>
+<p><strong>相互速度障碍物(RVO)</strong>：避免振荡，建立智能体之间的通讯或者整体的协调——<strong>选择当前速度和一个位于速度障碍物外部的速度的平均</strong>。</p>
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123001014677?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123001021859?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<p>应用：多智能体的导航</p>
+<h2 id="关节动画"><a class="markdownIt-Anchor" href="#关节动画"></a> 关节动画</h2>
+<h3 id="正向运动学"><a class="markdownIt-Anchor" href="#正向运动学"></a> 正向运动学</h3>
+<p>动画师通过直接指定关节处的关节运动参数来控制物体的运动</p>
+<p>从关节空间映射到笛卡尔空间</p>
+<p><strong>层次模型</strong>：层次连杆的树状结构，结点表示物体部件，连接弧表示层次结构中应用于物体部件之间的关节或变换</p>
+<p>算法：</p>
+<ul>
+<li>
+<p>对树进行DFS遍历（使用堆栈进行存储变换）</p>
+</li>
+<li>
+<p>对树进行回溯，直到遇到一个未被访问过的向下连接弧</p>
+</li>
+<li>
+<ul>
+<li>对向下连接弧进行遍历</li>
+<li>重复，直到所有的节点和连接弧都被访问</li>
+</ul>
+</li>
+</ul>
+<h3 id="逆向运动学"><a class="markdownIt-Anchor" href="#逆向运动学"></a> 逆向运动学</h3>
+<p>动画师指定目标位置，系统求解满足要求的关节角</p>
+<p>从笛卡尔空间映射到关节空间</p>
+<ul>
+<li>
+<p><strong>逆向雅克比矩阵求解法</strong></p>
+<p><strong>求解IK的逆向雅克比方法：</strong></p>
+<p>逆向雅克比矩阵把笛卡尔空间的速度映射到关节空间的速度；</p>
+<p>给定初始姿势和所需要的姿势，<strong>迭代</strong>变化关节角，使得末端影响器朝目标位置和方向前进；</p>
+<p>对于中间帧，插值得到所需的姿态向量</p>
+  <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123103653083?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+</li>
+<li>
+<p><strong>CCD方法（循环坐标下降）</strong></p>
+<ol>
+<li>从骨骼链上最深的子骨节开始处理。将其相对于原点旋转从而指向目标点（此处可以加约束）</li>
+<li>对其父骨节进行相似的操作，使得此父骨节的原点到新旋转的子骨节短点的连线指向目标点</li>
+<li>对每个骨节重复上述操作</li>
+<li>多次迭代循环得到稳定结果</li>
+</ol>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20170109165441600" alt="IK_CCD" class="lazyload"></p>
+</li>
+</ul>
+<h3 id="骨架与角色模型的绑定原理"><a class="markdownIt-Anchor" href="#骨架与角色模型的绑定原理"></a> 骨架与角色模型的绑定原理</h3>
+<p>角色的表面（外皮）必须随着骨架的运动而运动（变形）；</p>
+<p>在骨架绑定中，皮肤的运动定义为对应控制骨架的函数；</p>
+<p>很多骨架绑定系统采用一个称为中性姿势或静止姿势的几何信息；</p>
+<p>**自动绑定：**首先在未知的三维模型中嵌入骨架，然后计算骨骼对表面网格上每个顶点的影响权值，并将表面皮肤依附在骨骼上。</p>
+<ul>
+<li><strong>顶点混合(Vertex Blending)的原理</strong></li>
+</ul>
+<p>假设要用前臂和后臂来模拟一个手臂，要使关节处是柔软的，可以对前臂和后臂单独设置动画，然后关节处用柔性skin来连接；</p>
+<p>柔性部分的一部分顶点由前臂的矩阵来变换，另一部分由后臂的矩阵来变换。即一个三角形的顶点可以由不同的矩阵来变换，而不是一个矩阵；</p>
+<p>进一步推广：一个顶点可以由几个不同的矩阵进行加权变换；</p>
+<p>实施方法：在物体上放置关节骨架，每个骨架都按用户给定的权因子影响顶点。</p>
+<p><strong>数学表示：</strong></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210117190406114.png" alt="image-20210117190406114" class="lazyload"></p>
+<p>决定权因子：顶点到骨骼的映射，如果顶点在骨骼中间则为1，靠近边缘逐渐变化到0……</p>
+<h3 id="运动捕获系统mocap"><a class="markdownIt-Anchor" href="#运动捕获系统mocap"></a> 运动捕获系统(MOCAP)</h3>
+<p>运动捕获数据的处理——信号处理</p>
+<ul>
+<li>运动刻画（低频表示基本动作，高频表示特质运动）</li>
+<li>运动的操作/编辑/变形——滤波（低通去噪，高通控制风格）</li>
+</ul>
+<p>运动重定向——运动数据映射（是一个实控、非线性约束的优化问题）</p>
+<p>运动混合——多段运动叠加（逐帧插值的操作）</p>
+<p>运动过渡——连接运动捕获得到的小的运动片段</p>
+<p><strong>规划 -&gt; 标定 -&gt; 捕获 -&gt; 三维位置重建 -&gt; 拟合到骨架 -&gt; 后处理</strong></p>
+<p>**优点：**只要能被捕获，可以记录人体运动的所有细节，运动真实</p>
+<p>**缺点：**不容易进行编辑和控制，较昂贵</p>
+<h3 id="表情动画"><a class="markdownIt-Anchor" href="#表情动画"></a> 表情动画</h3>
+<p>人脸参数化Rigging：构造低维参数空间，并跟定参数空间到表情控件的映射关系</p>
+<p><strong>基于拉普拉斯变形的人脸表情合成</strong></p>
+<p>思想：将采集的表演者的人脸表情变化迁移到一个虚拟的中性目标人脸模型上</p>
+<ol>
+<li>
+<p>动捕采集——VICON光学捕获系统</p>
+<p>戴帽子——取消头发影响，五个标记点在前额，一个标记点在鼻尖，用于刻画刚体运动</p>
+</li>
+<li>
+<p>将脸部特征分解为脸部表情运动和头部刚体运动</p>
+<p>刚体标记点位置 = 旋转矩阵*脸部表情+平移矩阵</p>
+<p>由于刚体标记点会有微小非刚体运动，所以用最小二乘法近似计算最优刚体变换——六个刚体标记点运动偏差的极小值</p>
+</li>
+<li>
+<p>载入中性目标人脸模型</p>
+</li>
+<li>
+<p>根据中性目标人脸模型的集合结构域拓扑结构计算中兴目标人脸模型中各个点的拉普拉斯坐标</p>
+</li>
+<li>
+<p>分别迁移面部表情和刚性运动</p>
+</li>
+</ol>
+<p>真实感人脸建模和动画：The Digital Emily Project</p>
+<p><strong>Facial Rigging</strong></p>
+<p><strong>面部动作编码系统FACS</strong>——一种表达人脸表情的通用语言</p>
+<p>角色构建：用一系列三维搜啊面人脸模型构建一个绑定好的人脸</p>
+<p><strong>基于Blend Shapes（关键姿态表情形状）的人脸表情参数化</strong></p>
+<p>首先对人脸表情进行三维扫描，然后构建一组Blend Shapes模型（作为表情基），最后插值这些Blend Shapes来得到任意的表情。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123112653241?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload">
+<p>Face IK：控制脸部的关键点来得到动作</p>
+人脸上的点S_i = C_1S_{i,1}+C_2S_{i,2}+...+C_FS_{i,F}, i=1,2...,n\\
+\sum_{f=1}^F{C_f}=1\\
+约束L个点来得到顶点位置P_l = \sum_{f=1}^F{C_fS_{l,f}}, l=1,2,...,L\\
+用最小二乘法求解系数C_f
+
+<h2 id="变形动画"><a class="markdownIt-Anchor" href="#变形动画"></a> 变形动画</h2>
+<h3 id="基本概念"><a class="markdownIt-Anchor" href="#基本概念"></a> 基本概念</h3>
+<p>Deformation是指将集合对象的某种形状作某种扭曲，形变，使它形成动画师所需要的形状。在这种变化中，<strong>几何对象的拓扑关系保持不变</strong>。与Morphing不同，空间变形更具有某种随意性，若依空间变形也长称为自由变形（FFD）。</p>
+<ul>
+<li>
+<p>与物体表示有关的变形：针对物体的某种具体表示形式，如多边形网格、细分曲面、参数曲面</p>
+</li>
+<li>
+<p>与物体表示无关的变形：既可以用于多边形表示的物体，又可以用于参数曲面表示的物体。</p>
+<p><strong>核心思想</strong>：用少量的点去有效控制更多的点</p>
+</li>
+</ul>
+<h3 id="整体和局部变形方法"><a class="markdownIt-Anchor" href="#整体和局部变形方法"></a> 整体和局部变形方法</h3>
+<p>Barr方法：推广传统运算算子，把整体和局部变形作为新的算子，包括twisting扭曲，bending弯曲，tapering渐细</p>
+<p>优点：可以生成许多传统造型方法难以生成的形体，变形后的法向量可用元物体法向量和变换矩阵解析求得</p>
+<p><strong>变形模型和变形物体法向量的计算</strong></p>
+<h3 id="ffd与effd"><a class="markdownIt-Anchor" href="#ffd与effd"></a> FFD与EFFD</h3>
+<p>FFD：不直接操作物体，而是将物体嵌入一空间，当所嵌的空间变形时，物体也随之变形。只适合于平行六面体的lattice形状。</p>
+<p>三维FFD算法：利用三三次Bezier超曲面映射弯曲物体</p>
+<p>晶格（lattice）：由三根互相垂直的坐标轴排列的长方体结构的控制顶点</p>
+<p>FFD的性质：</p>
+<ul>
+<li>参数曲面变形后仍然是参数曲面</li>
+<li>能对变换前后的体积变化进行控制，如果设定雅克比行列式为1则是保体积的</li>
+</ul>
+<p>优点：与物体的集合表示无关，直观有效；缺点：晶格为平行六面体，不遵循物理规律，细节很难被保持，难以控制复杂变形</p>
+<p>允许FFD型lattice作为它结构的一部分，许多个FFD型lattice可合并构成EFFD的lattice。EFFD块构造好后，采用与FFD类似的方法来使物体变形，通常需要迭代求解。</p>
+<p><strong>过程：</strong></p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123135716469?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123135723270?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<h3 id="基于cage的变形原理"><a class="markdownIt-Anchor" href="#基于cage的变形原理"></a> 基于Cage的变形原理</h3>
+<p>**cage：**一个包裹高分辨率模型的低分辨率网格</p>
+<p><strong>变形原理：</strong></p>
+<ol>
+<li>构建模型的cage</li>
+<li>计算模型的cage坐标</li>
+<li>编辑cage模型</li>
+<li>把cage的变形通过预先计算的cage坐标光滑传播到其包裹的模型</li>
+</ol>
+<h3 id="laplacian微分坐标及其变形原理"><a class="markdownIt-Anchor" href="#laplacian微分坐标及其变形原理"></a> Laplacian微分坐标及其变形原理</h3>
+<p>拉普拉斯网格变形原理：形变前后点的拉普拉斯坐标尽量相等</p>
+<p>拉普拉斯坐标：</p>
+<p>三角形网格模型<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi><mo>=</mo><mo>(</mo><mi>V</mi><mo separator="true">,</mo><mi>E</mi><mo separator="true">,</mo><mi>F</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">M=(V,E,F)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="mrel">=</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.05764em;">E</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="mclose">)</span></span></span></span>，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>d</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">d_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">d</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>表示了<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mrow><mi mathvariant="bold">v</mi></mrow><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\mathbf {v}_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.59444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord textstyle uncramped"><span class="mord mathbf" style="margin-right:0.01597em;">v</span></span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>相邻点的个数</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/726c6ae833ed79df3fed855ffd020b65.png" alt="图源自论文Laplacian Mesh Processing" class="lazyload"></p>
+\delta_{i}=\left(\delta_{i}^{(x)}, \delta_{i}^{(y)}, \delta_{i}^{(z)}\right) \\ =\mathbf{v}_{i}-\frac{1}{d_{i}} \sum_{j \in N(i)} \mathbf{v}_{j}\\
+δ_i=\sum_{j\in N(i)}{\frac 1{d_i}(\mathbf{v}_{i} - \mathbf{v}_{j})}
+
+<p>拉普拉斯矩阵：拉普拉斯坐标的简化计算</p>
+L=I-D^{-1} AL=I−D−1A
+
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.07847em;">I</span></span></span></span>为单位矩阵，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02778em;">D</span></span></span></span>为对角矩阵，其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><msub><mi>d</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">D_{ij}=d_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">D</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">i</span><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord"><span class="mord mathit">d</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">A</span></span></span></span>为邻接矩阵（参考数据结构）</p>
+<p>简化计算：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi><mi mathvariant="bold">x</mi><mo>=</mo><mi>δ</mi></mrow><annotation encoding="application/x-tex">L\mathbf x = \delta
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit">L</span><span class="mord mathbf">x</span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.03785em;">δ</span></span></span></span></span></p>
+<p>拉普拉斯坐标的性质：线性变换、平移不变性、旋转变换敏感</p>
+<p>变形过程——本质是一个带位置约束的优化问题</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113114933925.png" alt="image-20210113114933925" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113114953124.png" alt="image-20210113114953124" class="lazyload"></p>
+<h2 id="布料动画"><a class="markdownIt-Anchor" href="#布料动画"></a> 布料动画</h2>
+<h3 id="核心问题"><a class="markdownIt-Anchor" href="#核心问题"></a> 核心问题</h3>
+<ol>
+<li>建立不了的物理（力学）模型： 物理参数的设置</li>
+<li>渲染与绘制问题</li>
+<li>物理模型的求解（偏微分方程数值解）：  速度，稳定性</li>
+<li>碰撞检测和响应： 衣服与人体的碰撞，衣服与衣服的碰撞（自交）多层衣服</li>
+<li>材料角度（结构问题）：结构决定性能——<strong>准确地预测织物的力学性能</strong></li>
+</ol>
+<h3 id="provot模型弹簧质点模型"><a class="markdownIt-Anchor" href="#provot模型弹簧质点模型"></a> Provot模型——弹簧质点模型</h3>
+<p>布料的<strong>物理性质</strong>——四种力</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123144402429?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<p><strong>弹簧 - 质点模型</strong>：采用<strong>显式Euler法</strong>求解微分方程组。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123144609772?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload">
+<p>该模型是一个由m × n个虚拟质点组成的网格，质点之间用无质量，自然长度不为零的弹簧连接，其连接关系有三种：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123144723288?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload">  
+<p>这三种弹簧分别用于计算结构力，剪力和弯矩。</p>
+<p>为了保证算法的<strong>稳定</strong>，必须采用<strong>很小的时间步长</strong>或者减小方程组的刚度，也就是弹簧的刚度；然而取较小的刚度会形成<strong>超弹性问题</strong>；</p>
+<p>对于超弹性问题，可以采用<strong>约束变形方法</strong>，动态修正质点的位置以保证弹簧不至于产生不现实的伸长。</p>
+<p><strong>优点</strong>：直接用布料mesh表示，简单高效，碰撞易处理，可扩展性好</p>
+<p><strong>缺点</strong>：精度有限，仿真结果依赖于网格表示</p>
+<h3 id="重要的几种物理方法"><a class="markdownIt-Anchor" href="#重要的几种物理方法"></a> 重要的几种物理方法</h3>
+<ul>
+<li>
+<p><strong>显示欧拉法——小步长显式方法</strong></p>
+<p>M是质点质量，x、v、a、f是粒子的位置、速度、加速度、所受合力，t是时间，h是时间步长，上标代表所在时间</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113090222718.png" alt="image-20210113090222718" class="lazyload"></p>
+<ul>
+<li>
+<p>优点：单步计算快，并行性好</p>
+</li>
+<li>
+<p>缺点：稳定性不好——h有最大临界值H，H与弹簧刚度有关（弹簧刚度K是载荷增量和变形增量之比，即产生单位变形所需要的载荷）</p>
+</li>
+<li>
+<p>解决办法：很小的时间步长——新问题：超弹性的问题（不可能的伸长）</p>
+</li>
+<li>
+<p>约束变形模型：动态修正质点位置以保证弹簧不至于产生不现实的伸长——把布料模型看做是半刚性的</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>隐式欧拉法——大步长隐式方法</strong></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113091015220.png" alt="image-20210113091015220" class="lazyload"></p>
+<p>下一个时刻的力直接拿来用——一阶泰勒展开近似</p>
+<p><strong>重点：推导</strong></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113091345132.png" alt="image-20210113091345132" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113091719452.png" alt="image-20210113091719452" class="lazyload"></p>
+<p>实际问题：一阶泰勒展开近似的稳定性</p>
+<p>进步：自适应调整步长，每一步计算后都检查一遍稳定性，一旦发现计算发散就动态减小时间步长，若干步后再换回大步长</p>
+</li>
+<li>
+<p>近似隐式法：减小计算开销，把隐式方法的矩阵近似成一个恒矩阵，不用每一步都计算一次矩阵值，可以预先计算矩阵的逆作为力的过滤器</p>
+</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210113092401357.png" alt="image-20210113092401357" class="lazyload"></p>
+<h2 id="隐函数曲面造型和动画"><a class="markdownIt-Anchor" href="#隐函数曲面造型和动画"></a> 隐函数曲面造型和动画</h2>
+<h3 id="基本概念-2"><a class="markdownIt-Anchor" href="#基本概念-2"></a> 基本概念</h3>
+<p>自由曲面的表示方法：参数曲面、多边形网格、细分曲面、隐式曲面。前三种称为边界表示曲面（B-rep），改变拓扑很困难，而且不一定表示一个个体模型</p>
+<p>元球造型metaball：采用具有等势场值的点集来定义曲面，生成一张等势面</p>
+<p>隐式曲面：用隐含的方法来表达某些值在曲面上</p>
+<p><strong>隐式曲面的表示</strong>：把曲面表示为空间三维函数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo separator="true">,</mo><mi>z</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">f(x,y,z)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="mclose">)</span></span></span></span>，在空间对点进行分类</p>
+\begin{cases}
+在内部f<0\\
+在外部f>0\\
+在曲面上f=0
+\end{cases}
+
+<p>同理也可以反过来定义内部和外部关于0的大小关系</p>
+<p>常用表示：二次代数曲面、距离曲面、卷积曲面</p>
+<p><strong>隐式曲面的法向</strong>——函数的梯度</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">∇</mi><mi>f</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo separator="true">,</mo><mi>z</mi><mo>)</mo><mo>=</mo><mo>(</mo><mfrac><mrow><mi>d</mi><mi>f</mi></mrow><mrow><mi>d</mi><mi>x</mi></mrow></mfrac><mo separator="true">,</mo><mfrac><mrow><mi>d</mi><mi>f</mi></mrow><mrow><mi>d</mi><mi>y</mi></mrow></mfrac><mo separator="true">,</mo><mfrac><mrow><mi>d</mi><mi>f</mi></mrow><mrow><mi>d</mi><mi>z</mi></mrow></mfrac><mo>)</mo></mrow><annotation encoding="application/x-tex">\nabla f(x,y,z)=(\frac{df}{dx},\frac{df}{dy},\frac{df}{dz})
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.37144em;"></span><span class="strut bottom" style="height:2.25188em;vertical-align:-0.8804400000000001em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathrm">∇</span><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="mclose">)</span><span class="mrel">=</span><span class="mopen">(</span><span class="mord reset-textstyle displaystyle textstyle uncramped"><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.686em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathit">d</span><span class="mord mathit">x</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.677em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mpunct">,</span><span class="mord reset-textstyle displaystyle textstyle uncramped"><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.6860000000000002em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.03588em;">y</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.677em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mpunct">,</span><span class="mord reset-textstyle displaystyle textstyle uncramped"><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.686em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.04398em;">z</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.677em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p>梯度指向函数f递增最快的方向，f&lt;0表示内部时梯度指向外，f&gt;0表示内部时梯度指向内</p>
+<p><strong>平面的隐式表示</strong>：点p和法向N。平面内任一点x与P相连的直线与法向N垂直</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210115100745252.png" alt="image-20210115100745252" class="lazyload">
+<p><strong>隐式曲面的性质：</strong></p>
+<ol>
+<li>
+<p>可以有效地判断一个点是否位于曲面的内部 ：只需要带入f函数</p>
+</li>
+<li>
+<p>求交计算很方便：比如光线跟踪，把光线方程代入隐式曲面方程即可</p>
+</li>
+<li>
+<p>布尔操作很方便：可以用min/max操作来实现</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210115101226937.png" alt="image-20210115101226937" class="lazyload">
+</li>
+</ol>
+<p><strong>隐式曲面优点：</strong></p>
+<ol>
+<li>很容易判断一个点是否在曲面上</li>
+<li>很容易计算曲面的交/差/并</li>
+<li>很容易处理拓扑变化</li>
+</ol>
+<p><strong>隐式曲面缺点：</strong></p>
+<ol>
+<li>曲面通过间接指定</li>
+<li>很难描述尖锐特征</li>
+<li>很难对曲面上的点进行枚举</li>
+<li>绘制慢</li>
+</ol>
+<p><strong>隐式曲面中核函数的选择</strong></p>
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123160348634?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<p>采样函数</p>
+<p>RBF曲面</p>
+<p>隐式曲面的绘制：浮动粒子法、轮廓法、光线跟踪、<strong>多边形化</strong>（隐式曲面转化为多边形网格，把空间分割成单元，在每个单元里用多边形去拟合曲面）</p>
+<p>表面顶点计算：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210115103249007.png" alt="image-20210115103249007" class="lazyload">
+<p>考虑对称性，256中三维单元情况简化为15种情况</p>
+<h3 id="元球造型"><a class="markdownIt-Anchor" href="#元球造型"></a> 元球造型</h3>
+<p><strong>优点</strong>：</p>
+<ul>
+<li>数据量少</li>
+<li>适合采用CSG模型来描述</li>
+<li>适合表示可变形的物体、柔性物体</li>
+<li>很适合人体、动物器官、液体造型</li>
+<li>生成的曲面永远是光滑的</li>
+</ul>
+<p>元球的势函数：幂函数、二次多项式、四次多项式、<strong>六次多项式</strong></p>
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123160806602?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123160815427?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<p>给定几何模型的元球自动拟合法：位置能量函数、法向能量函数、收缩能量函数、符合能量函数</p>
+<h2 id="碰撞检测和处理"><a class="markdownIt-Anchor" href="#碰撞检测和处理"></a> 碰撞检测和处理</h2>
+<p>涉及问题：碰撞检测（布尔判断，越快越好）、碰撞确定（找到物体之间实际相交位置）、碰撞响应（针对碰撞采取操作）</p>
+<p>挑战：几何计算复杂、多物体碰撞时间复杂度高</p>
+<p>研究方向：复杂物体简化、减少物体测试对的数目——包围体</p>
+<h3 id="包围体与包围体的选择"><a class="markdownIt-Anchor" href="#包围体与包围体的选择"></a> 包围体与包围体的选择</h3>
+<p>包围体BV：一个简化的复杂物体的包围体，如果一个物体与包围体不碰撞，则与包围体内部的物体也不碰撞</p>
+<p>有很多种选择，每种选择都是某种折中，更好的包裹是更好的选择</p>
+<ul>
+<li>物体的形状越简单，效果越好</li>
+<li>具有旋转不变性的包围体更好</li>
+</ul>
+<p>常用图元：</p>
+<ul>
+<li>
+<p>球体：旋转不变、易于计算、表示简单，但是包裹不紧密</p>
+<p>创建方法：基于AABB</p>
+<ul>
+<li>恒时单遍算法：用AABB的中心和对角线构造</li>
+<li>改进：从中心出发，遍历所有的顶点，找到距离最远的顶点作为新半径</li>
+<li>Ritter近似最优包围盒：找到三个轴上最大最小顶点，找到一组距离最大的顶点，去这组的中心为球心，距离一半为半径；再遍历其他顶点，计算顶点到求新的距离d，如果d&gt;r，则修正——球心向该顶点移动(d-r)/2，半径为(d+r)/2。重复直到所有的顶点都在球体内</li>
+</ul>
+</li>
+<li>
+<p>AABB包围盒（轴对齐）：一个表面法向与坐标轴方向一致的长方体，用两个顶点来表示，计算快，包裹性一般，物体旋转后需要更新包围盒</p>
+<p>创建方法：沿每条轴线取物体多边形组中顶点的最大最小值</p>
+</li>
+<li>
+<p>OBB包围盒（有向包围盒）：可以对物体旋转，包裹更加紧密，计算更慢（旋转需要更新三个归一化向量）</p>
+<p>创建方法：从凸包出发</p>
+</li>
+<li>
+<p>k-DOP</p>
+</li>
+<li>
+<p>凸包包围盒（最紧密的凸包围体）——存贮：形成包围盒的多边形，可以随物体旋转</p>
+<p>计算方法：QuickHull，复杂度为O(nlogn)、方向计算方法（协方差矩阵—特征向量归一化—包围盒的方向向量）</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210119101421853.png" alt="image-20210119101421853" class="lazyload"></p>
+</li>
+</ul>
+<h3 id="离散有向多面体k-dop"><a class="markdownIt-Anchor" href="#离散有向多面体k-dop"></a> 离散有向多面体k-DOP</h3>
+<p>与AABB类似的思想，但使用更多的轴，包裹性更好但是计算量更大（重点是选择轴）。</p>
+<p>创建：将顶点投影到k­-DOP的每条法线方向<strong>ni</strong>上，然后将投影的极小值和极大值分别保存在<strong>dimin</strong>和<strong>dimax</strong>中，这两个值定义了该方向上最紧密的平板层。所有这些值共同定义了一个最小的<strong>k-­DOP</strong>。</p>
+<p>k-DOP法向的选择：选择尽量均匀的轴，随着k的增大，切分越细，越紧密</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123161648458?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<h3 id="分离轴定理"><a class="markdownIt-Anchor" href="#分离轴定理"></a> 分离轴定理</h3>
+ <img data-fancybox="gallery" data-sizes="auto" data-src="https://img-blog.csdn.net/20180123161819607?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvRGFuZ29fbWlyYWNsZQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" class="lazyload"> 
+<p>意义：如何选择这条轴</p>
+<h3 id="求交测试的原则"><a class="markdownIt-Anchor" href="#求交测试的原则"></a> 求交测试的原则</h3>
+<p>优化方法：排除检测（筛选不可能碰撞的物体）、投影到一个最优的正交平面，在二维平面上处理</p>
+<p>稳定性问题：计算精度引起的非常小的数字选择问题</p>
+<p><strong>重要规则：</strong></p>
+<ul>
+<li>尽可能利用简单的比较和计算来排除、确认各种相交类型（预处理）</li>
+<li>尽可能充分利用上一次的测试结果</li>
+<li>如果使用了多种排除或确认测试，试着改变内部顺序来产生更有效的效果</li>
+<li>尽量搁置开销量大的计算（三角函数、开方、除法等）</li>
+<li>降维</li>
+<li>尽量找出在相交测试前就可以预先完成的计算</li>
+<li>当相交测试比较复杂时，尽量先利用物体的包围球进行初步排除</li>
+<li>计时比较，要采用真实的数据和测试环境</li>
+<li>尽量使程序有较好的鲁棒性，可以处理各种特殊情况，对浮点精度误差不敏感</li>
+</ul>
+<p>射线、隐式表面、显式表面</p>
+<p>射线与球体的相交测试：射线参数方程带入球体隐式方程，进行根的判别</p>
+<p>优化：不需要对射线原点O后的相交进行计算</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2021/06/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB%E6%8F%90%E7%BA%B2/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;06&#x2F;20&#x2F;%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB%E6%8F%90%E7%BA%B2&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;06&#x2F;20&#x2F;%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB%E6%8F%90%E7%BA%B2&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" rel="tag">计算机动画</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641198474362"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>

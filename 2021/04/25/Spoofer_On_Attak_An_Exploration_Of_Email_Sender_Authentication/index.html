@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>Spoofer On Attack: An Exploration of Email Sender Authentication - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="Spoofer On Attack: The Exploration of Email Sender Authentication  1. Introduction and Relative Work  1.1 Background Component-based software design is a primary engineering approach for building mod">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spoofer On Attack: An Exploration of Email Sender Authentication">
+<meta property="og:url" content="http://ruin.net.cn/2021/04/25/Spoofer_On_Attak_An_Exploration_Of_Email_Sender_Authentication/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="Spoofer On Attack: The Exploration of Email Sender Authentication  1. Introduction and Relative Work  1.1 Background Component-based software design is a primary engineering approach for building mod">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085201240.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085354461.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085437606.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085804868.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090125734.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210408151350529.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415223908096.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415223204929.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224456562.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224437411.png">
+<meta property="og:image" content="f:%5CTypora-image%5Cimage-20210415225924701.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224924391.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224955315.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415225318480.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415225122768.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415225209597.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090557845.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090634556.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090737980.png">
+<meta property="article:published_time" content="2021-04-25T13:30:37.000Z">
+<meta property="article:modified_time" content="2022-01-03T08:27:48.949Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="网络安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085201240.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641198474376">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641198474376">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>21</div>
+        <div><span>Tags</span>7</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a>
+    </div>
+    
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085437606.png" data-sizes="auto" alt="Spoofer On Attack: An Exploration of Email Sender Authentication" class="lazyload">
+              <h1>Spoofer On Attack: An Exploration of Email Sender Authentication</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年04月25日</a>
+    <a><i class="nexmoefont icon-areachart"></i>5.9k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 37 分钟</a>
+</div>
+
+      
+
+      <h1 id="spoofer-on-attack-the-exploration-of-email-sender-authentication"><a class="markdownIt-Anchor" href="#spoofer-on-attack-the-exploration-of-email-sender-authentication"></a> Spoofer On Attack: The Exploration of Email Sender Authentication</h1>
+<h2 id="1-introduction-and-relative-work"><a class="markdownIt-Anchor" href="#1-introduction-and-relative-work"></a> 1. Introduction and Relative Work</h2>
+<h3 id="11-background"><a class="markdownIt-Anchor" href="#11-background"></a> 1.1 Background</h3>
+<p>Component-based software design is a primary engineering approach for building modern software systems. When various components work together, because of different interpretations of messages or working protocols, the inconsistence between components may lead to insecurity.</p>
+<p>As the well-known mail transfer protocol, SMTP lacked mechanisms to protect the process of email sending and receiving. In an email, there are many identities, such as MAIL FROM, HELO, Sender and so on. But SMTP does not enforce consistencies among these which may lead to insecurity. To prevent email spoofing and other security issue, three protocols —— SPF, DKIM, and DMARC are put into use. But inconsistencies between different components could lead to security vulnerabilities. Because the verification of each step is separate. The attackers can exploit the inconsistencies between different internal components in an e-mail system.</p>
+<p>To use the mail system freely, we aim to achieve some security requirement, that is the end-user Bob who uses email client C to receive an email from receiving server R can determine that the message is indeed from user Alice of sending server S. Under this expectation, we are supposed to prove or ensure that (1) The From header of the email that S sends matches the authenticated username (other users of S cannot spoof Alice’s address); (2) SPF/DKIM/DMARC components in R can obtain S’s DNS correct policy; (3) SPF/DKIM and DMARC components in R consistently authenticate the same identifier; (4) the identifier that R authenticates is consistent with the identifier that C shows to Bob.</p>
+<p>But in reality, there exist packs of challenges. The first is working between different components. Although each specific system is fully functional, but when they work at the same time, something terrible may happen. The second is tensions with the robust principle, when facing ambiguous circumstance or potentially dangerous client, the actions different components take can lead to<br />
+numerous email spoofing attacks. The last one is the danger of feature composition which is similar to the first one.</p>
+<p>Because of the hidden problem, we are still under threat. Our work is to focus on such problem and look into several related paper and do a study on this topic about e-mail security.</p>
+<h4 id="111-smtp"><a class="markdownIt-Anchor" href="#111-smtp"></a> 1.1.1 SMTP</h4>
+<p>SMTP is the standard protocol for email services on a TCP/IP <a target="_blank" rel="noopener" href="http://network.it">network.it</a> provides the ability to send and receive email messages. However, SMTP lacks authentication. In practice, attackers usually exploit SMTP by running their own email servers or clients. SMTP’s design includes multiple “identities” when handling <a target="_blank" rel="noopener" href="http://messages.it">messages.it</a> also introduces multiple other sender identities, thus leading to the question: which identity to authenticate.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085201240.png" alt="image-20210424085201240" class="lazyload"></p>
+<p><em>figure 1.1: An example of an SMTP message</em></p>
+<h4 id="112-spfdkimdmarc"><a class="markdownIt-Anchor" href="#112-spfdkimdmarc"></a> 1.1.2 SPF/DKIM/DMARC</h4>
+<p>To combat email forgery, various email authentication mechanisms have been developed, including SPF, DKIM, and DMARC.</p>
+<p><strong>Sender Policy Framework</strong> (SPF) allows a domain owner to publish DNS records to specify which servers are allowed to send emails for the domain. A major problem of SPF is incompatibility with mail forwarders.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085354461.png" alt="image-20210424085354461" class="lazyload"></p>
+<p><em>figure 1.2: An example of SPF work process</em></p>
+<p><strong>Domain Keys Identified Mai</strong>l (DKIM) uses cryptography to authenticate senders and protect email integrity. The general idea behind DKIM is to let senders sign parts of messages so that receivers can validate them.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085437606.png" alt="image-20210424085437606" class="lazyload"></p>
+<p><em>figure 1.3: An example of DKIM work process</em></p>
+<p>However,neither SPF nor DKIM provides a complete solution for preventing email spoofing. Neither of them authenticates the From header displayed to the end-user, so that the FROM address of emails can still be forged.</p>
+<p><strong>Domain-based Message Authentication, Reporting &amp; Conformance</strong> (DMARC) is designed to fix the final trust problem by building on SPF and DKIM. The target is to ensure that the address in the FROM header cannot be forged and prevents email forgery.</p>
+<h3 id="12-threat-model"><a class="markdownIt-Anchor" href="#12-threat-model"></a> 1.2 Threat Model</h3>
+<p>We assume three types of attackers who would be able to exploit the vulnerability of mail server:</p>
+<p><strong>Forgery attacker</strong>. They may spoof the email’s sender in the From header and craft a fake message to attack the victim’s mailbox.</p>
+<p><strong>Replay attacker</strong>. They may use the valid SPF record and DKIM signatures to bypass the security system and exploit modifications to email header and send the fake email.</p>
+<p><strong>Malicious mailbox owner</strong>. They may own a legitimate email address to pass all the authentication. However they also have the ability to cheat the security system and exploit the failure of email providers to spoof the email header.</p>
+<p>Based on the previous types of attackers, various of attacking methods could be raised to cheat the SPF/DKIM/DMARC security system.</p>
+<h2 id="2-discussion-on-paper-work"><a class="markdownIt-Anchor" href="#2-discussion-on-paper-work"></a> 2. Discussion on Paper Work</h2>
+<p>We choose the paper <a target="_blank" rel="noopener" href="https://www.usenix.org/system/files/sec20fall_chen-jianjun_prepub_0.pdf"><em>Composition Kills: A Case Study of Email Sender Authentication</em></a> as the main reference. In this section, we’ll do the basic study on this awarded paper.</p>
+<h3 id="21-researching-method"><a class="markdownIt-Anchor" href="#21-researching-method"></a> 2.1 Researching method</h3>
+<p>To investigate how real-world systems handle these challenges, the research team conducted a security analysis of popular email providers and MUAs. In total, the team tested 10 email providers and 19 MUAs, including 9 local email clients and 10 web interfaces. The team defined an email authentication mechanism as broken when the following both hold: 1) the email server erroneously verifies the test email’s sender as not spoofed, for example, DMARC authentication produces a “pass” result; 2) the MUA erroneously indicates that the sender address is from a (legitimate) target domain rather than the attacker’s sending domain.</p>
+<p>Next, we will discover the way to attack the email system introduced in the paper, and show the test results of popular email server and MUAs facing many kinds of attacking techniques. Each technique is marked by letters such as A1 or B1.</p>
+<h3 id="22-attacking-methods-raised-by-paper"><a class="markdownIt-Anchor" href="#22-attacking-methods-raised-by-paper"></a> 2.2 Attacking Methods Raised by Paper</h3>
+<h4 id="221-intra-server-attacks"><a class="markdownIt-Anchor" href="#221-intra-server-attacks"></a> 2.2.1 Intra-server attacks</h4>
+<p>Intra-server attacks exploit inconsistencies between different internal components of a single implementation. The team discovered three techniques to exploit their inconsistencies: (1) HELO/MAIL FROM confusion (A1, A2); (2) ambiguous domains (A3); and (3) authentication results injection (A4, A5).</p>
+<p><strong>HELO/MAIL FROM confusion</strong> (A1, A2). SMTP employs two different identifiers—HELO and MAIL FROM—to represent the email sender who transmits a message. And when DMARK and SPF work, SPF is supposed to check the both, but actually HELO is recommended instead of enforced, while DMARK use MAIL FROM identities to perform alignment test. This design introduces the possibility that different components might authenticate different identifiers.</p>
+<p><em>Non-existent subdomains</em> (A1). The first technique crafts a MAIL FROM domain as a non-existent subdomain of a legitimate domain. That means the domain in MAIL FROM is not exist at all, SPF can only test the HELO, which is under the control<br />
+of attackers, and forwards a “pass” result. However, still use the MAIL FROM domain to perform the alignment test with the FROM header.</p>
+<p><em>“Empty” MAIL FROM addresses</em> (A2). Some SPF implementations treat “(<a href="mailto:any@legitimate.com">any@legitimate.com</a>” as an empty MAIL FROM address, and leads to the same result as A1.</p>
+<p><strong>Ambiguous domains</strong> (A3), NUL ambiguity (A3). DKIM and DNS components differ in interpreting NULs in domain name.</p>
+<p><strong>Authentication results injection</strong>. To explain this attack technique, firstly we will simply introduce authentication result header syntax which is passed by SPF and DKIM to DMARK to show the verification result. In the authentication result header, “smtp.mailfrom” represents the domain verified by the SPF component, and “header.d” represents the domain verified by the DKIM component. A vulnerability arises because attackers can modify the domain name embedded in the “smtp.mailfrom” and “header.d”. Particularly, attackers can introduce malformed domains including meta-characters, which will be treated as data by SPF and DKIM, and be parsed as control information by DMARC. The authentication results injection can be divided into DKIM authentication results injection (A4) and SPF authentication results injection (A5) which is similar.</p>
+<p>The paper issues the test results of their work. It shows that many email providers are proofed to have such vulnerability to Intra-server attacks up to the publication date.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424085804868.png" alt="image-20210424085804868" class="lazyload"></p>
+<p><em>figure 2.1: The test on main mailboxes provided by the paper author</em></p>
+<h4 id="222-ui-mismatch"><a class="markdownIt-Anchor" href="#222-ui-mismatch"></a> 2.2.2 UI-mismatch</h4>
+<p>Generally, UI-mismatch attacks exploit the inconsistencies between how an email server validates a message versus how the MUA ultimately indicates its validity. We divide the UI-mismatch attacks into two categories: ambiguous FROM headers and ambiguous email addresses.</p>
+<p><strong>Ambiguous FROM headers</strong> exploits the inconsistencies on the display and authenticate rules on FROM header of a certain email.</p>
+<p><em>Multiple From headers</em> (A6). When an email has multiple FROM headers, the email massage should be rejected by receiving services. For example, some of the MUAs show last FROM header while others use the first one.</p>
+<p><em>Space-surrounded From headers</em> (A7). The attackers violate the email header syntax by inserting whitespace around the FROM headers which will be handled by email servers in different way. First, use of whitespace can bypass the email server’s validation. Second, inconsistent interpretation of whitespace can lead to ambiguities.</p>
+<p><em>From alternative headers</em> (A8). If an attacker crafts an email with no From header or an unrecognized From header, some implementations will use alternative headers to identify the message sender.</p>
+<p>Next we will discuss <strong>ambiguous email addresses</strong>. A valid From header consists of four elements, with a single mailbox address. The four elements are Display name, Real address, Route portion and comment. Attackers can exploit the complexity of FROM header syntax.</p>
+<p>Attacks leveraging complex From headers. The team find that implementations vary in parsing and interpreting From headers. Here we show five attacks that exploit these inconsistencies.</p>
+<p><em>Multiple email addresses</em> (A9). The team observe 5 distinct behaviors in processing From headers listing multiple addresses. <a target="_blank" rel="noopener" href="http://Gmail.com">Gmail.com</a> (Server) and <a target="_blank" rel="noopener" href="http://Mail.ru">Mail.ru</a> (Server) reject the messages; <a target="_blank" rel="noopener" href="http://Tutanota.com">Tutanota.com</a> (Web) displays the last address; <a target="_blank" rel="noopener" href="http://Zoho.com">Zoho.com</a> (Server) and <a target="_blank" rel="noopener" href="http://iCloud.com">iCloud.com</a> (Web) don’t verify or display any address; 2 mail servers and 4 MUAs verify or display all of the addresses; all<br />
+the others take the first address.</p>
+<p><em>Email address encoding</em> (A10). In the experiments, <a target="_blank" rel="noopener" href="http://Yahoo.com">Yahoo.com</a> (Server), <a target="_blank" rel="noopener" href="http://Outlook.com">Outlook.com</a> (Server), <a target="_blank" rel="noopener" href="http://iCloud.com">iCloud.com</a> (Server), Fastmail (Server), <a target="_blank" rel="noopener" href="http://Zoho.com">Zoho.com</a> (Server) and <a target="_blank" rel="noopener" href="http://Tutanota.com">Tutanota.com</a> (Server) don’t recognize the encoded address, and use <a target="_blank" rel="noopener" href="http://attack.com">attack.com</a> for DMARC testing; but <a target="_blank" rel="noopener" href="http://Gmail.com">Gmail.com</a> (Web), <a target="_blank" rel="noopener" href="http://Outlook.com">Outlook.com</a> (Web), <a target="_blank" rel="noopener" href="http://Yahoo.com">Yahoo.com</a> (Web), <a target="_blank" rel="noopener" href="http://Naver.com">Naver.com</a> (Web), Mail (MacOS), Mail (Windows) and Mail (iOS) support this encoding feature, and only display the first address.</p>
+<p><em>Route portion</em> (A11). <a target="_blank" rel="noopener" href="http://Fastmail.com">Fastmail.com</a> (Server) does not recognize the route portion, and treats <a target="_blank" rel="noopener" href="http://attack.com">attack.com</a> as a real address to use for DMARC verification; while 10 MUAs, including <a target="_blank" rel="noopener" href="http://Fastmail.com">Fastmail.com</a> (Web), ignore the route portion, and only show <a href="mailto:admin@legitimate.com">admin@legitimate.com</a>.</p>
+<p><em>Quoted-pairs</em> (A12). <a target="_blank" rel="noopener" href="http://Gmail.com">Gmail.com</a> (Server) and <a target="_blank" rel="noopener" href="http://iCloud.com">iCloud.com</a> (Web) recognize the second address; but Mail (Windows), iCloud (Server) and 12 other implementations only use the first one.</p>
+<p><em>Parsing inconsistencies</em> (A13). Thunderbird (Linux), <a target="_blank" rel="noopener" href="http://Mail.ru">Mail.ru</a> (Web), <a target="_blank" rel="noopener" href="http://Gmail.com">Gmail.com</a> (Server) and <a target="_blank" rel="noopener" href="http://Mail.ru">Mail.ru</a> (Server) mistakenly validate or display <a href="mailto:admin@legitimate.com">admin@legitimate.com</a> as the real sender but <a target="_blank" rel="noopener" href="http://Outlook.com">Outlook.com</a> (Server), <a target="_blank" rel="noopener" href="http://iCloud.com">iCloud.com</a> (Server), <a target="_blank" rel="noopener" href="http://Protonmail.com">Protonmail.com</a> (Server) and 9 other implementations recognize it as the wrong one.</p>
+<p>SPF, DKIM, and DMARC rely on domain queries for sender authentication. When failing to obtain the domain record, the mail service providers may decide that the domain doesn’t deploy the corresponding security mechanisms, and allow the message into the user’s inbox.</p>
+<p>The attackers can use <em>Invisible characters</em> (B1), <em>Encoding</em> (B2), <em>From alternative headers</em> (B3) to exploit the vulnerability.</p>
+<p>The test results in the paper implies a more serious and general problem on most mailboxes.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090125734.png" alt="image-20210424090125734" class="lazyload"></p>
+<p><em>figure 2.2: The test on main mailboxes focus on the UI-mismatch attacks provided by the paper author</em></p>
+<h4 id="223-ambiguous-replay-attacks"><a class="markdownIt-Anchor" href="#223-ambiguous-replay-attacks"></a> 2.2.3 Ambiguous-replay Attacks</h4>
+<p>This is similar to the replay attack, the attackers spoof emails with seemingly valid DKIM signatures from legitimate domains. Two DKIM mechanisms make signature spoofing possible. First, DKIM doesn’t prevent replay attacks. Second, DKIM allows attackers to append additional email headers— or even body contents, in some cases—to the original message.</p>
+<p>Next, we will discuss DKIM signature replay attacks. DKIM signatures protect both email headers and bodies. The latter is always signed. Signing headers, however, is optional, and specified by the “h=” tag of the DKIM-Signature header.</p>
+<p><em>Header spoofing</em> (A14 and A15). Among the various identities, only the From header must be signed. A replay attacker can modify these unprotected fields in signed messages without invalidating DKIM signatures. While including all necessary headers in the signature can prevent attackers from tampering them, an attacker can craft ambiguous emails by adding a new header (e.g., Subject) to the signed mail, if two parties in the email process chain parse and interpret the extra header differently.</p>
+<p><em>Body spoofing</em> (A16). The attack technique can modify the email body without destroying the DKIM signature. The DKIM-Signature header has the option “l=”tag which indicates the length of the email body included in the signature. By modify the tag and email body, attackers can change the content of email without being detected by email servers.</p>
+<p>The problem of <em>spoofing via an email account</em> (A17) arises when an email provider does not perform sufficient checks on the From header, enabling an attacker to send a signed message with another user’s address (e.g., administrator). As the message has the email provider’s DKIM signature attached, it will pass the receiver’s DKIM and DMARC validation.</p>
+<p><em>The spoofing attack</em> (A18). First the attackers craft normal email to the email servers to get the DKIM signature and reuse the signature by adding an extra From header with another user’s address to the DKIM-signed message and resends it to a victim.</p>
+<h3 id="23-more-discussion"><a class="markdownIt-Anchor" href="#23-more-discussion"></a> 2.3 More Discussion</h3>
+<p>The team mainly discuss about the vulnerability arise from the inconsistence between different parts of authentication. The exploration pay attention to the mechanism with defective and unreasonable design. So, we can also pay close attention to the users’ manner and using habit. Because with a large number of users, millions of mail transfer may present specific behaviors which may lead to the insecurity. Based on the big data analysis, we may find other vulnerabilities which could be exploited by the attackers.</p>
+<h2 id="3-spoofer-demo"><a class="markdownIt-Anchor" href="#3-spoofer-demo"></a> 3. Spoofer Demo</h2>
+<p>After looking into the paper and understand the learning method, we constructed an email spoofer demo to illustrated our research results. The demo has two core part. One is the SMTP-based email sender and the other is the spoofing parameters. By setting the spoofing parameters, it is possible to send a sender-spoofed email.</p>
+<p>The demo is written in Python. Several open-sourced library are used, such as <em>dns</em>, <em>pydkim</em> and <em>socket</em>.</p>
+<p>One matter to be issued: All the spoofing cases are tested based on personal domain and personal email address. Besides, the email systems are all strengthened, so it cannot reach the target that achieve a real spoofing. The test is a way to proof that such technique is able to crack SPF/DKIM/DMARC authentication.</p>
+<h3 id="31-smtp-framework"><a class="markdownIt-Anchor" href="#31-smtp-framework"></a> 3.1 SMTP Framework</h3>
+<p>The implementation of SMTP is based on TCP and socket. The logic could be simplified as the figure below.</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210408151350529.png" alt="image-20210408151350529" class="lazyload">
+<p><em>figure 3.1: SMTP workflow</em></p>
+<p>The first step is common TCP three-way handshake. After the connection was established between sender and the mail server, the sender will send a EHLO request packet to ask for the server response. EHLO is an extended version of HELO, which supports user authentication. EHLO request includes the login information. A typical EHLO section can be listed as follow:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;&lt;&lt; ehlo 126.com	// inform the server to do the identity authentication</span><br><span class="line">&gt;&gt;&gt; 250-mail</span><br><span class="line">	250-PIPELINING</span><br><span class="line">	250-AUTH LOGIN PLAIN </span><br><span class="line">	250-AUTH=LOGIN PLAIN</span><br><span class="line">	250-coremail  1Uxr2xKj7kG0xkI17xGrU7I0s8FY2U3Uj8Cz28x1UUUUU7Ic2I0Y2UrTiPGSUCa0xDrUUUUj</span><br><span class="line">	250-STARTTLS</span><br><span class="line">	250 8BITMIME</span><br><span class="line">	</span><br><span class="line">&lt;&lt;&lt; AUTH LOGIN aml*****29t		// start identifying, sending the user mail address with base64 encoding</span><br><span class="line">&gt;&gt;&gt; 334 UGFzc3dvcmQ6			// asking for password</span><br><span class="line"></span><br><span class="line">&lt;&lt;&lt; ZW**********Mz				// the password with base64 encoding</span><br><span class="line">&gt;&gt;&gt; 235 Authentication successful</span><br></pre></td></tr></table></figure>
+<p>After the identity authentication, SMTP server will check the MAIL FROM header and the RCPT TO header. This will be the last security defense of SMTP.</p>
+<h3 id="32-key-techniques"><a class="markdownIt-Anchor" href="#32-key-techniques"></a> 3.2 Key Techniques</h3>
+<h4 id="321-domain-setting"><a class="markdownIt-Anchor" href="#321-domain-setting"></a> 3.2.1 Domain Setting</h4>
+<p>In order to perform well both on authenticated email address and the invalid domain (which refers to the fake email address), we used a personal domain name <em><a href="http://ruin.net.cn">ruin.net.cn</a></em> to deploy several configuration.</p>
+<p>Considering the security of email system, most of the servers shut down the 25 port which is the default forwarding port of SMTP. Thus, this domain cannot be set as an email sender. However, by changing the parameter of the email message and configuring the DNS records, a message with invalid domain name could be sent to the victim email.</p>
+<h4 id="322-spf-dkim-signature-configuration"><a class="markdownIt-Anchor" href="#322-spf-dkim-signature-configuration"></a> 3.2.2 SPF &amp; DKIM Signature Configuration</h4>
+<p>By setting SPF record and DKIM signature to a personal domain, the certain domain would be able to pass the SPF and DKIM checking. Generally, simple DNS resolver could achieve this goal.</p>
+<p>An SPF record can be noted as follow:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@ TXT v=spf1 a mx ip4:222.205.46.0/24 -all</span><br></pre></td></tr></table></figure>
+<p>A DKIM signature record can be noted as follow:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">selector._domainkey TXT v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCMK4X+VibGhNWBGmxwvNgTKqyyLHuOWlomLo0vG9nhy97w8BLUz6fD6yLYdVhmrWW8hy8j0rcPxr40+L6P9yZ5yDpYwTwcarEky8oj4Jb2XlqWE9OcYgIOjpoN5d2xGqJau+S0bmeuneuMRPh4cx/Uo1qEovsxnMAAiKPgmze6nwIDAQAB</span><br></pre></td></tr></table></figure>
+<p>The p domain in DKIM record refers to the public key. The private key is attached to the message while sending to the SMTP receiver.</p>
+<h3 id="33-typical-spoofing-methods"><a class="markdownIt-Anchor" href="#33-typical-spoofing-methods"></a> 3.3 Typical Spoofing Methods</h3>
+<p>Since most of the mail service providers have already strengthened their guarding system, it’s hard to recover the results presented by the author. The following tests are performed on a personal Outlook mail address, and all tests only proof that such a spoofing method may be effective to pass the DMARC checking.</p>
+<h4 id="331-a1-attack-fake-subdomain-invasion"><a class="markdownIt-Anchor" href="#331-a1-attack-fake-subdomain-invasion"></a> 3.3.1 A1 Attack: Fake subdomain invasion</h4>
+<p>The case crafts a fake MAIL FROM header with non-existent subdomain to cheat the receiver. Since some SPF implementations only check the HELO header, the MAIL FROM header is able to be a spoofing point. As long as the MAIL FROM address is not empty, OpenDMARC authentication will return a positive result because of the pass of SPF checking.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415223908096.png" alt="image-20210415223908096" class="lazyload"></p>
+<p><em>figure 3.2: A1 Attack mail</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415223204929.png" alt="image-20210415223204929" class="lazyload"></p>
+<p><em>figure 3.3: A1 Attack mail check</em></p>
+<p>In our test, the fake subdomain can still pass the verify of DKIM test while the SPF check shows <em>none</em> because of the MAIL FROM is set to a fake subdomain name <em><a target="_blank" rel="noopener" href="http://fakedoain.ruin.net.cn">fakedoain.ruin.net.cn</a></em>. However the DKIM check still go through the genuine domain name <em><a href="http://ruin.net.cn">ruin.net.cn</a></em>.</p>
+<p>The DMARC check result is bestguesspass for there’s no DMARC result setting at <em><a target="_blank" rel="noopener" href="http://outlook.com">outlook.com</a></em>. While no error reported from both SPF and DKIM, it gave a reasonable infer that the mail could pass the DMARC testing.</p>
+<h4 id="332-a5-attack-the-variation-of-authentication-results-injection"><a class="markdownIt-Anchor" href="#332-a5-attack-the-variation-of-authentication-results-injection"></a> 3.3.2 A5 Attack: The variation of authentication results injection</h4>
+<p>This case is a variation of the A5 Attack in the paper. This case exploit the vulnerability of the attacker’s accessibility and the character’s non-consistent.  In particular, an attacker can introduce malformed domains that include meta-characters. Different secure protocol and mail servers may treat those characters differently.</p>
+<p>In this spoofing case, the address in MAIL FROM is routed to another address. For example, a MAIL FROM header <em>&lt;@legitimate.com,@any.com:'any@attack.com&gt;</em> will lead to an inconsistence display in some mail server. Take <em><a target="_blank" rel="noopener" href="http://outlook.com">outlook.com</a></em> as an example, the receiver will be shown as <em><a href="mailto:any@legitimate.com">any@legitimate.com</a></em>, while the spoofed email will pass the security by the domain name <em><a target="_blank" rel="noopener" href="http://attack.com">attack.com</a></em>.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224456562.png" alt="image-20210415224456562" class="lazyload"></p>
+<p><em>figure 3.4: A5 Attack mail</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224437411.png" alt="image-20210415224437411" class="lazyload"></p>
+<p><em>figure 3.5: A5 Attack mail check</em></p>
+<p>The result shows that such a spoofed email with a fake MAIL FROM header will pass both SPF and DKIM. The verify system check only the legitimate domain, while the showing result is the attack site.</p>
+<h4 id="333-a10-attack-email-address-encoding"><a class="markdownIt-Anchor" href="#333-a10-attack-email-address-encoding"></a> 3.3.3 A10 Attack: Email address encoding</h4>
+<p>This case exploits the difference of coding rules between different part. The basic coding rule of a SMTP email is US-ASCII characters. To support non-ASCII characters, RFC 2047 defined two encoding approaches: Base64 encoding and quoted-printable encoding with following syntax:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">=?charset?encoding?encoded-text?=</span><br></pre></td></tr></table></figure>
+<p>Thus a hidden From header can be added to the mail, for example:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">=?utf-8?B? +base64.b64encode(b&quot;admin@126.com&quot;)+ ?=</span><br></pre></td></tr></table></figure>
+<p>Inside which is a base64 encoding of an email address, which will be displayed on MUA.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="F:%5CTypora-image%5Cimage-20210415225924701.png" alt="image-20210415225924701" class="lazyload"></p>
+<p><em>figure 3.6: A10 Attack mail</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224924391.png" alt="image-20210415224924391" class="lazyload"></p>
+<p><em>figure 3.7: A10 Attack mail check</em></p>
+<p>With this attacking method, we can even spoof as another domain. The SPF will go pass the sender address, which is outside the base64 encoding. While the displayed one is the fake spoofed sender address which encoded by base64.</p>
+<h4 id="334-a13-attack-parsing-inconsistencies"><a class="markdownIt-Anchor" href="#334-a13-attack-parsing-inconsistencies"></a> 3.3.4 A13 Attack: Parsing inconsistencies</h4>
+<p>This is one of the methods that leverages complex From headers. In paper, the author came up with various of spoofing methods including using multiple email address, encoding the email address and so on.</p>
+<p>We implemented the spoofing method which exploits the parsing inconsistencies. This is based on the inconsistencies in recognizing the precedence of different delimiters. For some email server, DMARC component will take ‘&lt;’ character for higher priority and go through the authentication process while MUA will have a different preference and display the other one.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415224955315.png" alt="image-20210415224955315" class="lazyload"></p>
+<p><em>figure 3.8: A13 Attack mail</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415225318480.png" alt="image-20210415225318480" class="lazyload"></p>
+<p><em>figure 3.9: A13 Attack mail check</em></p>
+<p>The testing result shows that the SPF and DMARC all go through the spoofed email address.</p>
+<h4 id="335-a17-attack-spoofing-via-an-email-service-account"><a class="markdownIt-Anchor" href="#335-a17-attack-spoofing-via-an-email-service-account"></a> 3.3.5 A17 Attack: Spoofing via an email service account</h4>
+<p>Among all of the test cases, the most reliable attack methods is to spoof via an authenticated account. In this way, the only goal is to forge the sender address.</p>
+<p>The most effective way is to forge into another email address of the same email server of the attacker’s account.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415225122768.png" alt="image-20210415225122768" class="lazyload"></p>
+<p><em>figure 3.10: A17 Attack mail</em></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210415225209597.png" alt="image-20210415225209597" class="lazyload"></p>
+<p><em>figure 3.11: A17 Attack mail check</em></p>
+<p>Our test case uses a personal email account in <em><a target="_blank" rel="noopener" href="http://126.com">126.com</a></em> and the goal is the result is to cheat the MUA and only display the spoofed email address <em><a href="mailto:admin@126.com">admin@126.com</a></em>. The email provider does not perform sufficient checks on the From header, enabling an attacker to send a signed message with another user’s address. As the message has the email provider’s DKIM signature attached, it will pass the receiver’s DKIM and DMARC validation.</p>
+<h2 id="4-further-study"><a class="markdownIt-Anchor" href="#4-further-study"></a> 4. Further Study</h2>
+<h3 id="41-basic-conclusion"><a class="markdownIt-Anchor" href="#41-basic-conclusion"></a> 4.1 Basic Conclusion</h3>
+<p>The protocol allows the sender to send a mail with multi-identifier. Although we can manager it with strict definition, implementation of SMTP always cant’s  fully understand the complicated definition.</p>
+<p>Complicated syntax rules based on text leads to the inconsistency between different components and the ambiguity of parsing process. Allowing various types of white space and notes makes the possible positions variable. But different implementations would not obey the rules totally, for the cause of robustness, which makes the situation even worse.</p>
+<p>Furthermore, there are too many components in SMTP system, between which two would cause security problems.</p>
+<h3 id="42-comprehensive-solutions-to-avoid-spoofing"><a class="markdownIt-Anchor" href="#42-comprehensive-solutions-to-avoid-spoofing"></a> 4.2 Comprehensive Solutions to Avoid Spoofing</h3>
+<p><strong>Reject the mails which have ambiguous address problems</strong>. But in the real life, many mails are not perfectly right. So we can’t do it in the receiving server and receiving MUA. ⇒ We need to begin it in the sending MUA.</p>
+<p><strong>Deploy IMAP extension</strong> to pass the authentication result to the MUA, instead of passing the result in the “Authentication-Results” header. This solution can also shield the Authentication-Result header to be spoofed.</p>
+<p><strong>Add the verify result of identity</strong>. To solve “multi-identifier” problems, apart from adding “xxx: pass” to the Authentication-Result, we can also add”xxx_identifier: xxx” to the result. In this way, we can unify the identifiers used in different components. And thus we can decrease the inconsistency in a large scale ⇒ Authentication-Result header is safe enough ⇒ We can use Comprehensive_solutions_2 to help get it solved.</p>
+<p><strong>Collect suspicious information</strong>. For mails that we have found to be abnormal, though we can accept it by courtesy of robustness, it is important to collect the information so that the MUA can display it to the user.</p>
+<p><strong>Set detailed configuration of the MUA</strong>. To improve the complicated syntax rules which make much contribution to the difficulty of the interacting between different implementation, the service providers need to keep a configuration message, which signify the  parts of the “FROM” rules, like white space、portion、notes.</p>
+<p><strong>Improve the rules of “FROM” headers</strong>. We don’t chase restricting the input totally. Instead, we try to reduce the freedom of it. For example, we can request the header to be regular-language、context-free-language… to the lower level in the Chomsky infrastructure. We impose a same parser to both the receiving server and the MUA. In this way, we can extinguish the inconsistency in the parsing procedure. Besides, simply set some restrictions to part of the special characters, which lead to most bugs, like “(”.</p>
+<p><strong>Realizing the inconsistency between the receiving server and the MUA</strong>. The service providers can eliminate the parsing &amp; verifying procedure of the MUA. The receiving server pass the authentication result . This result will not be parsed/verified again. ⇒ RFC standards have considered this solution. But it is not defined well, which can still be spoofed. ⇒ choose some new transfer protocol like IMAP/POP.</p>
+<h3 id="43-current-defenses"><a class="markdownIt-Anchor" href="#43-current-defenses"></a> 4.3 Current Defenses</h3>
+<p><strong>Aims at the threat of spam spreading into the enterprise network and causing great harm</strong>. A large number of potential malicious spam are collected, and the main distinguishing features of dangerous spam are analyzed. The common supervised machine learning classifiers are used for learning test and optimization. Finally, the best performance model is obtained: Support Vector Machine &amp; random forest classifiers. The recall rate is 91.6% and the accuracy rate is 95.2%</p>
+<p><strong>Dynamic blacklist based on IP/domain/HELO/FROM</strong>. Blacklist is widely used in many places. It protect the user from too many malicious mails. In the practice, it is always combined with reporting. If your mails are reported to be dangerous by several people in a short time, all mails from you may be rejected, even there is spoofing.</p>
+<p><strong>Over-sign technique</strong>. In a common case, there is only 1 header in the mail, so we will only check 1 header. But under the risk of spoofing with multi-header, we need to change the protocol. We make digital signature on all the possible headers, even on nonexistent headers. So any changes will fail.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090557845.png" alt="image-20210424090557845" class="lazyload"></p>
+<p><em>figure 4.1: An example of Over-sign technique working principle</em></p>
+<p><strong>IMAP/POP extensions</strong>. In the past, the receiving server will parse and verify the mail, add the result to the mail and send it to the user. And the inconsistency between the receiving server and the MUA, is one of the major reasons of risks. After adopting the IMAP/POP extensions, your computers are really a screen for displaying. You don’t need to do the verifying for the second time.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090634556.png" alt="image-20210424090634556" class="lazyload"></p>
+<p><em>figure 4.2: An example of IMAP/POP extension working principle</em></p>
+<p><strong>ARC protocol</strong>. Authentication Received chain. In this protocol, a mail is not allowed to be changed in the transit. Just like what the picture shows, if a Mail from ZJU get changed in the Yahoo, the user will search for the chain. If the chain is trustworthy, the user will accept the mail.</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210424090737980.png" alt="image-20210424090737980" class="lazyload"></p>
+<p><em>figure 4.3: An example of ARC mail chain and trust chain</em></p>
+<h3 id="44-other-possible-attacks-and-solutions"><a class="markdownIt-Anchor" href="#44-other-possible-attacks-and-solutions"></a> 4.4 Other Possible Attacks and Solutions</h3>
+<p><strong>Homograph Impersonation</strong>: IDN (international domain name) allows people from all over the world to visit websites in their own national languages. In the field of Web defense, there has always been a way of attacking websites by means of profiling. Characters in many languages may look very similar. The classic one is the official website of apple. A can be replaced by characters in other languages, All the headers that may be presented in the address bar – from header, may be disguised as characters of other languages. This attack takes advantage of the homonym of human languages, so it is difficult to solve fundamentally</p>
+<p><strong>Solutions</strong>:</p>
+<p>There are similarities and differences between e-mail system and web system. For example, both of them are domain based processing methods, and need to interact with DNS server. Therefore, we can learn from the browser’s solution and experience of IDN problem, and build similar filter verification components on MUA. However, we need to pay attention to that web system is often divided into mainstream websites.</p>
+<p>However, in the SMTP system, the mailbox name is no mainstream or substream, and the use frequency of individual users may be lower than that of attackers, so it can not be copied. It needs to be combined with the characteristics of the mail system.</p>
+<h2 id="appendix-1-detail-solutions-to-different-attacks"><a class="markdownIt-Anchor" href="#appendix-1-detail-solutions-to-different-attacks"></a> Appendix 1: Detail Solutions to Different Attacks</h2>
+<h3 id="a1a2-helomail_from-confusion"><a class="markdownIt-Anchor" href="#a1a2-helomail_from-confusion"></a> A1+A2 HELO/MAIL_FROM confusion</h3>
+<ol>
+<li>We should regard the SPF result to be “fail” if we can’t get the DNS-record for SPF policy.</li>
+<li>All DMARC implementation should be strict, in which way we can prevent bypassing through non-existent sub-domain.</li>
+<li>Use unified identifier in SPF and DMARC process. For example, we impose the SPF to verify “HELO”  and  pass”SPF_identifier: HELO” to the DMARC. And then DMARC can use the same identifier for verifying.</li>
+<li>Filter the characters in the MAIL_FROM header which may lead to ambiguity like “(”</li>
+</ol>
+<h3 id="a3-ambiguous-domains"><a class="markdownIt-Anchor" href="#a3-ambiguous-domains"></a> A3  ambiguous domains</h3>
+<ol>
+<li>DMARC not only verify the “d=” label from the DKIM, but also verify the raw MAIL_FROM, and request these two to be unified.</li>
+<li>Upgrade the DNS server to avoid the “\x00”-cheating. This may lead to incremental deployment problems and cost a lot.</li>
+</ol>
+<h3 id="a4a5-spfdkim-injection"><a class="markdownIt-Anchor" href="#a4a5-spfdkim-injection"></a> A4+A5  SPF/DKIM injection</h3>
+<ol>
+<li>We call for help from the DNS server just like what we do in A3.2</li>
+<li>Recognize the special characters that the DNS server may not support before SPF/DKIM pass the content to the DNS server. And tell the exception to the Authentication-Result.</li>
+<li>Impose a same parser in SPF、DKIM and DMARC</li>
+<li>A3.1</li>
+</ol>
+<h3 id="a6-multiple-from-header"><a class="markdownIt-Anchor" href="#a6-multiple-from-header"></a> A6  multiple FROM header</h3>
+<ol>
+<li>Obey the RFC5322 standard and accept only one FROM header.</li>
+</ol>
+<h3 id="a7-space-surrounded-form-header"><a class="markdownIt-Anchor" href="#a7-space-surrounded-form-header"></a> A7  space-surrounded FORM header</h3>
+<ol>
+<li>Improve the complicated syntax rules of FROM header, and in this way we can solve the problem while we don’t loose much robustness.</li>
+</ol>
+<h3 id="a8-from-alternative-header"><a class="markdownIt-Anchor" href="#a8-from-alternative-header"></a> A8  FROM alternative header</h3>
+<ol>
+<li>When we look forward to other headers as substitutes of FROM header, we should notify the user instead of simply putting them in the address.</li>
+<li>Comprehensive_solutions.2: Passing the identifiers used in the receiving server.</li>
+</ol>
+<h3 id="a9-multiple-email-address"><a class="markdownIt-Anchor" href="#a9-multiple-email-address"></a> A9  Multiple email address</h3>
+<ol>
+<li>Receiving server don’t insert the Sender to the FROM header, since the sender maybe not the real sender. The insertion may lead to the FROM header’s inconsistency between DMARC and MUA.</li>
+</ol>
+<h3 id="a10-email-address-encoding"><a class="markdownIt-Anchor" href="#a10-email-address-encoding"></a> A10 Email address encoding</h3>
+<ol>
+<li>Since the problems arise from “Servers can’t distinguish non-ASCII-encoded From header”, we should improve the syntax library so the server can support them.</li>
+<li>Tell the MUA that the server don’t support other encoding methods, and impose the MUA to use the same encoding methods. ⇒ This way may lead to some decrease in the robustness</li>
+</ol>
+<h3 id="a11-route-portion"><a class="markdownIt-Anchor" href="#a11-route-portion"></a> A11 Route portion</h3>
+<ol>
+<li>Sending server begin to unable route-portion function. And then the MUA should follow this action.</li>
+<li>Comprehensive solutions 5</li>
+</ol>
+<h3 id="a12-quoted-pairs"><a class="markdownIt-Anchor" href="#a12-quoted-pairs"></a> A12 Quoted-pairs</h3>
+<ol>
+<li>Comprehensive solutions 5</li>
+</ol>
+<h3 id="a13-parsing-inconsistency"><a class="markdownIt-Anchor" href="#a13-parsing-inconsistency"></a> A13 Parsing inconsistency</h3>
+<ol>
+<li>Comprehensive solutions 6.2</li>
+</ol>
+<h3 id="b1-invisible-characters"><a class="markdownIt-Anchor" href="#b1-invisible-characters"></a> B1 Invisible characters</h3>
+<ol>
+<li>Comprehensive solutions 4</li>
+<li>Instead of using open-failure, we use open-reject. Failure of DNS request of SPF、DKIM、DMARC at the same time is impossible in the theory, and at that time ,we should reject the mail. The danger of the mail overwhelms the robustness principle.</li>
+<li>For domain datas that can’t be shown as characters like \u2000, we can display it in the address as byte-string, and then notify the user.</li>
+</ol>
+<h3 id="b2-encoding"><a class="markdownIt-Anchor" href="#b2-encoding"></a> B2 Encoding</h3>
+<ol>
+<li>Comprehensive solutions 4</li>
+<li>Instead of using open-failure, we use open-reject. Failure of DNS request of SPF、DKIM、DMARC at the same time is impossible in the theory, and at that time ,we should reject the mail. The danger of the mail overwhelms the robustness principle.</li>
+<li>For domain data that can’t be shown as characters like \u2000, we can display it in the address as byte-string, and then notify the user.</li>
+</ol>
+<h3 id="b3-from-alternative-header"><a class="markdownIt-Anchor" href="#b3-from-alternative-header"></a> B3 From alternative header</h3>
+<ol>
+<li>When we find the FROM header to be null, we should just show it to be null, instead of showing another header as a substitute. And we need to notify the user about the possible senders.</li>
+<li>Just reject the mail, because FROM header is a very basic header which is so important that forgetting it seems to be impossible.</li>
+</ol>
+<h3 id="a14a15a16-header-spoofing"><a class="markdownIt-Anchor" href="#a14a15a16-header-spoofing"></a> A14+A15+A16  Header spoofing</h3>
+<ol>
+<li>Get all the headers into the protection of DKIM signature.</li>
+<li>By Comprehensive solutions 7, we can solve the inconsistency problems between receiving server and the MUA. And based on this, we can still enjoy the robustness brought by the “I=” flag.</li>
+</ol>
+<p>combining   (1) and (2) is reasonable and useful.</p>
+<h3 id="a17-spoofing-via-an-account"><a class="markdownIt-Anchor" href="#a17-spoofing-via-an-account"></a> A17  spoofing via an account</h3>
+<ol>
+<li>Combine comprehensive solutions 1,4,5,6. We can mitigate the incremental deployment problem while decrease the complexity of FROM header.</li>
+<li>Mail service providers always deploy username/password authentication mechanism incompatible with the complex FROM header syntax. So there is no need to verify the previous one based on the latter one. We can extract the message from the username, if the From header is not so standard, we can replace the FROM header with the username, since the previous one can be more safe by courtesy of the service providers.</li>
+<li>This paper proposes to remove the authentication function of MUA directly and transfer the authentication responsibility to receiving server completely. MUA only exists as the front end and is not responsible for the actual authentication</li>
+</ol>
+<p>Therefore, the sender can not fill in the from header, but the sending receiver can fill in according to the user name / password, which can also avoid many security problems caused by the inconsistency between MUA and sending server</p>
+<h3 id="a18-replay-attack-to-subvert-dkim-signature"><a class="markdownIt-Anchor" href="#a18-replay-attack-to-subvert-dkim-signature"></a> A18  Replay attack to subvert DKIM signature</h3>
+<ol>
+<li>
+<p>Since MUA has verified the DKIM signature of the first from header, it can’t display the second from header, otherwise the verification will lose its function. The real address displayed by MUA should be parsed from the result of DKIM verification, not directly from the e-mail</p>
+</li>
+<li>
+<p>Adopt the solution of A17.3, let MUA not directly fill in the from header. In this way, attackers will not be able to directly manipulate the from header of e-mail, and naturally have no chance to exploit the inconsistency of multi from header vulnerability</p>
+</li>
+<li>
+<p>Using over-sign technology, we can avoid multi from header and have certain resistance to various attacks based on from header</p>
+</li>
+</ol>
+<h2 id="appendix-2-teamwork"><a class="markdownIt-Anchor" href="#appendix-2-teamwork"></a> Appendix 2: Teamwork</h2>
+<table>
+<thead>
+<tr>
+<th>Team Member</th>
+<th>Work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>刘佳润</td>
+<td>Raise the topic. Reference researching. Demo implementation. Writing the report.</td>
+</tr>
+<tr>
+<td>孙奥</td>
+<td>Reference researching. Relative work analysis. Further study and research. Writing the report.</td>
+</tr>
+<tr>
+<td>项俊程</td>
+<td>Reference researching. Relative work analysis. Writing the report.</td>
+</tr>
+<tr>
+<td>谢华洋</td>
+<td>Reference researching. Writing the report.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="references"><a class="markdownIt-Anchor" href="#references"></a> References</h2>
+<ol>
+<li>
+<p><a target="_blank" rel="noopener" href="https://www.usenix.org/system/files/sec20fall_chen-jianjun_prepub_0.pdf">Composition Kills: A Case Study of Email Sender Authentication</a> - Jianjun Chen, Vern Paxson, Jian Jiang; 29th USENIX Security Symposium.</p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=7163217">Towards More Security in Data Exchange: Defining Unparsers with Context-Sensitive Encoders for Context-Free Grammars</a> - Lars Hermerschmidt, Stephen Kugelmann, Bernhard Rumpe; 2015 IEEE Security and Privacy Workshops.</p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://www.hjp.at/doc/rfc/rfc2095.html">IMAP/POP AUTHorize Extension for Simple Challenge/Response</a> - J. Klensin, R. Catoe, P. Krumviede; RFC 2195, 1997.</p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://www.usenix.org/system/files/conference/usenixsecurity18/sec18-hu.pdf">End-to-End Measurements of Email Spoofing Attacks</a> - Hang Hu, Gang Wang; 27th USENIX Security Symposium.</p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://www.hjp.at/doc/rfc/rfc7489.html">Domain-based Message Authentication, Reporting, and Conformance (DMARC)</a> -  M. Kucherawy, Ed., E. Zwicky, Ed.; RFC 7489, 2015.</p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://nvlpubs.nist.gov/nistpubs/TechnicalNotes/NIST.TN.1945.pdf">Email Authentication Mechanisms: DMARC, SPF and DKIM</a> - Stephen Nightingale.</p>
+</li>
+</ol>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2021/04/25/Spoofer_On_Attak_An_Exploration_Of_Email_Sender_Authentication/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;04&#x2F;25&#x2F;Spoofer_On_Attak_An_Exploration_Of_Email_Sender_Authentication&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;04&#x2F;25&#x2F;Spoofer_On_Attak_An_Exploration_Of_Email_Sender_Authentication&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag">网络安全</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '80b2453b6d5f37ad6225',
+        clientSecret: '43e99fa852795c9a7b3eb924b2558c64b84bbdeb',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641198474377"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
