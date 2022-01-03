@@ -15,7 +15,7 @@
     <meta name="description" content="UE5学习记录(6)  8.16  关于光栅化的动手操作 上周看了关于光栅化的shader代码。在老师的提示下，这周可以针对软件光栅化进行研究与实践。 梳理一下Nanite光栅化的思路：  整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个独自的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon">
 <meta property="og:type" content="article">
 <meta property="og:title" content="UE5学习记录#6">
-<meta property="og:url" content="http://example.com/2021/08/22/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6/index.html">
+<meta property="og:url" content="http://ruin.net.cn/2021/08/22/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6/index.html">
 <meta property="og:site_name" content="RUiN&#39;s Blog">
 <meta property="og:description" content="UE5学习记录(6)  8.16  关于光栅化的动手操作 上周看了关于光栅化的shader代码。在老师的提示下，这周可以针对软件光栅化进行研究与实践。 梳理一下Nanite光栅化的思路：  整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个独自的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon">
 <meta property="og:locale" content="en_US">
@@ -33,10 +33,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/meshlets_bunny.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641135460977">
+    <link rel="stylesheet" href="/css/style.css?v=1641172671280">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641135460977">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641172671280">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -250,7 +250,7 @@
       
     <div class="nexmoe-post-copyright">
         <strong>Author：</strong>RUiN<br>
-        <strong>Link：</strong><a href="http://example.com/2021/08/22/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;22&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;22&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6&#x2F;</a><br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2021/08/22/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;08&#x2F;22&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;08&#x2F;22&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-6&#x2F;</a><br>
         
             <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
         
@@ -320,7 +320,7 @@
 
  
 
-<script async src="/js/app.js?v=1641135460978"></script>
+<script async src="/js/app.js?v=1641172671280"></script>
 
 
 

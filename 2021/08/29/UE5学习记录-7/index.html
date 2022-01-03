@@ -15,7 +15,7 @@
     <meta name="description" content="UE5学习记录(7)  8.23~8.24  开始动手基于CS的软光栅 &amp; 学习  8.25  UE5渲染管线的重大更改 之前进展一直比较缓慢。但是最近在查看UE5最新的版本更迭的时候，发现他们把光栅化的流程进行了一个更改，那就是加入了对于Mesh Shader使用的判断，并且在Rasterize的shader里做了进一步的判断。 查看了UE5仓库的commit记录，我发现工程师们从8月">
 <meta property="og:type" content="article">
 <meta property="og:title" content="UE5学习记录#7">
-<meta property="og:url" content="http://example.com/2021/08/29/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7/index.html">
+<meta property="og:url" content="http://ruin.net.cn/2021/08/29/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7/index.html">
 <meta property="og:site_name" content="RUiN&#39;s Blog">
 <meta property="og:description" content="UE5学习记录(7)  8.23~8.24  开始动手基于CS的软光栅 &amp; 学习  8.25  UE5渲染管线的重大更改 之前进展一直比较缓慢。但是最近在查看UE5最新的版本更迭的时候，发现他们把光栅化的流程进行了一个更改，那就是加入了对于Mesh Shader使用的判断，并且在Rasterize的shader里做了进一步的判断。 查看了UE5仓库的commit记录，我发现工程师们从8月">
 <meta property="og:locale" content="en_US">
@@ -41,10 +41,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210825093427875.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641135460975">
+    <link rel="stylesheet" href="/css/style.css?v=1641172671278">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641135460975">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641172671278">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -287,7 +287,7 @@
       
     <div class="nexmoe-post-copyright">
         <strong>Author：</strong>RUiN<br>
-        <strong>Link：</strong><a href="http://example.com/2021/08/29/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7/" title="http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;29&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2021&#x2F;08&#x2F;29&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7&#x2F;</a><br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2021/08/29/UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;08&#x2F;29&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2021&#x2F;08&#x2F;29&#x2F;UE5%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95-7&#x2F;</a><br>
         
             <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
         
@@ -357,7 +357,7 @@
 
  
 
-<script async src="/js/app.js?v=1641135460976"></script>
+<script async src="/js/app.js?v=1641172671279"></script>
 
 
 
