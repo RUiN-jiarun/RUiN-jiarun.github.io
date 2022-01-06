@@ -31,10 +31,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210418174553535.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641480698737">
+    <link rel="stylesheet" href="/css/style.css?v=1641481041385">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641480698737">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641481041385">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -294,7 +294,7 @@
 <h3 id="understand-the-distillation"><a class="markdownIt-Anchor" href="#understand-the-distillation"></a> Understand the Distillation</h3>
 <p>Neuron distillation is a method to implement the transfer learning.</p>
 <p>Take the attention map function of the reference code as an example. It’s an AT model with sum of absolute values with power p:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AT</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, p</span>):</span></span><br><span class="line">		<span class="built_in">super</span>(AT, self).__init__()</span><br><span class="line">		self.p = p</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, fm_s, fm_t</span>):</span></span><br><span class="line">		loss = F.mse_loss(self.attention_map(fm_s), self.attention_map(fm_t))</span><br><span class="line">		<span class="keyword">return</span> loss</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">attention_map</span>(<span class="params">self, fm, eps=<span class="number">1e-6</span></span>):</span></span><br><span class="line">		am = torch.<span class="built_in">pow</span>(torch.<span class="built_in">abs</span>(fm), self.p)</span><br><span class="line">		am = torch.<span class="built_in">sum</span>(am, dim=<span class="number">1</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">		norm = torch.norm(am, dim=(<span class="number">2</span>,<span class="number">3</span>), keepdim=<span class="literal">True</span>)</span><br><span class="line">		am = torch.div(am, norm+eps)</span><br><span class="line">		<span class="keyword">return</span> am</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AT</span>(<span class="hljs-params">nn.Module</span>):</span><br>	<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span>(<span class="hljs-params">self, p</span>):</span><br>		<span class="hljs-built_in">super</span>(AT, self).__init__()<br>		self.p = p<br><br>	<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">forward</span>(<span class="hljs-params">self, fm_s, fm_t</span>):</span><br>		loss = F.mse_loss(self.attention_map(fm_s), self.attention_map(fm_t))<br>		<span class="hljs-keyword">return</span> loss<br><br>	<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">attention_map</span>(<span class="hljs-params">self, fm, eps=<span class="hljs-number">1e-6</span></span>):</span><br>		am = torch.<span class="hljs-built_in">pow</span>(torch.<span class="hljs-built_in">abs</span>(fm), self.p)<br>		am = torch.<span class="hljs-built_in">sum</span>(am, dim=<span class="hljs-number">1</span>, keepdim=<span class="hljs-literal">True</span>)<br>		norm = torch.norm(am, dim=(<span class="hljs-number">2</span>,<span class="hljs-number">3</span>), keepdim=<span class="hljs-literal">True</span>)<br>		am = torch.div(am, norm+eps)<br>		<span class="hljs-keyword">return</span> am<br></code></pre></td></tr></table></figure>
 <p>It’s exactly the attention maps using the Ap sum attention operator.</p>
 <h2 id="results-and-evaluation"><a class="markdownIt-Anchor" href="#results-and-evaluation"></a> Results and Evaluation</h2>
 <p>The paper evaluate the performance of defense mechanisms with two metrics: attack success rate (<strong>ASR</strong>), which is the ratio of backdoored examples that are misclassified as the target label, and model’s accuracy on clean samples (<strong>ACC</strong>). The more the ASR drops and the less the ACC drops, the stronger the defense mechanism is.</p>
@@ -387,10 +387,10 @@ gitment.render('gitment')
 
  
 
-<script async src="/js/app.js?v=1641480698738"></script>
+<script async src="/js/app.js?v=1641481041387"></script>
 
 
-	<script async src="/js/search.js?v=1641480698738"></script>
+	<script async src="/js/search.js?v=1641481041387"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>

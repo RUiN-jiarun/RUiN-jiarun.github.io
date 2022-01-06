@@ -36,10 +36,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210715111113801.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641480698698">
+    <link rel="stylesheet" href="/css/style.css?v=1641481041346">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641480698698">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641481041346">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -261,7 +261,7 @@
 <li>编译UE5源码，计划从Nanite特性切入，研究其实现原理</li>
 <li>Nanite相关功能的源码位置：<code>Engine/Shaders/Private/Nanite</code></li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usf文件：UE引擎识别的shader文件</span><br></pre></td></tr></table></figure>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs processing">usf文件：UE引擎识别的<span class="hljs-built_in">shader</span>文件<br></code></pre></td></tr></table></figure>
 <p><em>Nanite遵循的设计理念是——三角形的绘制数量超过像素数量就是一种浪费。</em></p>
 <p>可以看到Nanite是<strong>基于GPU渲染管线</strong>编写的。GPU Driven Pipeline把模型的顶点数据进一步切分为更细粒度的单位<strong>Cluster</strong>。每个Cluster的精细度可以更好地适应顶点处理阶段的Cache大小，并进行各类剔除<strong>Culling</strong>。</p>
 <h2 id="714"><a class="markdownIt-Anchor" href="#714"></a> 7.14</h2>
@@ -280,7 +280,7 @@
 </ul>
 <p><a target="_blank" rel="noopener" href="https://docs.unrealengine.com/5.0/zh-CN/RenderingFeatures/Nanite/">Nanite虚拟几何体 | 虚幻引擎文档 (unrealengine.com)</a></p>
 <p>官方的文档中提出：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Nanite能与现有的引擎工作流程无缝结合，但使用了全新的方法来存储和渲染网格体数据。</span><br><span class="line"></span><br><span class="line">- 导入期间：分析网格体，并将其拆分成由三角形组构成的层级化群集。</span><br><span class="line">- 渲染期间：群集会根据摄像机视图，在运行时动态地切换细节级别，并且可以在不破坏同一对象中相邻群集的情况下完美衔接。数据会根据需求流送，因此只有可见细节才会保存在内存中。Nanite在自己的渲染通道中运行，该通道完全绕过了传统的绘制调用。你可以使用可视化模式来检视Nanite管线。</span><br></pre></td></tr></table></figure>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc">Nanite能与现有的引擎工作流程无缝结合，但使用了全新的方法来存储和渲染网格体数据。<br><br><span class="hljs-bullet">- </span>导入期间：分析网格体，并将其拆分成由三角形组构成的层级化群集。<br><span class="hljs-bullet">- </span>渲染期间：群集会根据摄像机视图，在运行时动态地切换细节级别，并且可以在不破坏同一对象中相邻群集的情况下完美衔接。数据会根据需求流送，因此只有可见细节才会保存在内存中。Nanite在自己的渲染通道中运行，该通道完全绕过了传统的绘制调用。你可以使用可视化模式来检视Nanite管线。<br></code></pre></td></tr></table></figure>
 <h2 id="715~717"><a class="markdownIt-Anchor" href="#715~717"></a> 7.15~7.17</h2>
 <p>观看Nanite的官方直播</p>
 <p><strong>Nanite虚拟几何体系统</strong>：系统只会流送绘制画面必须的数据，只有这些会存在内存里。换言之只需要渲染你可以看见的物体，不会绘制看不见的部分。</p>
@@ -390,7 +390,7 @@
 </ul>
 <h3 id="探究3动态集群划分"><a class="markdownIt-Anchor" href="#探究3动态集群划分"></a> 探究3：动态集群划分</h3>
 <p>在控制台输入：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nanitestats</span><br></pre></td></tr></table></figure>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">nanitestats</span><br></code></pre></td></tr></table></figure>
 <p>可以在右侧显示数据，显示Nanite实际的绘制情况。不管是什么视角，实际绘制的三角形个数都大概不会超过2000万个。这就是所谓“根据屏幕分辨率调整”，无论放置什么资源，开销都差不多大，保持了实时传输与绘制的需求。</p>
 <p>下面这张图是cluster的可视化，可以看到不管是在近视角还是远视角，cluster的大小都差不多，因此实际绘制的三角形数目也差不多。</p>
 <p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20210719165423319.png" alt="image-20210719165423319" class="lazyload"></p>
@@ -550,10 +550,10 @@ gitment.render('gitment')
 
  
 
-<script async src="/js/app.js?v=1641480698699"></script>
+<script async src="/js/app.js?v=1641481041348"></script>
 
 
-	<script async src="/js/search.js?v=1641480698699"></script>
+	<script async src="/js/search.js?v=1641481041348"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>

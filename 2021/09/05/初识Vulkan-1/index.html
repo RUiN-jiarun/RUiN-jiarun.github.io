@@ -29,10 +29,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20200407120549998.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1641480698669">
+    <link rel="stylesheet" href="/css/style.css?v=1641481041316">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641480698669">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641481041316">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -276,7 +276,7 @@
 </ul>
 <h2 id="window-surface"><a class="markdownIt-Anchor" href="#window-surface"></a> Window surface</h2>
 <p>Vulkan是平台不可知的图形API，因此无法直接与窗口系统系统进行交互。Vulkan 将window相关的操作和图形核心的API隔离；窗口使用对应的扩展，KHR 代表了这是一种Khronos Extension。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">VkSurfaceKHR surface;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C++">VkSurfaceKHR surface;<br></code></pre></td></tr></table></figure>
 <p>VkSurfaceKHR代表一种抽象类型，用以呈现渲染图象。surface可以被认为是Vulkan和窗体系统的桥梁。</p>
 <p>因此需要设置一个Present Queue Family。Present操作指将一个swap chain image传给物理显示器的过程。</p>
 <h2 id="vulkan渲染管线"><a class="markdownIt-Anchor" href="#vulkan渲染管线"></a> Vulkan渲染管线</h2>
@@ -370,10 +370,10 @@ gitment.render('gitment')
 
  
 
-<script async src="/js/app.js?v=1641480698670"></script>
+<script async src="/js/app.js?v=1641481041318"></script>
 
 
-	<script async src="/js/search.js?v=1641480698670"></script>
+	<script async src="/js/search.js?v=1641481041318"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
