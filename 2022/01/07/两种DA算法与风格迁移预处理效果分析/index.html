@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>两种DA算法与风格迁移预处理效果分析 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="description" content="论文来源：Keep it Simple: Image Statistics Matching for Domain Adaptation  概述 这篇文章的提出是为了解决计算机视觉中物体识别与切割时应对不同环境鲁棒性较差的情况。一种常用的解决方法叫做Domain Adaptation，暂译为区域自适应。本文提出了一种非监督的区域自适应算法：当目标域中只有未标记的图像可用时，在不同的数据分布中保持检">
+<meta property="og:type" content="article">
+<meta property="og:title" content="两种DA算法与风格迁移预处理效果分析">
+<meta property="og:url" content="http://ruin.net.cn/2022/01/07/%E4%B8%A4%E7%A7%8DDA%E7%AE%97%E6%B3%95%E4%B8%8E%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E9%A2%84%E5%A4%84%E7%90%86%E6%95%88%E6%9E%9C%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：Keep it Simple: Image Statistics Matching for Domain Adaptation  概述 这篇文章的提出是为了解决计算机视觉中物体识别与切割时应对不同环境鲁棒性较差的情况。一种常用的解决方法叫做Domain Adaptation，暂译为区域自适应。本文提出了一种非监督的区域自适应算法：当目标域中只有未标记的图像可用时，在不同的数据分布中保持检">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107131501505.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_plot_1.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134029253.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134107115.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134121287.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134230313.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134241320.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/seated-nude.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test5_at_iteration_50_2x.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/adjust_3_at_iteration_50_2x_postprocess.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/scream.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_s_l_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_s_r_at_iteration_50.png">
+<meta property="article:published_time" content="2022-01-07T06:36:48.000Z">
+<meta property="article:modified_time" content="2022-01-07T06:38:22.792Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="图像处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107131501505.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641537519006">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641537519006">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>23</div>
+        <div><span>Tags</span>8</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/01/07/%E4%B8%A4%E7%A7%8DDA%E7%AE%97%E6%B3%95%E4%B8%8E%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E9%A2%84%E5%A4%84%E7%90%86%E6%95%88%E6%9E%9C%E5%88%86%E6%9E%90/">两种DA算法与风格迁移预处理效果分析</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/06/Real-Time-Style-Transfer%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">Real Time Style Transfer论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/02/Neural-Style-Transfer%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">Neural-Style-Transfer论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2021/10/03/%E5%88%9D%E8%AF%86Vulkan-3/">初识Vulkan#3</a>
+          </li>
+        
+          <li>
+            <a href="/2021/09/12/%E5%88%9D%E8%AF%86Vulkan-2/">初识Vulkan#2</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134121287.png" data-sizes="auto" alt="两种DA算法与风格迁移预处理效果分析" class="lazyload">
+              <h1>两种DA算法与风格迁移预处理效果分析</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年01月07日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.8k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 8 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2005.12551.pdf">Keep it Simple: Image Statistics Matching for Domain Adaptation</a></p>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>这篇文章的提出是为了解决计算机视觉中物体识别与切割时应对不同环境鲁棒性较差的情况。一种常用的解决方法叫做<em>Domain Adaptation</em>，暂译为<strong>区域自适应</strong>。本文提出了一种非监督的区域自适应算法：当目标域中只有未标记的图像可用时，在不同的数据分布中保持检测精度。</p>
+<p>简而言之，这是一种调整图像以增强机器学习中网络的识别精度的辅助方法。</p>
+<p>特别地，这篇文章提出的方法遵循<em>Keep it Simple</em>的原则。比起其他自适应调整算法，这种方法不需要监督，不需要复杂的网络结构，计算成本低，原理完全遵循图像处理的方法。对于我们进行<strong>风格迁移</strong>研究的人来说，作为一种预处理的方法非常合适。</p>
+<h2 id="原理与方法论"><a class="markdownIt-Anchor" href="#原理与方法论"></a> 原理与方法论</h2>
+<h3 id="pca白化"><a class="markdownIt-Anchor" href="#pca白化"></a> PCA白化</h3>
+<p>白化（whitning）是一种重要的数据预处理过程。其目的是降低输入数据的冗余性，使得经过白化处理的数据具有一下性质：</p>
+<ul>
+<li>特征之间相关性较低</li>
+<li>所有特征具有相同的方差</li>
+</ul>
+<p>PCA白化保证数据各维度的方差为1。PCA白化可以用于降维和去相关性。</p>
+<p>相关的推导和证明，这里贴一个网址：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/demian/p/7627324.html">白化(Whitening): PCA 与 ZCA (转) - demianzhang - 博客园 (cnblogs.com)</a></p>
+<h3 id="特征分布匹配feature-distribution-matching"><a class="markdownIt-Anchor" href="#特征分布匹配feature-distribution-matching"></a> 特征分布匹配（Feature Distribution Matching）</h3>
+<p>FDM算法的基本思想是：保持转换前后两张图像的颜色均值与方差，同时保留原图像的内容。不适用齐次坐标的变换，而是使用这种计算方式，将变换推广到c维欧几里德变换空间。</p>
+<p>第一步，将原始图片和目标图片变形到特征矩阵：</p>
+\bold{x}_s^i \in \natnums^{h_s \times w_s \times c} \rightarrow \bold{F}_s \in \reals^{N_s\times c} \\
+\bold{x}_t^j \in \natnums^{h_t \times w_t \times c} \rightarrow \bold{F}_t \in \reals^{N_t\times c}
+
+<p>在特征矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="bold">F</mi></mrow></mrow><annotation encoding="application/x-tex">\bold{F}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.68611em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathbf">F</span></span></span></span></span>​中，每一行<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mrow><mi mathvariant="bold">f</mi></mrow><mi>i</mi></msup></mrow><annotation encoding="application/x-tex">\bold{f}^i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.824664em;"></span><span class="strut bottom" style="height:0.824664em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord textstyle uncramped"><span class="mord mathbf" style="margin-right:0.10903em;">f</span></span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>代表了图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10903em;">N</span></span></span></span>​​​个像素中的其中一个，并且对应了一个<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi></mrow><annotation encoding="application/x-tex">c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">c</span></span></span></span>维空间中的采样特征。</p>
+<p>第二步，通过减去采样均值来中心化数据：</p>
+\bold{F}_s^0=\bold{F}_s-\bar{\bold{f}_s} \\
+\bold{F}_t^0=\bold{F}_t-\bar{\bold{f}_t}
+
+<p>其中：</p>
+\bar{\bold{f}} = \frac{1}{N}\sum_N\bold{f}^i \in \reals^{1\times c}
+
+<p>接下来通过PCA白化变换（PCA-Whitening transformation），对原始数据的协方差矩阵进行奇异值分解（SVD）。得到的矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="bold">U</mi></mrow></mrow><annotation encoding="application/x-tex">\bold{U}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.68611em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathbf">U</span></span></span></span></span>用于旋转，而特征值构成的对角矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="bold">S</mi></mrow></mrow><annotation encoding="application/x-tex">\bold{S}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.68611em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathbf">S</span></span></span></span></span>用于缩放采样点。</p>
+\Sigma_s=cov(\bold{F}_s^0) \in \reals^{c\times c} \\
+\bold{U}_s\bold{S}_s\bold{V}_s^* = svd(\Sigma_s) \\
+\hat{\bold{F}_s^0} = \bold{F}_s^0\bold{U}_s\bold{S}_s^{-\frac{1}{2}}
+
+<p>其中，协方差矩阵：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi><mi>o</mi><mi>v</mi><mo>(</mo><msubsup><mrow><mi mathvariant="bold">F</mi></mrow><mi>s</mi><mn>0</mn></msubsup><mo>)</mo><mo>=</mo><mfrac><mrow><mn>1</mn></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></mfrac><msub><mo>∑</mo><mi>n</mi></msub><msubsup><mrow><mi mathvariant="bold">f</mi></mrow><mi>i</mi><mn>0</mn></msubsup><mo>(</mo><msubsup><mrow><mi mathvariant="bold">f</mi></mrow><mi>i</mi><mn>0</mn></msubsup><msup><mo>)</mo><mtext><mi mathvariant="normal">T</mi></mtext></msup></mrow><annotation encoding="application/x-tex">cov(\bold{F}_s^0) = \frac{1}{n-1}\sum_n\bold{f}_i^0(\bold{f}_i^0)^\text T
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.32144em;"></span><span class="strut bottom" style="height:2.5714449999999998em;vertical-align:-1.250005em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit">c</span><span class="mord mathit">o</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class=""><span class="mord displaystyle textstyle uncramped"><span class="mord mathbf">F</span></span><span class="vlist"><span style="top:0.247em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span style="top:-0.4129999999999999em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">=</span><span class="mord reset-textstyle displaystyle textstyle uncramped"><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.686em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathit">n</span><span class="mbin">−</span><span class="mord mathrm">1</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.677em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathrm">1</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mop op-limits"><span class="vlist"><span style="top:1.150005em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">n</span></span></span><span style="top:-0.000005000000000032756em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span><span class="op-symbol large-op mop">∑</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class=""><span class="mord displaystyle textstyle uncramped"><span class="mord mathbf" style="margin-right:0.10903em;">f</span></span><span class="vlist"><span style="top:0.247em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span style="top:-0.4129999999999999em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class=""><span class="mord displaystyle textstyle uncramped"><span class="mord mathbf" style="margin-right:0.10903em;">f</span></span><span class="vlist"><span style="top:0.247em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span style="top:-0.4129999999999999em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose"><span class="mclose">)</span><span class="vlist"><span style="top:-0.413em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="text mord scriptstyle uncramped"><span class="mord mathrm">T</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span></span></p>
+<p>注意到，每一行已经经过中心化。对于变换点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mover accent="true"><mrow><mrow><mi mathvariant="bold">F</mi></mrow></mrow><mo>^</mo></mover><mi>s</mi><mn>0</mn></msubsup></mrow><annotation encoding="application/x-tex">\hat{\bold{F}}_s^0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.0146579999999998em;"></span><span class="strut bottom" style="height:1.2616579999999997em;vertical-align:-0.247em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord accent"><span class="vlist"><span style="top:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="mord textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathbf">F</span></span></span></span><span style="top:-0.25511em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="accent-body"><span>^</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="vlist"><span style="top:0.247em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span style="top:-0.5635499999999999em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>​​而言，协方差矩阵将会等于单位矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mrow><mi mathvariant="bold">I</mi></mrow><mi>C</mi></msub></mrow><annotation encoding="application/x-tex">\bold{I}_C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.83611em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord textstyle uncramped"><span class="mord mathbf">I</span></span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.07153em;">C</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。</p>
+<p>随后，对于白化点的旋转和缩放操作，同样在目标图像的协方差矩阵上应用SVD方法，生成现在具有目标协方差的变换特征：</p>
+\Sigma_t=cov(\bold{F}_t^0) \in \reals^{c\times c} \\
+\bold{U}_t\bold{S}_t\bold{V}_t^* = svd(\Sigma_t) \\
+\bold{F}_{s\rightarrow t}^0 = \hat{\bold{F}}_s^0\bold{S}_t^{\frac{1}{2}}(\bold{U}_t)^\text T \\
+cov(\bold{F}_{s\rightarrow t}^0) = \Sigma_t
+
+<p>接下来，我们用目标均值移动变换后的特征矩阵，并将其重新整形为我们需要的图像格式：</p>
+\bold{F}_{s\rightarrow t}=\bold{F}_{s\rightarrow t}^0+\bar{\bold{f}_t}\\
+\bold{F}_{s\rightarrow t} \rightarrow \bold{x}^i_{s \rightarrow t} \in \natnums^{h_s \times w_s\times c}
+
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107131501505.png" alt="image-20220107131501505" class="lazyload"></p>
+<p>同时，论文提出，由于广义变换，同样的过程还可以很容易地应用到CNN的某一层的输出，已使用更高级别的层的表示来进行特征分布的匹配与对齐。可以将FDM应用于源图像和目标图像的层响应并用作下一层的输出。</p>
+<h3 id="直方图匹配histogram-matching"><a class="markdownIt-Anchor" href="#直方图匹配histogram-matching"></a> 直方图匹配（Histogram Matching）</h3>
+<p>直方图匹配的原理更加简单易懂。简而言之，直方图匹配的过程就是在两个图像的颜色直方图之间知道一种单调映射。它调整与改变源图像的像素，使其直方图与目标图像的直方图进行匹配。</p>
+<p>对于给定的源图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mrow><mi mathvariant="bold">x</mi></mrow><mi>s</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">\bold{x}_s^i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.824664em;"></span><span class="strut bottom" style="height:1.071664em;vertical-align:-0.247em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord textstyle uncramped"><span class="mord mathbf">x</span></span><span class="vlist"><span style="top:0.247em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和目标图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mrow><mi mathvariant="bold">x</mi></mrow><mi>t</mi><mi>j</mi></msubsup></mrow><annotation encoding="application/x-tex">\bold{x}_t^j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.942572em;"></span><span class="strut bottom" style="height:1.1883279999999998em;vertical-align:-0.24575599999999995em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord textstyle uncramped"><span class="mord mathbf">x</span></span><span class="vlist"><span style="top:0.24575599999999995em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">t</span></span></span><span style="top:-0.480908em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，他们的直方图记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>h</mi><mrow><msubsup><mi mathvariant="bold">x</mi><mi>s</mi><mi>i</mi></msubsup></mrow></msub></mrow><annotation encoding="application/x-tex">h_{\bold x_s^i}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:1.0546em;vertical-align:-0.36016em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">h</span><span class="vlist"><span style="top:0.18725999999999998em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:0.247em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">s</span></span></span><span style="top:-0.28900000000000003em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>h</mi><mrow><msubsup><mi mathvariant="bold">x</mi><mi>t</mi><mi>j</mi></msubsup></mrow></msub></mrow><annotation encoding="application/x-tex">h_{\bold x_t^j}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:1.19616em;vertical-align:-0.5017199999999999em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">h</span><span class="vlist"><span style="top:0.32353999999999994em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:0.2545428571428571em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">t</span></span></span><span style="top:-0.48368571428571433em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>​。相应的累积分布函数（Cumulative Distribution Function）分别可以记为：</p>
+cdf_{\bold x^i_s}(k) = \frac 1{N_s}\sum^k_{l=1}h_{\bold x_s^i}(l) \\
+cdf_{\bold x^j_t}(k) = \frac 1{N_t}\sum^k_{l=1}h_{\bold x_t^j}(l) \\
+k = 1,...,m
+
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">m</span></span></span></span>是直方图bar的个数，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>s</mi></msub></mrow><annotation encoding="application/x-tex">N_s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">N_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">t</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>分别是像素个数。</p>
+<p>对于每个源图像中的像素值<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span></span>，根据cdf函数可以在目标图像中求出对应的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>v</mi><mrow><mi mathvariant="normal">′</mi></mrow></msup></mrow><annotation encoding="application/x-tex">v&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:0.751892em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>使得：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi><mi>d</mi><msub><mi>f</mi><mrow><msubsup><mi mathvariant="bold">x</mi><mi>s</mi><mi>i</mi></msubsup></mrow></msub><mo>(</mo><mi>v</mi><mo>)</mo><mo>=</mo><mi>c</mi><mi>d</mi><msub><mi>f</mi><mrow><msubsup><mi mathvariant="bold">x</mi><mi>t</mi><mi>j</mi></msubsup></mrow></msub><mo>(</mo><msup><mi>v</mi><mrow><mi mathvariant="normal">′</mi></mrow></msup><mo>)</mo></mrow><annotation encoding="application/x-tex">cdf_{\bold x^i_s}(v) = cdf_{\bold x^j_t}(v&#x27;)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.801892em;"></span><span class="strut bottom" style="height:1.303612em;vertical-align:-0.5017199999999999em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit">c</span><span class="mord mathit">d</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.18725999999999998em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:0.247em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">s</span></span></span><span style="top:-0.28900000000000003em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord mathit">c</span><span class="mord mathit">d</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.32353999999999994em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:0.2545428571428571em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">t</span></span></span><span style="top:-0.48368571428571433em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:-0.413em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p>这样一来，HM算法就可以映射并拟合直方图的分布。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_plot_1.png" alt="hm_plot_1" class="lazyload"></p>
+<h2 id="在风格迁移预处理中的表现"><a class="markdownIt-Anchor" href="#在风格迁移预处理中的表现"></a> 在风格迁移预处理中的表现</h2>
+<p>在风格迁移处理中，我们发现对于content图像中色差较小的部分，由于特征难以还原，在不同的迁移算法中会出现不同程度的失真与模糊情况。另一些情况下，由于一些style图像的色彩分布具有艺术性与夸张风格，在迁移的过程中会出现匹配失调的情况。</p>
+<p>我们认为FDM和HM算法可以在一定程度上缓解这种情况。在实验的过程中，我们在RGB空间和LAB空间都做了相关的测试，也只保留了亮度匹配的情况。</p>
+<p>以下图为例：</p>
+<ul>
+<li>
+<p>HM匹配算法</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134029253.png" alt="image-20220107134029253" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134107115.png" alt="image-20220107134107115" class="lazyload"></p>
+<p>经过匹配，可以看出在周围色差较小的背景部分，通过匹配后出现了色彩的层次与填充，在进行风格迁移的时候，风格纹理填充较为均匀。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134121287.png" alt="image-20220107134121287" class="lazyload"></p>
+</li>
+<li>
+<p>FDM算法</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134230313.png" alt="image-20220107134230313" class="lazyload"></p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220107134241320.png" alt="image-20220107134241320" class="lazyload">
+</li>
+</ul>
+<p>对于颜色匹配与分布的问题，通过这样的方式也可以得到最基本的调节：</p>
+<table>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">原图</center></td>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/seated-nude.jpg" style="zoom: 60%">风格图</center></td>
+    </tr>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test5_at_iteration_50_2x.png">未经处理直接迁移</center></td>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/adjust_3_at_iteration_50_2x_postprocess.png">HM RGB通道匹配 亮度后处理</center></td>
+    </tr>
+</table>
+<p>另外，不同颜色通道的匹配也会产生不同的色彩分布：</p>
+<table>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">原图</center></td>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/scream.jpg" style="zoom: 40%">风格图</center></td>
+    </tr>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_s_l_at_iteration_50.png">FDM亮度匹配</center></td>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_s_r_at_iteration_50.png">FDM RGB通道匹配</center></td>
+    </tr>
+</table>
+<p>另外，对于“光晕现象”和类似的过度过渡情况，我们认为也可以通过数值匹配和调整的方式来使得效果更加理想。一些设想是先对直方图分布比较极端的图片进行直方图均衡化，然后再应用FDM或者HM算法继续进行匹配。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/01/07/%E4%B8%A4%E7%A7%8DDA%E7%AE%97%E6%B3%95%E4%B8%8E%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E9%A2%84%E5%A4%84%E7%90%86%E6%95%88%E6%9E%9C%E5%88%86%E6%9E%90/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;01&#x2F;07&#x2F;%E4%B8%A4%E7%A7%8DDA%E7%AE%97%E6%B3%95%E4%B8%8E%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E9%A2%84%E5%A4%84%E7%90%86%E6%95%88%E6%9E%9C%E5%88%86%E6%9E%90&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;01&#x2F;07&#x2F;%E4%B8%A4%E7%A7%8DDA%E7%AE%97%E6%B3%95%E4%B8%8E%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E9%A2%84%E5%A4%84%E7%90%86%E6%95%88%E6%9E%9C%E5%88%86%E6%9E%90&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/">风格迁移</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" rel="tag">图像处理</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%E4%B8%8E%E6%96%B9%E6%B3%95%E8%AE%BA"><span class="toc-number">2.</span> <span class="toc-text"> 原理与方法论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pca%E7%99%BD%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text"> PCA白化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E5%88%86%E5%B8%83%E5%8C%B9%E9%85%8Dfeature-distribution-matching"><span class="toc-number">2.2.</span> <span class="toc-text"> 特征分布匹配（Feature Distribution Matching）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%8C%B9%E9%85%8Dhistogram-matching"><span class="toc-number">2.3.</span> <span class="toc-text"> 直方图匹配（Histogram Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E9%A2%84%E5%A4%84%E7%90%86%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text"> 在风格迁移预处理中的表现</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641537519020"></script>
+
+
+	<script async src="/js/search.js?v=1641537519020"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
