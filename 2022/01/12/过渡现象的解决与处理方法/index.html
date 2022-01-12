@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>风格迁移中的背景填充与过渡边缘现象 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/amv6d-ugpbz-001.ico" type="image/x-icon" />
+    <meta name="description" content="问题的发现 在测试多款风格迁移的开源代码后，发现一些普遍存在的现象：对于一些色差较小的平滑区域，纹理的填充会失真、走样或者模糊。而对于色差较大的前背景分界线部分，常常会出现一些不自然的“过度”过渡现象。               平滑区域纹理失真（FST）         平滑区域纹理走样（FSt）         平滑区域风格模糊（NST）                      分界线出">
+<meta property="og:type" content="article">
+<meta property="og:title" content="风格迁移中的背景填充与过渡边缘现象">
+<meta property="og:url" content="http://ruin.net.cn/2022/01/12/%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="问题的发现 在测试多款风格迁移的开源代码后，发现一些普遍存在的现象：对于一些色差较小的平滑区域，纹理的填充会失真、走样或者模糊。而对于色差较大的前背景分界线部分，常常会出现一些不自然的“过度”过渡现象。               平滑区域纹理失真（FST）         平滑区域纹理走样（FSt）         平滑区域风格模糊（NST）                      分界线出">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_yyn.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/yynblack.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test_with_high_gram_matrix_at_iteration_50_2x.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_yyn.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/muse_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test2_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test6_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_front_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_bimask_muse_c_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_bimask_muse_19_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/farmer_paint.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test_with_high_gram_matrix_at_iteration_50_2x.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/fdb_rgb_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/starry_night.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test7_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/adjust6_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/la_muse.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/muse_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/avetest_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/farmer_paint.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test_with_high_gram_matrix_at_iteration_50_2x.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/farm_avetest_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_starry_19_at_iteration_100.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_19_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/la_muse.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/muse_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_m_a_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_m_l_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_m_r_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_muse_ab_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_muse_light_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_muse_rgb_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_rgb_19_at_iteration_50_masked.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_1.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_5.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_15.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_25.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_100.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_150.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_200.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_ave_19_at_iteration_150.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_1.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_5.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_15.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_25.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_75.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_100.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_125.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_150.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_rgb_19_at_iteration_50.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_ave_19_at_iteration_75.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_starry_ave_19_at_iteration_150.png">
+<meta property="article:published_time" content="2022-01-12T10:46:18.000Z">
+<meta property="article:modified_time" content="2022-01-12T10:47:48.822Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_yyn.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1641984495118">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1641984495118">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>24</div>
+        <div><span>Tags</span>8</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">4</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/01/12/%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/">风格迁移中的背景填充与过渡边缘现象</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/07/%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E4%B8%AD%E7%9A%84%E8%83%8C%E6%99%AF%E5%A1%AB%E5%85%85%E4%B8%8E%E8%BF%87%E6%B8%A1%E8%BE%B9%E7%BC%98%E7%8E%B0%E8%B1%A1/">两种DA算法与风格迁移预处理效果分析</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/06/Real-Time-Style-Transfer%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">Real Time Style Transfer论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/02/Neural-Style-Transfer%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">Neural-Style-Transfer论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2021/10/03/%E5%88%9D%E8%AF%86Vulkan-3/">初识Vulkan#3</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_rgb_19_at_iteration_50_masked.png" data-sizes="auto" alt="风格迁移中的背景填充与过渡边缘现象" class="lazyload">
+              <h1>风格迁移中的背景填充与过渡边缘现象</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年01月12日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.4k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 5 分钟</a>
+</div>
+
+      
+
+      <h2 id="问题的发现"><a class="markdownIt-Anchor" href="#问题的发现"></a> 问题的发现</h2>
+<p>在测试多款风格迁移的开源代码后，发现一些普遍存在的现象：对于一些色差较小的平滑区域，纹理的填充会失真、走样或者模糊。而对于色差较大的前背景分界线部分，常常会出现一些不自然的“过度”过渡现象。</p>
+<table>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_yyn.png">平滑区域纹理失真（FST）</center></td>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/yynblack.jpg" style="zoom: 70%">平滑区域纹理走样（FSt）</center></td>
+        <td><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test_with_high_gram_matrix_at_iteration_50_2x.png" style="zoom: 42%">平滑区域风格模糊（NST）</center></td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_yyn.png"><br> 分界线出现光晕（FST）</center></td>
+        <td><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/muse_at_iteration_50.png" style="zoom:85%"> <br>分界线过渡范围过大（NST）</center></td>
+    </tr>
+</table>
+<p>就后一种情况而言，一般来说，”光晕“现象是摄影作品中一种特殊的风格处理，或者说一般是不太可能出现在画作与插画中的。这种光晕现象在Fast Neural Transfer仓库的代码测试中非常显著。而分界线的过渡部分，我们希望可以有一定的控制。一般来说，前背景之间的晕染是不会有这么大的范围的。因此也需要进行一定的处理和控制。</p>
+<h2 id="成因分析"><a class="markdownIt-Anchor" href="#成因分析"></a> 成因分析</h2>
+<p>我们之前在纯前景风格转换的蒙版测试结果中发现，即使是只对前景进行转换，也会出现过渡的边缘现象。</p>
+<table>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test2_at_iteration_50.png"></center></td>
+        <td><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test6_at_iteration_50.png"></center></td>
+    </tr>
+    <tr>
+        <td ><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_front_at_iteration_50.png"></center></td>
+        <td><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_bimask_muse_c_at_iteration_50.png"></center></td>
+    </tr>
+</table>
+这些**噪点**的产生原因还在查找中。
+<p>以上的实验是在VGG-16的网络架构中进行实验得到的结果。采用更加细腻的VGG-19进行实验，得到的结果有一些不同。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_bimask_muse_19_at_iteration_50.png" alt="bird_bimask_muse_19_at_iteration_50" class="lazyload"></p>
+<p>使用更加深的网络和复杂的网络进行训练，原图的细节保留程度更多，而且产生的噪点也明显变少了。或许<strong>采用更复杂的网络结构</strong>可以提升转换效果。</p>
+<h2 id="平滑填充问题优化方法"><a class="markdownIt-Anchor" href="#平滑填充问题优化方法"></a> 平滑填充问题优化方法</h2>
+<h3 id="fdmhm匹配"><a class="markdownIt-Anchor" href="#fdmhm匹配"></a> FDM/HM匹配</h3>
+<p>经过实验测试，在RGB空间/HSV空间或者亮度重匹配的情况下，NST算法的结果可以更好地进行纹理布局平均化或者平铺化。</p>
+<ul>
+<li>
+<p>样例1：农民画风格</p>
+<table>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" >内容图</center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/farmer_paint.png">风格图</center></td>
+    </tr>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test_with_high_gram_matrix_at_iteration_50_2x.png" >原始结果</center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/fdb_rgb_at_iteration_50.png">色彩空间匹配后效果</center></td>
+    </tr>
+</table>
+<p>但同时，在这种情况下，纹理的反复复杂又会造成一定的视觉冲击与视觉疲劳。</p>
+</li>
+<li>
+<p>样例2：梵高风格</p>
+<table>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" >内容图</center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/starry_night.jpg"/>风格图</center></td>
+    </tr>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test7_at_iteration_50.png" >原始结果</center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/adjust6_at_iteration_50.png">色彩空间匹配后效果</center></td>
+    </tr>
+</table>
+</li>
+</ul>
+<p>从上面这个样例中可以看出，经过色彩匹配过后，风格图和原内容图之间的前背景对比相似度有了很大提升。</p>
+<p>我们预期的成果中，能够对色彩的匹配保持原来的样子，但是经过直方图变化后的结果会对颜色进行重新分配。虽然纯色背景中的风格纹理得到了很好的扩展与填充，但是过于繁复的结果可能不是艺术家想要得到的结果。</p>
+<h3 id="池化方法"><a class="markdownIt-Anchor" href="#池化方法"></a> 池化方法</h3>
+<p>实验证明，对于纹理细腻的风格图片，使用均值池化可以对背景进行更充分的填充，减少了模糊现象。</p>
+<table>
+    <tr>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" ><br>内容图</center></td>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/la_muse.jpg"/><br>风格图</center></td>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/muse_at_iteration_50.png" >最大池化结果</center></td>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/avetest_at_iteration_50.png">均值池化效果</center></td>
+    </tr>
+        <tr>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" ><br>内容图</center></td>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/farmer_paint.png"/><br>风格图</center></td>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/test_with_high_gram_matrix_at_iteration_50_2x.png" >最大池化结果</center></td>
+        <td style="width:25%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/farm_avetest_at_iteration_50.png">均值池化效果</center></td>
+    </tr>
+</table>
+但同时我们发现在未经过任何匹配对齐处理后直接采用均值池化，会导致边缘过渡现象非常明显。
+<h3 id="网络结构"><a class="markdownIt-Anchor" href="#网络结构"></a> 网络结构</h3>
+<p>采用卷积层更多，整体结构更加复杂的VGG-19网络进行特征提取与损失函数计算，也可以对于空白部分得到更加细致的填充。</p>
+<table>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_starry_19_at_iteration_100.png" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_19_at_iteration_50.png"/></center></td>
+    </tr>
+</table>
+<h2 id="过渡问题优化方法"><a class="markdownIt-Anchor" href="#过渡问题优化方法"></a> 过渡问题优化方法</h2>
+<h3 id="fdmhm匹配-2"><a class="markdownIt-Anchor" href="#fdmhm匹配-2"></a> FDM/HM匹配</h3>
+<p>通过不同通道的匹配算法，将content图像向style图像进行靠近与匹配，对结果分析的结果可以看出，在<strong>RGB空间</strong>和<strong>Lab保持亮度</strong>的情况下进行匹配，用NST算法得到的结果更加好看。</p>
+<p>样例：la_muse风格</p>
+<table>
+    <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" >内容图</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/la_muse.jpg">风格图</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/muse_at_iteration_50.png">NST原始效果</center></td>
+    </tr>
+    <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_m_a_at_iteration_50.png" >FDM Lab空间匹配（亮度不变）</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_m_l_at_iteration_50.png">FDM 亮度匹配</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/b_m_r_at_iteration_50.png">FDM RGB空间匹配</center></td>
+    </tr>
+     <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_muse_ab_at_iteration_50.png" >HM Lab空间匹配（亮度不变）</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_muse_light_at_iteration_50.png">HM 亮度匹配</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/hm_muse_rgb_at_iteration_50.png">HM RGB空间匹配</center></td>
+    </tr>
+</table>
+<h3 id="池化方法-2"><a class="markdownIt-Anchor" href="#池化方法-2"></a> 池化方法？</h3>
+<p>实验证明，均值池化和最大值池化的效果都存在过渡边缘问题。有时使用均值池化效果甚至更加明显。</p>
+<h3 id="蒙版"><a class="markdownIt-Anchor" href="#蒙版"></a> 蒙版？</h3>
+<p>在之前的纯前景转换实验中，使用了蒙版。无论是正常的蒙版还是二值化的蒙版，在风格迁移之后，都出现了噪点与模糊边缘的过渡现象。但是这也提供了一种可能的解决方案？</p>
+<p>如果我们进行<strong>去噪</strong>、<strong>滤波</strong>等后处理，也许可以清除掉过渡边缘。</p>
+<p>如果使用<strong>后处理</strong>进行蒙版转换，那么可以得到直接的截断式边缘效果：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_rgb_19_at_iteration_50_masked.png" alt="bird_muse_rgb_19_at_iteration_50_masked" class="lazyload"></p>
+<p>当然，背景的纹理填充也就没有了。</p>
+<h3 id="网络结构-2"><a class="markdownIt-Anchor" href="#网络结构-2"></a> 网络结构</h3>
+<p>采用VGG-19网络进行迁移，运算成本与时间变高，需要迭代的次数也变多了。但是在最后进行优化的过程中，边缘过渡部分的融合程度会逐渐扩大，最终形成较为不明显的过渡。</p>
+<p>我们可以通过控制迭代次数来获得不同程度的过渡效果，这种情况对于前背景反差明显的图像尤其适用。</p>
+<table>
+    <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_1.png" >iter 1</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_5.png">iter 5</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_15.png">iter 15</center></td>
+    </tr>
+    <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_25.png" >iter 25</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_50.png">iter 50</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_100.png">iter 100</center></td>
+    </tr>
+     <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_150.png" >iter 150</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_lesscontent_19_at_iteration_200.png">iter 200</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_ave_19_at_iteration_150.png">w/ Average Pooling</center></td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_1.png" >iter 1</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_5.png">iter 5</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_15.png">iter 15</center></td>
+    </tr>
+    <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_25.png" >iter 25</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_50.png">iter 50</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_75.png">iter 75</center></td>
+    </tr>
+     <tr>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_100.png" >iter 100</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_125.png">iter 125</center></td>
+        <td style="width:33%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_lesscontent_19_at_iteration_150.png">iter 150</center></td>
+    </tr>
+</table>
+<h2 id="组合方法效果展示"><a class="markdownIt-Anchor" href="#组合方法效果展示"></a> 组合方法效果展示</h2>
+<ul>
+<li>
+<p>FDM-RGB色彩匹配后，使用VGG-19网络进行风格迁移效果</p>
+<table>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_muse_rgb_19_at_iteration_50.png"></center></td>
+    </tr>
+</table>
+</li>
+<li>
+<p>VGG-19网络正常迁移，使用均值池化</p>
+<table>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_farmer_ave_19_at_iteration_75.png"></center></td>
+    </tr>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_starry_ave_19_at_iteration_150.png"></center></td>
+    </tr>
+</table>
+</li>
+</ul>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/01/12/%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;01&#x2F;12&#x2F;%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;01&#x2F;12&#x2F;%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/">风格迁移</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E5%8F%91%E7%8E%B0"><span class="toc-number">1.</span> <span class="toc-text"> 问题的发现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%90%E5%9B%A0%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text"> 成因分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E6%BB%91%E5%A1%AB%E5%85%85%E9%97%AE%E9%A2%98%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text"> 平滑填充问题优化方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#fdmhm%E5%8C%B9%E9%85%8D"><span class="toc-number">3.1.</span> <span class="toc-text"> FDM&#x2F;HM匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%A0%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text"> 池化方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84"><span class="toc-number">3.3.</span> <span class="toc-text"> 网络结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%B8%A1%E9%97%AE%E9%A2%98%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text"> 过渡问题优化方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#fdmhm%E5%8C%B9%E9%85%8D-2"><span class="toc-number">4.1.</span> <span class="toc-text"> FDM&#x2F;HM匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%A0%E5%8C%96%E6%96%B9%E6%B3%95-2"><span class="toc-number">4.2.</span> <span class="toc-text"> 池化方法？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%92%99%E7%89%88"><span class="toc-number">4.3.</span> <span class="toc-text"> 蒙版？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84-2"><span class="toc-number">4.4.</span> <span class="toc-text"> 网络结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%96%B9%E6%B3%95%E6%95%88%E6%9E%9C%E5%B1%95%E7%A4%BA"><span class="toc-number">5.</span> <span class="toc-text"> 组合方法效果展示</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1641984495125"></script>
+
+
+	<script async src="/js/search.js?v=1641984495125"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
