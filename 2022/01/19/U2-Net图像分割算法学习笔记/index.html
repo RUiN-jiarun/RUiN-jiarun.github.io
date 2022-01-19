@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>U2-Net图像分割算法学习笔记 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/amv6d-ugpbz-001.ico" type="image/x-icon" />
+    <meta name="description" content="前置：U-Net 论文来源：U-Net: Convolutional Networks for Biomedical Image Segmentation U-Net发表于2015年，最早被应用于医学细胞分割，后来也适用于各种图像分割问题。U-Net是一种基于CNN的网络结构，提出了一种高效利用有效标签数据的策略。这种U型结构在下采样的过程中捕捉语义信息，在上采样的过程中精确定位，实现非常简单的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="U2-Net图像分割算法学习笔记">
+<meta property="og:url" content="http://ruin.net.cn/2022/01/19/U2-Net%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="前置：U-Net 论文来源：U-Net: Convolutional Networks for Biomedical Image Segmentation U-Net发表于2015年，最早被应用于医学细胞分割，后来也适用于各种图像分割问题。U-Net是一种基于CNN的网络结构，提出了一种高效利用有效标签数据的策略。这种U型结构在下采样的过程中捕捉语义信息，在上采样的过程中精确定位，实现非常简单的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/v2-714b7117ee1e1da8683099ae3311ff2e_1440w.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119125944532.png">
+<meta property="og:image" content="https://github.com/xuebinqin/U-2-Net/raw/master/figures/U2Net_Logo.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119130747978.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119140917736.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119140656201.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/13727053-b3dbd24bee0ed2f0.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119174151022.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/birdout.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Obama.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/out.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Latte.jpg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/out2.png">
+<meta property="article:published_time" content="2022-01-19T09:37:32.000Z">
+<meta property="article:modified_time" content="2022-01-19T09:43:09.809Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/v2-714b7117ee1e1da8683099ae3311ff2e_1440w.jpg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1642585399758">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1642585399758">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>26</div>
+        <div><span>Tags</span>9</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">4</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/01/19/U2-Net%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">U2-Net图像分割算法学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/15/%E6%9D%9C%E6%99%AE%E8%95%BE%E7%9A%84%E5%A4%A7%E6%8F%90%E7%90%B4/">杜普蕾的大提琴</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/12/%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/">风格迁移中的背景填充与过渡边缘现象</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/07/%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB%E4%B8%AD%E7%9A%84%E8%83%8C%E6%99%AF%E5%A1%AB%E5%85%85%E4%B8%8E%E8%BF%87%E6%B8%A1%E8%BE%B9%E7%BC%98%E7%8E%B0%E8%B1%A1/">两种DA算法与风格迁移预处理效果分析</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/06/Real-Time-Style-Transfer%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">Real Time Style Transfer论文阅读</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119174151022.png" data-sizes="auto" alt="U2-Net图像分割算法学习笔记" class="lazyload">
+              <h1>U2-Net图像分割算法学习笔记</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年01月19日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.6k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 11 分钟</a>
+</div>
+
+      
+
+      <h2 id="前置u-net"><a class="markdownIt-Anchor" href="#前置u-net"></a> 前置：U-Net</h2>
+<p>论文来源：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1505.04597.pdf">U-Net: Convolutional Networks for Biomedical Image Segmentation</a></p>
+<p>U-Net发表于2015年，最早被应用于医学细胞分割，后来也适用于各种图像分割问题。U-Net是一种基于CNN的网络结构，提出了一种高效利用有效标签数据的策略。这种<strong>U型结构</strong>在下采样的过程中<strong>捕捉语义信息</strong>，在上采样的过程中<strong>精确定位</strong>，实现非常简单的端到端训练模型。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/v2-714b7117ee1e1da8683099ae3311ff2e_1440w.jpg" alt="[论文笔记] U-Net" class="lazyload"></p>
+<h3 id="网络结构"><a class="markdownIt-Anchor" href="#网络结构"></a> 网络结构</h3>
+<p>网络结构包括两部分，左侧的<strong>收缩路径</strong>和右侧的<strong>扩张路径</strong>（contracting path &amp; expansive path）。</p>
+<ul>
+<li>
+<p>收缩路径</p>
+<p>收缩路径的结构基于传统CNN网络，它包括两个3x3卷积的重复利用（无填充卷积），每一个卷积核跟着一个ReLU激活以及2x2+2步长的最大池化，用于下采样。</p>
+<p>每一个下采样的过程中，特征通道的数量增加了一倍。、</p>
+</li>
+<li>
+<p>扩张路径</p>
+<p>扩张路径中，每一步包括特征图的上采样，和2x2卷积，将特征通道的数量减半，与收缩路径中相应的裁剪的特征图连接，以及两个3x3卷积，每一个后面跟着一个ReLU激活。</p>
+</li>
+</ul>
+<p>每次卷积后，需要进行裁剪以保留边界像素。</p>
+<p>最后一层，是一个1x1的菊娜姬，用来映射64个特征向量到对应的类别。整个架构拥有23层卷积层。</p>
+<p><em>细节：为了保证2x2的最大池化可以应用到所有层，输入最好是奇数的size尺寸。</em></p>
+<h3 id="训练原理"><a class="markdownIt-Anchor" href="#训练原理"></a> 训练原理</h3>
+<p>文章中使用的训练数据集是Caffe。</p>
+<p>**这里学到一个重要的训练技巧：为了最大限度地减少开销并最大限度地利用GPU内存，我们倾向于使用较大的输入块（input tiles）而不是较大的批处理大小（batch size），从而将批处理减少到单个图像（reduce the batch to a single image）。**因此作者使用high momentum来使得大量之前看到的训练样本确定当前优化步骤中的更新参数。</p>
+<p>首先回忆一下Softmax，结合网络我们定义如下：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><msub><mi>M</mi><mi>k</mi></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>=</mo><mi>exp</mi><mo>(</mo><msub><mi>a</mi><mi>k</mi></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>)</mo><mi mathvariant="normal">/</mi><mo>(</mo><msubsup><mo>∑</mo><mrow><msup><mi>k</mi><mrow><mi mathvariant="normal">′</mi></mrow></msup><mo>=</mo><mn>1</mn></mrow><mi>K</mi></msubsup><mi>exp</mi><mo>(</mo><msub><mi>a</mi><mrow><msup><mi>k</mi><mrow><mi mathvariant="normal">′</mi></mrow></msup></mrow></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">SM_k(\bold x) = \exp(a_k(\bold x)) / (\sum^K_{k&#x27;=1}\exp(a_{k&#x27;}(\bold x))
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.8283360000000002em;"></span><span class="strut bottom" style="height:3.1304490000000005em;vertical-align:-1.302113em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mrel">=</span><span class="mop">exp</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">a</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mclose">)</span><span class="mord mathrm">/</span><span class="mopen">(</span><span class="mop op-limits"><span class="vlist"><span style="top:1.202113em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="vlist"><span style="top:-0.289em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">1</span></span></span></span><span style="top:-0.000005000000000032756em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span><span class="op-symbol large-op mop">∑</span></span></span><span style="top:-1.250005em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.07153em;">K</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mop">exp</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">a</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="vlist"><span style="top:-0.289em;margin-right:0.07142857142857144em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span></span></p>
+<p>简而言之，就是多个神经元的输出映射到(0,1)区间，用于多分类。</p>
+<p>然后，给出损失函数交叉熵cross entropy的定义：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi><mo>=</mo><msub><mo>∑</mo><mrow><mi mathvariant="bold">x</mi><mo>∈</mo><mi mathvariant="normal">Ω</mi></mrow></msub><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>log</mi><mo>(</mo><mi>S</mi><msub><mi>M</mi><mrow><mi>l</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">E = \sum_{\bold x \in \Omega}w(x)\log(SM_{l(\bold x)}(\bold x))
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.050005em;"></span><span class="strut bottom" style="height:2.3717110000000003em;vertical-align:-1.321706em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">E</span><span class="mrel">=</span><span class="mop op-limits"><span class="vlist"><span style="top:1.194336em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathbf">x</span><span class="mrel">∈</span><span class="mord mathrm">Ω</span></span></span></span><span style="top:-0.000005000000000032756em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span><span class="op-symbol large-op mop">∑</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="vlist"><span style="top:0.18019999999999992em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span></span></p>
+<p>我们会发现这个损失函数使用的是带边界权值的损失函数。其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mo>:</mo><mi mathvariant="normal">Ω</mi><mo>→</mo><mrow><mn>1</mn><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><mi>K</mi></mrow></mrow><annotation encoding="application/x-tex">l:\Omega \rightarrow {1, ..., K}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mrel">:</span><span class="mord mathrm">Ω</span><span class="mrel">→</span><span class="mord textstyle uncramped"><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.07153em;">K</span></span></span></span></span>，代表像素点的标签值，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>w</mi></mrow><annotation encoding="application/x-tex">w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02691em;">w</span></span></span></span>是像素点的权值，目的是为了给图像中贴近边界点的像素更高的权重。定义权重函数如下：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>w</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>=</mo><msub><mi>w</mi><mi>c</mi></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>+</mo><msub><mi>w</mi><mn>0</mn></msub><mo>⋅</mo><mi>exp</mi><mo>(</mo><mo>−</mo><mfrac><mrow><mo>(</mo><msub><mi>d</mi><mn>1</mn></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>+</mo><msub><mi>d</mi><mn>2</mn></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><msup><mo>)</mo><mn>2</mn></msup></mrow><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac><mo>)</mo></mrow><annotation encoding="application/x-tex">w(\bold x) = w_c(\bold x) + w_0 \cdot \exp(-\frac{(d_1(\bold x)+d_2(\bold x))^2}{2\sigma^2}) 
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.491108em;"></span><span class="strut bottom" style="height:2.177108em;vertical-align:-0.686em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">⋅</span><span class="mop">exp</span><span class="mopen">(</span><span class="mord">−</span><span class="mord reset-textstyle displaystyle textstyle uncramped"><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.686em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathrm">2</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="vlist"><span style="top:-0.289em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.677em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle textstyle uncramped"><span class="mord textstyle uncramped"><span class="mopen">(</span><span class="mord"><span class="mord mathit">d</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mbin">+</span><span class="mord"><span class="mord mathit">d</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span><span class="mclose"><span class="mclose">)</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">w_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是平衡类别比例的权值，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>d</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">d_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">d</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>d</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">d_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">d</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>分别是该像素到距离其最近的细胞以及第二近的细胞的距离（扩展一下，也就是检测目标的范围），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">w_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span></span></span>是常值，可以进行微调。</p>
+<h3 id="效果"><a class="markdownIt-Anchor" href="#效果"></a> 效果</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119125944532.png" alt="image-20220119125944532" class="lazyload"></p>
+<p>U-Net一经提出，在当年（2015年）的ISBI cell tracking challenge上获得了不凡的好成绩。在测试的两组数据集（PhC-U373和DIC-HeLa）上，分别获得92.03%和77.56%的好成绩，一骑绝尘。</p>
+<h2 id="优化提出u2-net"><a class="markdownIt-Anchor" href="#优化提出u2-net"></a> 优化提出：U2-Net</h2>
+<p>论文来源：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2005.09007.pdf">U2-Net: Going Deeper with Nested U-Structure for Salient Object Detection</a></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://github.com/xuebinqin/U-2-Net/raw/master/figures/U2Net_Logo.png" alt="img" class="lazyload"></p>
+<p>U2-Net，确切的说，应该叫做U-Square-Net，提出的动机是，能否设计一个新的用于显著物体检测的网络，能允许从头开始训练，并取得更好的性能，并在低内存和低计算成本的情况下，在保持高分辨率特征图的同时，实现更加深层的网络结构。</p>
+<p>U2-Net是一个两层嵌套的U-Net结构，没有使用任何预训练骨干网络，可以从头训练，效果显著。</p>
+<h2 id="理解残差与残差块"><a class="markdownIt-Anchor" href="#理解残差与残差块"></a> 理解：残差与残差块</h2>
+<p>如何理解<strong>残差</strong>（residual）？<strong>残差是指预测值和观测值之间的差距</strong>。注意不是误差（loss），<em>误差是指观察值和真实值的差距</em>。对于一个网络的某一层<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi><mo>=</mo><mi>H</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">y=H(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span></span></span></span>，一个<strong>残差块</strong>可以表示为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi><mo>=</mo><mi>H</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>+</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">y=H(x)=F(x)+x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span><span class="mbin">+</span><span class="mord mathit">x</span></span></span></span>。在单位映射中，我们看到<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi><mo>=</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">y=x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mrel">=</span><span class="mord mathit">x</span></span></span></span>。那么，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>就是观测值，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>H</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">H(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span></span></span></span>是预测值，那么<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">F(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span></span></span></span>就是残差。</p>
+<p>残差网络有两个属性：</p>
+<ul>
+<li>任意一个较深的层都可以表示为任意一个比它浅的层和他们之间的残差之和；</li>
+<li>MLP（多层感知器）是特征矩阵的累积，我们可以将任意一个更深的层理解为从最前的层到其的所有残差之和。</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119130747978.png" alt="image-20220119130747978" class="lazyload"></p>
+<p>上图展示了CNN网络架构中常见的卷积块：</p>
+<ol>
+<li>
+<p>普通卷积块PLN。采用最普遍的3x3小型卷积滤波器进行特征提取。</p>
+</li>
+<li>
+<p>残差类块RES。最早见于ResNet残差神经网络。通过建立<em>恒等快捷连接</em>（identity shortcut connection），跳过一个层或多个层，用直接映射来连接网络不同层。</p>
+</li>
+<li>
+<p>密集类块DSE。最早见于DenseNet密集连接卷积神经网络。利用一种快捷连接，将所有层直接联系在一起。每一层的输入由之前所有层的特征映射组成，其输出将传输给每个后续层。</p>
+</li>
+<li>
+<p>Inception-like块INC。这是一种李彤膨胀卷积进行局部和全局特征结构提取的方法。有时为了减少计算损失，也选择对下采样后的特征使用金字塔池化模块PPM提取全局特征。</p>
+</li>
+<li>
+<p><strong>RSU残差U形块，即RSU</strong>。下面详细记录。</p>
+</li>
+</ol>
+<h2 id="u2-net算法原理"><a class="markdownIt-Anchor" href="#u2-net算法原理"></a> U2-Net算法原理</h2>
+<h3 id="rsu残差块架构"><a class="markdownIt-Anchor" href="#rsu残差块架构"></a> RSU残差块架构</h3>
+<p>我们把这个结构图放大仔细看看：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119140917736.png" alt="image-20220119140917736" class="lazyload"></p>
+<p>RSU-L中的L代表高度，图中Cin和Cout表示输入和输出通道，M表示RSU内层的通道数。</p>
+<p>RSU分成三个部分：</p>
+<ul>
+<li>一个输入卷积层，卷积核大小是3×3，作用是将输入特征图的通道数转换成Cout大小，提取局部特征。</li>
+<li>一个高度为L的类似U-Net的对称编解码结构。更大的L会有更深的RSU块，更多的池化操作，更大范围的感受野和更丰富的局部和全局特征。使用不同L的RSU可以从具有任意空间分辨率的输入特征图中提取多尺度特征。多尺度特征从逐渐下采样的特征图中提取，并通过逐渐上采样、拼接和卷积编码成高分辨率特征图。该过程减轻了由大规模直接上采样引起的精细细节的损失。</li>
+<li>残差连接，也就是计算局部特征和多尺度特征的和。</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119140656201.png" alt="image-20220119140656201" class="lazyload"></p>
+<p>对比发现，RSU用权重变换的多尺度特征代替了原始特征，使得网络能直接从每个残差块提取<strong>多尺度特征</strong>。</p>
+<h3 id="u2-net总体架构"><a class="markdownIt-Anchor" href="#u2-net总体架构"></a> U2-Net总体架构</h3>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/13727053-b3dbd24bee0ed2f0.png" alt="img" class="lazyload">
+<p>（不得不说这个图画的真的很好懂……）</p>
+<p>显而易见，U2-Net的整体结构是一个两层嵌套的U-Net编码解码器结构网络。整体包括了11个阶段（stage），每一个阶段中是一个RSU结构块。</p>
+<p>再细分一下，U2-Net网络包含了三部分：</p>
+<ul>
+<li>一个6阶段编码器（En_1~En_6）</li>
+<li>一个5阶段解码器（De_1~De_5）</li>
+<li>一个saliency map融合模块，用于连接最后一个编码器和解码器</li>
+</ul>
+<p>再来理解一些图中的一些细节：</p>
+<ul>
+<li>编码器阶段En_1~En_4分别包含RSU-7、RSU-6、RSU-5和RSU-4。</li>
+<li>因为最后两个阶段的编码器获得的特征图分辨率已经比较小了，因此不适用进一步的下采样了，我们采用一种RSU-4F结构的残差块——这里替换了池化和上采样操作，采用具有膨胀卷积性质（dilated convolution）的算子。这意味着RSU-4F的所有中间特征图与其输入也正有着相同的分辨率。</li>
+<li>解码器和编码器的结构对称类似。</li>
+<li>最后的saliency map fusion module（显著图融合模块）用来生成显著概率图。整个网络首先生成了6个side概率图（即S1~S6）。生成方式很简单，就是图示中的六个阶段输出经过3x3菊娜姬和sigmoid激活。然后经过上采样和级联操作，经过1x1卷积和sigmoid激活，得到最终saliency map。</li>
+</ul>
+<h3 id="训练监督"><a class="markdownIt-Anchor" href="#训练监督"></a> 训练监督</h3>
+<p>训练损失函数的定义如下：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi><mi>o</mi><mi>s</mi><mi>s</mi><mo>=</mo><msubsup><mo>∑</mo><mrow><mi>m</mi><mo>=</mo><mn>1</mn></mrow><mi>M</mi></msubsup><msubsup><mi>w</mi><mrow><mi>s</mi><mi>i</mi><mi>d</mi><mi>e</mi></mrow><mrow><mo>(</mo><mi>m</mi><mo>)</mo></mrow></msubsup><msubsup><mi>l</mi><mrow><mi>s</mi><mi>i</mi><mi>d</mi><mi>e</mi></mrow><mrow><mo>(</mo><mi>m</mi><mo>)</mo></mrow></msubsup><mo>+</mo><msub><mi>w</mi><mrow><mi>f</mi><mi>u</mi><mi>s</mi><mi>e</mi></mrow></msub><mo>+</mo><msub><mi>l</mi><mrow><mi>f</mi><mi>u</mi><mi>s</mi><mi>e</mi></mrow></msub></mrow><annotation encoding="application/x-tex">Loss = \sum_{m=1}^M w_{side}^{(m)}l_{side}^{(m)}+w_{fuse}+l_{fuse}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.8283360000000002em;"></span><span class="strut bottom" style="height:3.0954490000000003em;vertical-align:-1.267113em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit">L</span><span class="mord mathit">o</span><span class="mord mathit">s</span><span class="mord mathit">s</span><span class="mrel">=</span><span class="mop op-limits"><span class="vlist"><span style="top:1.1671129999999998em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">m</span><span class="mrel">=</span><span class="mord mathrm">1</span></span></span></span><span style="top:-0.000005000000000143778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span><span class="op-symbol large-op mop">∑</span></span></span><span style="top:-1.2500050000000003em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.10903em;">M</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.3013079999999999em;margin-left:-0.02691em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">s</span><span class="mord mathit">i</span><span class="mord mathit">d</span><span class="mord mathit">e</span></span></span></span><span style="top:-0.5198em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mopen">(</span><span class="mord mathit">m</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.3013079999999999em;margin-left:-0.01968em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">s</span><span class="mord mathit">i</span><span class="mord mathit">d</span><span class="mord mathit">e</span></span></span></span><span style="top:-0.5198em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mopen">(</span><span class="mord mathit">m</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mord mathit">u</span><span class="mord mathit">s</span><span class="mord mathit">e</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.01968em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mord mathit">u</span><span class="mord mathit">s</span><span class="mord mathit">e</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span></span></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>l</mi><mrow><mi>s</mi><mi>i</mi><mi>d</mi><mi>e</mi></mrow></msub></mrow><annotation encoding="application/x-tex">l_{side}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.01968em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">s</span><span class="mord mathit">i</span><span class="mord mathit">d</span><span class="mord mathit">e</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是对应的side output saliency map的loss，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>l</mi><mrow><mi>f</mi><mi>u</mi><mi>s</mi><mi>e</mi></mrow></msub></mrow><annotation encoding="application/x-tex">l_{fuse}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.01968em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mord mathit">u</span><span class="mord mathit">s</span><span class="mord mathit">e</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是最终saliency map的loss。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>w</mi></mrow><annotation encoding="application/x-tex">w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02691em;">w</span></span></span></span>顾名思义就是对应的权重。</p>
+<p>对于每个<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi></mrow><annotation encoding="application/x-tex">l</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.01968em;">l</span></span></span></span>，使用标准二元交叉熵来计算：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mo>=</mo><mo>−</mo><msubsup><mo>∑</mo><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow><mrow><mo>(</mo><mi>H</mi><mo separator="true">,</mo><mi>W</mi><mo>)</mo></mrow></msubsup><mo>[</mo><msub><mi>P</mi><mrow><msub><mi>G</mi><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow></msub></mrow></msub><mi>log</mi><msub><mi>P</mi><mrow><msub><mi>S</mi><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow></msub></mrow></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>P</mi><mrow><msub><mi>G</mi><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow></msub></mrow></msub><mo>)</mo><mi>log</mi><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>P</mi><mrow><msub><mi>S</mi><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow></msub></mrow></msub><mo>)</mo><mo>]</mo></mrow><annotation encoding="application/x-tex">l = -\sum_{(r,c)}^{(H,W)}[P_{G_{(r,c)}}\log P_{S_{(r,c)}} + (1-P_{G_{(r,c)}})\log (1-P_{S_{(r,c)}}) ]
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.9610050000000006em;"></span><span class="strut bottom" style="height:3.4770100000000004em;vertical-align:-1.5160049999999998em;"></span><span class="base displaystyle textstyle uncramped"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mrel">=</span><span class="mord">−</span><span class="mop op-limits"><span class="vlist"><span style="top:1.2410049999999997em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span style="top:-0.000005000000000254801em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span><span class="op-symbol large-op mop">∑</span></span></span><span style="top:-1.3360050000000006em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.13889em;">W</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">[</span><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit">G</span><span class="vlist"><span style="top:0.19091428571428573em;margin-right:0.07142857142857144em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="vlist"><span style="top:0.19091428571428573em;margin-right:0.07142857142857144em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mopen">(</span><span class="mord mathrm">1</span><span class="mbin">−</span><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit">G</span><span class="vlist"><span style="top:0.19091428571428573em;margin-right:0.07142857142857144em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mopen">(</span><span class="mord mathrm">1</span><span class="mbin">−</span><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="vlist"><span style="top:0.19091428571428573em;margin-right:0.07142857142857144em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mclose">]</span></span></span></span></span></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(r,c)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span>​​是像素坐标，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>H</mi><mo separator="true">,</mo><mi>W</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(H,W)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.13889em;">W</span><span class="mclose">)</span></span></span></span>​​是图片尺寸。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mrow><msub><mi>G</mi><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow></msub></mrow></msub></mrow><annotation encoding="application/x-tex">P_{G_{(r,c)}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:1.0919699999999999em;vertical-align:-0.40864em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit">G</span><span class="vlist"><span style="top:0.19091428571428573em;margin-right:0.07142857142857144em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>​​ 和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mrow><msub><mi>S</mi><mrow><mo>(</mo><mi>r</mi><mo separator="true">,</mo><mi>c</mi><mo>)</mo></mrow></msub></mrow></msub></mrow><annotation encoding="application/x-tex">P_{S_{(r,c)}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:1.0919699999999999em;vertical-align:-0.40864em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="vlist"><span style="top:0.19091428571428573em;margin-right:0.07142857142857144em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord scriptscriptstyle cramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mord mathit">c</span><span class="mclose">)</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>​​​​ 分别表示ground truth和预测显著性概率图的像素值。</p>
+<h2 id="应用与实践"><a class="markdownIt-Anchor" href="#应用与实践"></a> 应用与实践</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220119174151022.png" alt="image-20220119174151022" class="lazyload"></p>
+<p>为什么突然研究起来这个了呢，主要是需要在风格迁移项目中多次应用蒙版，希望可以整一套智能蒙版系统。那么一个轻量的，快捷的，智能的图像分割算法就很有必要，于是乎就调研到了U2-Net。</p>
+<p>具体在蒙版生成系统中，可以做到什么样的效果，先挖个坑吧，后面再填。</p>
+<p>甩几张移除背景的测试上来，平均每次需要5秒左右吧：</p>
+<table>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/bird_00.png" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/birdout.png"></center></td>
+    </tr>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Obama.jpg" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/out.png"></center></td>
+    </tr>
+    <tr>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/Latte.jpg" ></center></td>
+        <td style="width:50%"><center><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/out2.png"></center></td>
+    </tr>
+</table>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/01/19/U2-Net%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;01&#x2F;19&#x2F;U2-Net%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;01&#x2F;19&#x2F;U2-Net%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'RUiN-jiarun', // 你的 GitHub ID
+    repo: 'RUiN-jiarun.github.io', // 存储评论的 repo
+    oauth: {
+        client_id: 'f107122b036187b34c98', // 你的 client ID
+        client_secret: '5125c5d93abd2550a98b156ee4c550896330fd81' // 你的 client secret
+    },
+})
+gitment.render('gitment')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AEu-net"><span class="toc-number">1.</span> <span class="toc-text"> 前置：U-Net</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text"> 网络结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text"> 训练原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%88%E6%9E%9C"><span class="toc-number">1.3.</span> <span class="toc-text"> 效果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%8F%90%E5%87%BAu2-net"><span class="toc-number">2.</span> <span class="toc-text"> 优化提出：U2-Net</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E6%AE%8B%E5%B7%AE%E4%B8%8E%E6%AE%8B%E5%B7%AE%E5%9D%97"><span class="toc-number">3.</span> <span class="toc-text"> 理解：残差与残差块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u2-net%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text"> U2-Net算法原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#rsu%E6%AE%8B%E5%B7%AE%E5%9D%97%E6%9E%B6%E6%9E%84"><span class="toc-number">4.1.</span> <span class="toc-text"> RSU残差块架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u2-net%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">4.2.</span> <span class="toc-text"> U2-Net总体架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E7%9B%91%E7%9D%A3"><span class="toc-number">4.3.</span> <span class="toc-text"> 训练监督</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E4%B8%8E%E5%AE%9E%E8%B7%B5"><span class="toc-number">5.</span> <span class="toc-text"> 应用与实践</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1642585399782"></script>
+
+
+	<script async src="/js/search.js?v=1642585399782"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
