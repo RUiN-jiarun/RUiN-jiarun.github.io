@@ -11,7 +11,7 @@
     
     
 
-    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/amv6d-ugpbz-001.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
     <meta name="description" content="初识Vulkan(1)  Validation Layers Vulkan API的设计核心是尽量最小化驱动程序的额外开销，所谓额外开销更多的是指向渲染以外的运算。其中一个具体的表现就是默认条件下，Vulkan API的错误检查的支持非常有限。即使遍历不正确的值或者将需要的参数传递为空指针，也不会有明确的处理逻辑，并且直接导致崩溃或者未定义的异常行为。之所以这样，是因为Vulkan要求每一个步骤">
 <meta property="og:type" content="article">
 <meta property="og:title" content="初识Vulkan#1">
@@ -29,10 +29,10 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20200407120549998.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1643437835363">
+    <link rel="stylesheet" href="/css/style.css?v=1643470461136">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1643437835363">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1643470461136">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -71,24 +71,24 @@
             </div>
         </a>
         
-        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
             <i class="mdui-list-item-icon nexmoefont icon-container"></i>
             <div class="mdui-list-item-content">
                 文章归档
             </div>
         </a>
         
-        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about.html" title="关于博客">
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
             <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
             <div class="mdui-list-item-content">
                 关于博客
             </div>
         </a>
         
-        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends.html" title="我的朋友">
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
             <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
             <div class="mdui-list-item-content">
-                我的朋友
+                友情链接
             </div>
         </a>
         
@@ -372,10 +372,10 @@
 
  
 
-<script async src="/js/app.js?v=1643437835365"></script>
+<script async src="/js/app.js?v=1643470461138"></script>
 
 
-	<script async src="/js/search.js?v=1643437835365"></script>
+	<script async src="/js/search.js?v=1643470461138"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
