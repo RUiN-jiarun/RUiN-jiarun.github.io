@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>SLAM入门#1：概述 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="SLAM需要哪些知识  数学：高数、线代、概率论 编程：C++、Linux 使用Ubuntu 18.04虚拟机测试（什么时候发我台笔记本配Linux啊）   SLAM概述 SLAM：Simultaneous Localization and Mapping——同时定位与地图构建  两个问题  我在哪？（定位） 我周围是啥？（建图）   硬件需求  传感器——机器人感知外界环境的手段 相机——以二">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SLAM入门#1：概述">
+<meta property="og:url" content="http://ruin.net.cn/2022/03/01/SLAM%E5%85%A5%E9%97%A8-1%EF%BC%9A%E6%A6%82%E8%BF%B0/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="SLAM需要哪些知识  数学：高数、线代、概率论 编程：C++、Linux 使用Ubuntu 18.04虚拟机测试（什么时候发我台笔记本配Linux啊）   SLAM概述 SLAM：Simultaneous Localization and Mapping——同时定位与地图构建  两个问题  我在哪？（定位） 我周围是啥？（建图）   硬件需求  传感器——机器人感知外界环境的手段 相机——以二">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301094603697.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301094940174.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301095051382.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301100955691.png">
+<meta property="article:published_time" content="2022-03-01T02:20:15.000Z">
+<meta property="article:modified_time" content="2022-03-01T02:21:25.324Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301094603697.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1646101307381">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1646101307381">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>28</div>
+        <div><span>Tags</span>10</div>
+        <div><span>Categories</span>4</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 13.33px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16.67px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 10px;">计算机视觉</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/03/01/SLAM%E5%85%A5%E9%97%A8-1%EF%BC%9A%E6%A6%82%E8%BF%B0/">SLAM入门#1：概述</a>
+          </li>
+        
+          <li>
+            <a href="/2022/02/02/CycleGAN%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">CycleGAN学习记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/19/U2-Net%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">U2-Net图像分割算法学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/15/%E6%9D%9C%E6%99%AE%E8%95%BE%E7%9A%84%E5%A4%A7%E6%8F%90%E7%90%B4/">杜普蕾的大提琴</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/12/%E8%BF%87%E6%B8%A1%E7%8E%B0%E8%B1%A1%E7%9A%84%E8%A7%A3%E5%86%B3%E4%B8%8E%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/">风格迁移中的背景填充与过渡边缘现象</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301095051382.png" data-sizes="auto" alt="SLAM入门#1：概述" class="lazyload">
+              <h1>SLAM入门#1：概述</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年03月01日</a>
+    <a><i class="nexmoefont icon-areachart"></i>521 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 2 分钟</a>
+</div>
+
+      
+
+      <h2 id="slam需要哪些知识"><a class="markdownIt-Anchor" href="#slam需要哪些知识"></a> SLAM需要哪些知识</h2>
+<ul>
+<li>数学：高数、线代、概率论</li>
+<li>编程：C++、Linux</li>
+<li>使用Ubuntu 18.04虚拟机测试（什么时候发我台笔记本配Linux啊）</li>
+</ul>
+<h2 id="slam概述"><a class="markdownIt-Anchor" href="#slam概述"></a> SLAM概述</h2>
+<p>SLAM：Simultaneous Localization and Mapping——同时定位与地图构建</p>
+<h3 id="两个问题"><a class="markdownIt-Anchor" href="#两个问题"></a> 两个问题</h3>
+<ul>
+<li>我在哪？（定位）</li>
+<li>我周围是啥？（建图）</li>
+</ul>
+<h3 id="硬件需求"><a class="markdownIt-Anchor" href="#硬件需求"></a> 硬件需求</h3>
+<ul>
+<li>传感器——机器人感知外界环境的手段</li>
+<li>相机——以二位投影记录三维世界信息
+<ul>
+<li>单目相机：monocular，无深度信息</li>
+<li>双目相机（立体相机）：stereo，通过<strong>视差</strong>计算深度</li>
+<li>深度相机：RGB-D，通过物理方法测量深度</li>
+<li>其他相机</li>
+</ul>
+</li>
+</ul>
+<p>回忆早些时候学习图形学的时候，使用过Depth Buffer，也用过光线求交等计算方法，也学习过各种消隐算法。现在的问题是，我们如何从二维图像提取出深度信息。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301094603697.png" alt="image-20220301094603697" class="lazyload"></p>
+<p>另外一个例子是通过相机运动捕捉深度，利用“视差”</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301094940174.png" alt="image-20220301094940174" class="lazyload"></p>
+<h3 id="视觉slam框架"><a class="markdownIt-Anchor" href="#视觉slam框架"></a> 视觉SLAM框架</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301095051382.png" alt="image-20220301095051382" class="lazyload"></p>
+<ul>
+<li>前端：视觉里程计Visual Odometry
+<ul>
+<li>估计邻近时刻的相机运动（小范围）</li>
+<li>方法：特征点对应法、直接法</li>
+</ul>
+</li>
+<li>后端：非线性优化Optimization
+<ul>
+<li>从带有噪声的数据中估计出最优轨迹与地图</li>
+<li>最大后验概率估计</li>
+<li>滤波器</li>
+<li>图优化</li>
+</ul>
+</li>
+<li>回环检测Loop Closing
+<ul>
+<li>检测相机是否到达了之前到达过的位置，进一步优化轨迹</li>
+<li>判断差异、计算相似性</li>
+</ul>
+</li>
+<li>建图Mapping</li>
+</ul>
+<h2 id="slam的数学描述"><a class="markdownIt-Anchor" href="#slam的数学描述"></a> SLAM的数学描述</h2>
+<p>SLAM可以理解为运动与观测的综合分析——一个<strong>状态估计问题</strong></p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220301100955691.png" alt="image-20220301100955691" class="lazyload">
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>为位置（定位），已知<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">k-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.77777em;vertical-align:-0.08333em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="mbin">−</span><span class="mord mathrm">1</span></span></span></span>时刻位置<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">x_{k-1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.638891em;vertical-align:-0.208331em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="mbin">−</span><span class="mord mathrm">1</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，传感器的输入量（机器人的运动指令）<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>u</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">u_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">u</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，以及噪声<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">w_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。</p>
+<p>对于采集，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">z_{k,j}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>表示在<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span></span></span></span>时刻采集到了路标<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span>。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>y</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">y_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>表示路标<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span>的位置（建图），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>v</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">v_{k,j}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为噪声。</p>
+<p>进一步学习的问题：</p>
+<ul>
+<li>如何描述三维空间位置</li>
+<li>观测模型如何描述——相机模型</li>
+<li>如何推测建图</li>
+</ul>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/03/01/SLAM%E5%85%A5%E9%97%A8-1%EF%BC%9A%E6%A6%82%E8%BF%B0/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;03&#x2F;01&#x2F;SLAM%E5%85%A5%E9%97%A8-1%EF%BC%9A%E6%A6%82%E8%BF%B0&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;03&#x2F;01&#x2F;SLAM%E5%85%A5%E9%97%A8-1%EF%BC%9A%E6%A6%82%E8%BF%B0&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/SLAM%E5%85%A5%E9%97%A8/">SLAM入门</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#slam%E9%9C%80%E8%A6%81%E5%93%AA%E4%BA%9B%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text"> SLAM需要哪些知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#slam%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text"> SLAM概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E9%97%AE%E9%A2%98"><span class="toc-number">2.1.</span> <span class="toc-text"> 两个问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E9%9C%80%E6%B1%82"><span class="toc-number">2.2.</span> <span class="toc-text"> 硬件需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E8%A7%89slam%E6%A1%86%E6%9E%B6"><span class="toc-number">2.3.</span> <span class="toc-text"> 视觉SLAM框架</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#slam%E7%9A%84%E6%95%B0%E5%AD%A6%E6%8F%8F%E8%BF%B0"><span class="toc-number">3.</span> <span class="toc-text"> SLAM的数学描述</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1646101307405"></script>
+
+
+	<script async src="/js/search.js?v=1646101307405"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
