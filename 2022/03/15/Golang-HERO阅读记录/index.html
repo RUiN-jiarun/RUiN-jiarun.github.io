@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>Golang HERO阅读记录 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文题目：HERO: On the Chaos When PATH Meets Modules 论文来源：ISCE 2021 主题：Go生态系统下两种不同的项目管理方式导致的Dependency Management问题与解决  背景  Go Modules与GOPATH不向后兼容。 即使Golang项目及其引用的上游项目都使用Go Modules，也可能违反SIV规则。 解决Golang项目的D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang HERO阅读记录">
+<meta property="og:url" content="http://ruin.net.cn/2022/03/15/Golang-HERO%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文题目：HERO: On the Chaos When PATH Meets Modules 论文来源：ISCE 2021 主题：Go生态系统下两种不同的项目管理方式导致的Dependency Management问题与解决  背景  Go Modules与GOPATH不向后兼容。 即使Golang项目及其引用的上游项目都使用Go Modules，也可能违反SIV规则。 解决Golang项目的D">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315182645649.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315181947803.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315182951640.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315184126910.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315211702381.png">
+<meta property="article:published_time" content="2022-03-15T13:21:59.000Z">
+<meta property="article:modified_time" content="2022-03-15T13:22:49.015Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315182645649.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1647350577708">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1647350577708">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>35</div>
+        <div><span>Tags</span>11</div>
+        <div><span>Categories</span>5</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12.5px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 17.5px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 15px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 15px;">计算机视觉</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">15</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/03/15/Golang-HERO%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">Golang HERO阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/14/VS-Net%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">VS-Net阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/10/SLAM%E5%85%A5%E9%97%A8-3%EF%BC%9A%E6%9D%8E%E7%BE%A4%E4%B8%8E%E6%9D%8E%E4%BB%A3%E6%95%B0/">SLAM入门#3：李群与李代数</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/08/Happy-Birthday-RUiN/">Happy Birthday, RUiN</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/04/Small-World-With-High-Risks%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">Small World With High Risks阅读记录</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315184126910.png" data-sizes="auto" alt="Golang HERO阅读记录" class="lazyload">
+              <h1>Golang HERO阅读记录</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年03月15日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.5k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 6 分钟</a>
+</div>
+
+      
+
+      <p>论文题目：HERO: On the Chaos When PATH Meets Modules</p>
+<p>论文来源：ISCE 2021</p>
+<p>主题：Go生态系统下两种不同的项目管理方式导致的Dependency Management问题与解决</p>
+<h2 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h2>
+<ul>
+<li>Go Modules与GOPATH不向后兼容。</li>
+<li>即使Golang项目及其引用的上游项目都使用Go Modules，也可能违反<em>SIV规则</em>。</li>
+<li>解决Golang项目的DM问题需要了解其上游和下游项目的最新信息，以及它们可能对两种库参考模式的异构使用。</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315182645649.png" alt="image-20220315182645649" class="lazyload"></p>
+<p>SIV规则：必须有语义版本控制格式，以<code>v2</code>版本或更高的项目必须包含<code>/v2</code>后缀，而<code>v0</code>或<code>v1</code>版本则不应该在其模块或导入路径中包含版本后缀。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315181947803.png" alt="image-20220315181947803" class="lazyload"></p>
+<p>(a) lz4的v2.0.7迁移到了Go Modules，并声明模块路径<code>github.com/pierrec/lz4/v2</code>，然而他的下游项目仍在GOPATH，所以不识别<code>/v2</code>，引发了DM问题。因此lz4的v2.2.4移除了<code>/v2</code>后缀，解决了DM问题。但是对于已经迁移到Go Modules的下游项目出现了build错误，因为违反了SIV规则。最终lz4的v2.2.6又重用了GOPATH。</p>
+<p>(b) go-i18n的v2.0.1为了更精细的库引用控件而使用了Go Modules，引发了下游使用GOPATH的项目的DM问题，同样是不识别<code>/v2</code>后缀。因此v2.0.2版本提供了一个额外的子目录<code>go-il8n/v2</code>，包含一份支持GOPATH的实现方法。</p>
+<p>对于大多Golang项目包含两种：module-aware和module-unaware：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315182951640.png" alt="image-20220315182951640" class="lazyload"></p>
+<p>早期版本经常包含module-unaware的项目，特别是GOPATH环境下使用了DM管理工具，这些项目都是module unaware的，一旦迁移到Go Modules，就容易产生DM问题。</p>
+<h2 id="实证研究"><a class="markdownIt-Anchor" href="#实证研究"></a> 实证研究</h2>
+<h3 id="rq1module-awareness的程度"><a class="markdownIt-Anchor" href="#rq1module-awareness的程度"></a> RQ1（module-awareness的程度）</h3>
+<p><strong>Golang生态中的项目的库参考模式迁移现状如何？它们在多大程度上是module-aware的？</strong></p>
+<p>Golang项目在迁移到Go Modules时面临挑战。截至2020年6月，GitHub上排名前2万的项目中只有35.9%迁移到了Go模块，排名前2万的项目中至少有51.0%是module-aware的。这两种库参考模式可能在生态系统中长期共存。</p>
+<h3 id="rq2问题的种类的诱因"><a class="markdownIt-Anchor" href="#rq2问题的种类的诱因"></a> RQ2（问题的种类的诱因）</h3>
+<p><strong>DM问题的常见类型是什么？其根本原因是什么？</strong></p>
+<p>DM问题通常是由于GOPATH和Go Modules的异构使用而产生的。它们的表现有两个共同的根本原因：（1）GOPATH和Go Modules以不同的方式解释导入路径；（2）Golang生态系统中没有严格执行SIV规则。</p>
+<h3 id="rq3解决方案"><a class="markdownIt-Anchor" href="#rq3解决方案"></a> RQ3（解决方案）</h3>
+<p><strong>解决DM问题的常见做法是什么？它们如何影响Golang生态系统？</strong></p>
+<ul>
+<li>GOPATH项目迁移到Go Modules</li>
+<li>Go Modules项目回滚到GOPATH</li>
+<li>将Go Modules中v2+项目的发布策略从主要分支更改为子目录</li>
+<li>在下游项目的Vendor目录中的Go Modules中维护v2+库，而不是通过虚拟导入路径引用它们</li>
+<li>使用带有版本信息的replace指令避免在引用库中使用导入路径</li>
+<li>更新已更改存储库的库的导入路径</li>
+<li>Go Modules中的项目修复配置项以严格遵守SIV规则</li>
+<li>使用特定版本的hash commit ID替换库引用中有问题的版本号</li>
+</ul>
+<p>我们观察到针对DM问题的八种常见修复方案，覆盖了95.4%的研究问题。大多数解决方案可能会影响生态系统中的其他项目。在解决DM问题时，开发人员应该在好处和可能的后果之间进行权衡。</p>
+<h2 id="hero"><a class="markdownIt-Anchor" href="#hero"></a> HERO</h2>
+<h3 id="检测算法"><a class="markdownIt-Anchor" href="#检测算法"></a> 检测算法</h3>
+<ol>
+<li>收集当前项目信息：利用Github的API<code>repository_url</code>，通过查找是否有<code>go.mod</code>文件来查询当前项目的导入路径和库引用模式。如果当前工程在GOPATH环境，那么检查是否有DM工具配置文件。然后通过查找Vendor目录中的维护库信息来确定相应的库是否被删除或重新定位。</li>
+<li>收集下游项目信息：利用Github的API<code>code_search_url</code>。简单来说，查找当前项目<code>go.mod</code>的需求指令和源文件中的导入指令或者DM工具的配置项来查找下游项目。HERO收集每一个下游项目的最新版本，其余信息的收集同上。</li>
+<li>收集上游项目信息：
+<ol>
+<li>若当前项目为Go Modules，则通过当前项目的导入路径和版本信息来收集上游项目</li>
+<li>若当前项目为GOPATH，则通过当前项目的导入路径和源文件来收集上游项目</li>
+</ol>
+</li>
+</ol>
+<h3 id="检测类型"><a class="markdownIt-Anchor" href="#检测类型"></a> 检测类型</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315184126910.png" alt="image-20220315184126910" class="lazyload"></p>
+<ul>
+<li>
+<p>Type A：module-unaware项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>在Go Modules里引用了上游项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的特定版本，而另一个上游项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>b</mi></msub></mrow><annotation encoding="application/x-tex">up_b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">b</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>则使用了最新版本，主要使用了major branch策略（主要分支），发布了一个v2+版本</p>
+<ul>
+<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>引用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>旧版本：不会发生build错误</li>
+<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>更新<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>以引用最新版本：无法识别<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>b</mi></msub></mrow><annotation encoding="application/x-tex">up_b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">b</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的虚拟导入路径</li>
+</ul>
+</li>
+<li>
+<p>Type B.1：基于Go Modules的项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>通过一个基于GOPATH的module-unaware项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>间接引用了一个上游项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>b</mi></msub></mrow><annotation encoding="application/x-tex">up_b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">b</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的v2+版本。由于两种方式对于导入路径的解释不同，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>将使用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>b</mi></msub></mrow><annotation encoding="application/x-tex">up_b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">b</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的最新版本，而<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>仍将是用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>b</mi></msub></mrow><annotation encoding="application/x-tex">up_b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">b</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的旧版本</p>
+</li>
+<li>
+<p>Type B.2：基于GOPATH的项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>引用了仅在其Vendor目录里维护的上游项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>（即，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>已经被删除或重定位）。</p>
+<ul>
+<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>在Go Modules里没有下游项目：不会发生build错误</li>
+<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>在Go Modules里没有下游项目：后者通过其导入路径而不是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的Vendor目录来获取<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><msub><mi>p</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">up_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，则无法获取而导致build错误。</li>
+</ul>
+</li>
+<li>
+<p>Type C：基于Go Modules的项目<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>违反了SIV规则。一旦<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>P</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">P_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>游下游项目，会直接发生build错误。</p>
+</li>
+</ul>
+<h3 id="检测效果"><a class="markdownIt-Anchor" href="#检测效果"></a> 检测效果</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220315211702381.png" alt="image-20220315211702381" class="lazyload"></p>
+<p>似乎效果很好……</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/03/15/Golang-HERO%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;03&#x2F;15&#x2F;Golang-HERO%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;03&#x2F;15&#x2F;Golang-HERO%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E8%BD%AF%E4%BB%B6%E4%BE%9B%E5%BA%94%E9%93%BE/">软件供应链</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" rel="tag">计算机安全</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text"> 背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%AF%81%E7%A0%94%E7%A9%B6"><span class="toc-number">2.</span> <span class="toc-text"> 实证研究</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#rq1module-awareness%E7%9A%84%E7%A8%8B%E5%BA%A6"><span class="toc-number">2.1.</span> <span class="toc-text"> RQ1（module-awareness的程度）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rq2%E9%97%AE%E9%A2%98%E7%9A%84%E7%A7%8D%E7%B1%BB%E7%9A%84%E8%AF%B1%E5%9B%A0"><span class="toc-number">2.2.</span> <span class="toc-text"> RQ2（问题的种类的诱因）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rq3%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">2.3.</span> <span class="toc-text"> RQ3（解决方案）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hero"><span class="toc-number">3.</span> <span class="toc-text"> HERO</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text"> 检测算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text"> 检测类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E6%95%88%E6%9E%9C"><span class="toc-number">3.3.</span> <span class="toc-text"> 检测效果</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1647350577719"></script>
+
+
+	<script async src="/js/search.js?v=1647350577719"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
