@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>SLAM入门#5-1：特征点法与对极几何 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="特征点提取与匹配  特征点 如何描述一个SLAM的过程：位姿与路标的对应。  经典SLAM模型：路标是三维空间中的固定点，能够在特定位姿下观测到。 视觉SLAM模型：路标是图像的特征。  特征：图像信息的一种数字表达形式。具有可重复性、可区别性、高效、本地性的特征。 我们希望，特征点在相机运动之后保持稳定，即在光照、视角发生少量变化时仍保持一致。 特征点的组成：  关键点：特征点的位置、大小、朝">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SLAM入门#5-1：特征点法与对极几何">
+<meta property="og:url" content="http://ruin.net.cn/2022/03/23/SLAM%E5%85%A5%E9%97%A8-5-1%EF%BC%9A%E7%89%B9%E5%BE%81%E7%82%B9%E6%B3%95%E4%B8%8E%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="特征点提取与匹配  特征点 如何描述一个SLAM的过程：位姿与路标的对应。  经典SLAM模型：路标是三维空间中的固定点，能够在特定位姿下观测到。 视觉SLAM模型：路标是图像的特征。  特征：图像信息的一种数字表达形式。具有可重复性、可区别性、高效、本地性的特征。 我们希望，特征点在相机运动之后保持稳定，即在光照、视角发生少量变化时仍保持一致。 特征点的组成：  关键点：特征点的位置、大小、朝">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321201119628.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321201520453.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220416718.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220723909.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220931118.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322223152291.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322224710783.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322224721754.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322225024210.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322225050234.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322225110138.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230101803.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230322248.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230416993.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230512153.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323100900590.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101042994.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101204451.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101434042.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101703922.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101725322.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101750193.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101816681.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101842250.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323102202153.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323102253945.png">
+<meta property="article:published_time" content="2022-03-23T02:24:53.000Z">
+<meta property="article:modified_time" content="2022-03-23T02:25:41.764Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321201119628.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1648002347398">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1648002347398">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>37</div>
+        <div><span>Tags</span>11</div>
+        <div><span>Categories</span>5</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 18px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 16px;">计算机视觉</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/03/23/SLAM%E5%85%A5%E9%97%A8-5-1%EF%BC%9A%E7%89%B9%E5%BE%81%E7%82%B9%E6%B3%95%E4%B8%8E%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95/">SLAM入门#5-1：特征点法与对极几何</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/19/SLAM%E5%85%A5%E9%97%A8-4%EF%BC%9A%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%9D%9E%E7%BA%BF%E6%80%A7%E4%BC%98%E5%8C%96/">SLAM入门#4：相机模型与非线性优化</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/15/Golang-HERO%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">Golang HERO阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/14/VS-Net%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">VS-Net阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/10/SLAM%E5%85%A5%E9%97%A8-3%EF%BC%9A%E6%9D%8E%E7%BE%A4%E4%B8%8E%E6%9D%8E%E4%BB%A3%E6%95%B0/">SLAM入门#3：李群与李代数</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220931118.png" data-sizes="auto" alt="SLAM入门#5-1：特征点法与对极几何" class="lazyload">
+              <h1>SLAM入门#5-1：特征点法与对极几何</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年03月23日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.6k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 6 分钟</a>
+</div>
+
+      
+
+      <h2 id="特征点提取与匹配"><a class="markdownIt-Anchor" href="#特征点提取与匹配"></a> 特征点提取与匹配</h2>
+<h3 id="特征点"><a class="markdownIt-Anchor" href="#特征点"></a> 特征点</h3>
+<p>如何描述一个SLAM的过程：位姿与路标的对应。</p>
+<ul>
+<li>经典SLAM模型：路标是三维空间中的固定点，能够在特定位姿下观测到。</li>
+<li>视觉SLAM模型：路标是图像的特征。</li>
+</ul>
+<p>特征：图像信息的一种数字表达形式。具有可重复性、可区别性、高效、本地性的特征。</p>
+<p>我们希望，<strong>特征点在相机运动之后保持稳定</strong>，即在光照、视角发生少量变化时仍保持一致。</p>
+<p>特征点的组成：</p>
+<ul>
+<li>关键点：特征点的位置、大小、朝向等信息</li>
+<li>描述子：特征点周围的像素信息</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321201119628.png" alt="image-20220321201119628" class="lazyload"></p>
+<p>经典特征点的例子：SIFT、SURF、ORB</p>
+<h3 id="orb特征"><a class="markdownIt-Anchor" href="#orb特征"></a> ORB特征</h3>
+<ul>
+<li>关键点：计算了主方向的FAST角点</li>
+<li>描述子：BRIEF</li>
+</ul>
+<h4 id="fast关键点"><a class="markdownIt-Anchor" href="#fast关键点"></a> FAST关键点</h4>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321201520453.png" alt="image-20220321201520453" class="lazyload"></p>
+<p>FAST的原理是检测以一个目标像素<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi></mrow><annotation encoding="application/x-tex">p</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">p</span></span></span></span>为中心半径为3的圆周上的16个像素点中，是否有连续的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10903em;">N</span></span></span></span>个点的亮度大于<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>p</mi></msub><mo>+</mo><mi>T</mi></mrow><annotation encoding="application/x-tex">I_p+T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">p</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>或小于<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>p</mi></msub><mo>−</mo><mi>T</mi></mrow><annotation encoding="application/x-tex">I_p-T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">p</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">−</span><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>。以FAST-12为例，即取N为12，检测邻域圆上的像素。</p>
+<p>加速方法：直接检测第1，5，9，13个像素的亮度，只有当有3个同时大于<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>p</mi></msub><mo>+</mo><mi>T</mi></mrow><annotation encoding="application/x-tex">I_p+T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">p</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>或小于<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>p</mi></msub><mo>−</mo><mi>T</mi></mrow><annotation encoding="application/x-tex">I_p-T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">p</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">−</span><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>，当前像素才有可能是角点。</p>
+<p>第一次检测完后需要进行非极大值抑制，在一定区域内保留响应极大值的角点，避免角点集中。</p>
+<p>在FAST的基础上，加入尺度不变性和旋转不变性：</p>
+<ul>
+<li>
+<p>尺度不变性：构建图像金字塔，对图像进行不同层次降采样，以获得不同分辨率的图像。</p>
+</li>
+<li>
+<p>旋转不变性：使用灰度质心法</p>
+<p>灰度质心（Intensity Centroid）是指以图像块灰度值作为权重的中心。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220416718.png" alt="image-20220321220416718" class="lazyload">
+</li>
+</ul>
+<h4 id="brief描述子"><a class="markdownIt-Anchor" href="#brief描述子"></a> BRIEF描述子</h4>
+<p>一种二进制描述子，由许多0和1编码向量，编码关键点附近两个随即像素的大小关系。一般选择BRIEF-128，即在特征点附近的128次像素比较。</p>
+<p>一般使用汉明距离度量。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220723909.png" alt="image-20220321220723909" class="lazyload"></p>
+<h3 id="特征匹配"><a class="markdownIt-Anchor" href="#特征匹配"></a> 特征匹配</h3>
+<p>特征匹配解决SLAM中的数据关联问题。一个基本的想法是通过描述子的差异判断哪些特征点其实是同一个点。</p>
+<ul>
+<li>暴力匹配法：比较两个图中每个特征点于其他所有特征点之间的描述子距离，排序取最近的为匹配点。</li>
+<li>快速近似最近邻（FLANN）</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220321220931118.png" alt="image-20220321220931118" class="lazyload"></p>
+<h2 id="对极几何"><a class="markdownIt-Anchor" href="#对极几何"></a> 对极几何</h2>
+<p>解决问题：只有两个单目图像之间2D-2D的对应关系</p>
+<h3 id="对极约束"><a class="markdownIt-Anchor" href="#对极约束"></a> 对极约束</h3>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322223152291.png" alt="image-20220322223152291" class="lazyload">
+<p>定义：</p>
+<ul>
+<li>两幅图像平面<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>I</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">I_1,I_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>中的对应特征点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>p</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>p</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">p_1,p_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，其实是同一个世界坐标中的点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>P</mi></mrow><annotation encoding="application/x-tex">P</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">P</span></span></span></span>的投影</li>
+<li>两个相机中心<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>O</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>O</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">O_1,O_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span></li>
+<li>极平面：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>O</mi><mn>1</mn></msub><msub><mi>O</mi><mn>2</mn></msub><mi>P</mi></mrow><annotation encoding="application/x-tex">O_1O_2P</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord mathit" style="margin-right:0.13889em;">P</span></span></span></span></li>
+<li>极点：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>O</mi><mn>1</mn></msub><msub><mi>O</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">O_1O_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>与两个平面的交点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>e</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>e</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">e_1,e_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">e</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">e</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span></li>
+<li>极线：极平面与两个图像平面的交线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>l</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>l</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">l_1,l_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.01968em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.01968em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>
+<ul>
+<li>另一种解释：极线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>l</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">l_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.01968em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>其实是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>O</mi><mn>2</mn></msub><mi>P</mi></mrow><annotation encoding="application/x-tex">O_2P</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord mathit" style="margin-right:0.13889em;">P</span></span></span></span>在平面<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">I_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>上的投影<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>e</mi><mn>1</mn></msub><msub><mi>p</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">e_1p_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">e</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord"><span class="mord mathit">p</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，反之亦然</li>
+</ul>
+</li>
+<li>两个相机之间的变换矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>T</mi><mrow><mn>1</mn><mn>2</mn></mrow></msub></mrow><annotation encoding="application/x-tex">T_{12}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">T</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathrm">1</span><span class="mord mathrm">2</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span></li>
+</ul>
+<p>实践当中，我们只知道特征点匹配的两个点，具体坐标和极点都是未知的，我们需要求解变换矩阵来估计相机的位姿。</p>
+<p><strong>对极约束公式</strong>：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322224710783.png" alt="image-20220322224710783" class="lazyload">
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322224721754.png" alt="image-20220322224721754" class="lazyload">
+<p>其中下面一个公式是包含相机内参的展开，上面一个公式直接使用了两个像素点归一化平面上的坐标。</p>
+<p>这个公式刻画了O_1、O_2、P共面的关系，约束中包含了平移和旋转</p>
+<ul>
+<li>
+<p>基础矩阵（Fundamental Matrix）:</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322225024210.png" alt="image-20220322225024210" class="lazyload"></p>
+</li>
+<li>
+<p>本质矩阵（Essential Matrix）：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322225050234.png" alt="image-20220322225050234" class="lazyload"></p>
+</li>
+</ul>
+<p>则对极约束可以简化为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322225110138.png" alt="image-20220322225110138" class="lazyload"></p>
+<p><strong>对极约束的性质</strong>：</p>
+<ul>
+<li>乘以任意非零常数依然满足关系</li>
+<li>本质矩阵只有五个自由度（由于<strong>尺度等价性</strong>，即投影关系的坐标在齐次坐标下相等）</li>
+<li>本质矩阵的内在性质：奇异值必定是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>σ</mi><mo separator="true">,</mo><mi>σ</mi><mo separator="true">,</mo><mn>0</mn><msup><mo>]</mo><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">[\sigma,\sigma,0]^T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8413309999999999em;"></span><span class="strut bottom" style="height:1.0913309999999998em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose"><span class="mclose">]</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的形式</li>
+</ul>
+<p>相机位姿求解的步骤：</p>
+<ol>
+<li>根据配对点的像素位置求出本质矩阵</li>
+<li>根据本质矩阵恢复相机外参</li>
+</ol>
+<h3 id="本质矩阵的求解"><a class="markdownIt-Anchor" href="#本质矩阵的求解"></a> 本质矩阵的求解</h3>
+<p><strong>八点法</strong>：利用八对点来估计本质矩阵，指利用本质矩阵的线性性质。</p>
+<p>考虑一对匹配点，其归一化坐标分别为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><msub><mi>u</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>v</mi><mn>1</mn></msub><mo separator="true">,</mo><mn>1</mn><msup><mo>]</mo><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">[u_1,v_1,1]^T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8413309999999999em;"></span><span class="strut bottom" style="height:1.0913309999999998em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord"><span class="mord mathit">u</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mclose"><span class="mclose">]</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><msub><mi>u</mi><mn>2</mn></msub><mo separator="true">,</mo><msub><mi>v</mi><mn>2</mn></msub><mo separator="true">,</mo><mn>1</mn><msup><mo>]</mo><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">[u_2,v_2,1]^T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8413309999999999em;"></span><span class="strut bottom" style="height:1.0913309999999998em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord"><span class="mord mathit">u</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mclose"><span class="mclose">]</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。其对极约束公式为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230101803.png" alt="image-20220322230101803" class="lazyload"></p>
+<p>展开本质矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">E</span></span></span></span>，写成向量形式：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230322248.png" alt="image-20220322230322248" class="lazyload"></p>
+<p>则对极约束为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230416993.png" alt="image-20220322230416993" class="lazyload"></p>
+<p>以此类推，可以写出对应八对点的方程组：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220322230512153.png" alt="image-20220322230512153" class="lazyload"></p>
+<blockquote>
+<p>这个方程组的可解性分析：</p>
+<p>如果八对匹配点组成的矩阵满足秩为8的条件，则<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">E</span></span></span></span>的个元素可以解</p>
+</blockquote>
+<p>解法：奇异值分解。请参考<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/29846048">奇异值分解（SVD） - 知乎 (zhihu.com)</a>来看什么是奇异值分解</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323100900590.png" alt="image-20220323100900590" class="lazyload"></p>
+<p>由本质矩阵的内在性质，SVD分解中任意一个<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">E</span></span></span></span>，可以存在两个可能的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mo separator="true">,</mo><mi>R</mi></mrow><annotation encoding="application/x-tex">t,R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">t</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.00773em;">R</span></span></span></span>与之对应，则一共存在4个可能的解：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101042994.png" alt="image-20220323101042994" class="lazyload"></p>
+<p>在保持投影点（红点）不变的情况下，两个相机空间点一共有4中可能的情况，但只有一个深度为正(1)。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101204451.png" alt="image-20220323101204451" class="lazyload"></p>
+<ul>
+<li>
+<p>如果利用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">E</span></span></span></span>的内在性质，由于其只有五个自由度，所以最少可以通过5对点来求解相机运动，但是非常复杂。</p>
+</li>
+<li>
+<p>SVD分解中，如果不满足奇异值的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>σ</mi><mo separator="true">,</mo><mi>σ</mi><mo separator="true">,</mo><mn>0</mn><msup><mo>]</mo><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">[\sigma,\sigma,0]^T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8413309999999999em;"></span><span class="strut bottom" style="height:1.0913309999999998em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose"><span class="mclose">]</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的形式，通常会调整如下：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101434042.png" alt="image-20220323101434042" class="lazyload"></p>
+</li>
+</ul>
+<h3 id="单应矩阵"><a class="markdownIt-Anchor" href="#单应矩阵"></a> 单应矩阵</h3>
+<p><strong>单应矩阵</strong>（Homography）：常记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.08125em;">H</span></span></span></span>，描述了两个平面之间的映射关系，特别是处于共同平面上的一些点在两个图像之间的变换关系。</p>
+<p>设特征点落在某平面方程上：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101703922.png" alt="image-20220323101703922" class="lazyload">
+<p>或</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101725322.png" alt="image-20220323101725322" class="lazyload"></p>
+<p>根据两个图象特征点的坐标关系（此处的等号意味着尺度意义下相等）：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101750193.png" alt="image-20220323101750193" class="lazyload"></p>
+<p>得到一个直接描述图像坐标之间的变化，记中间部分为单应矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.08125em;">H</span></span></span></span>：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101816681.png" alt="image-20220323101816681" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323101842250.png" alt="image-20220323101842250" class="lazyload"></p>
+<p>实际操作中，令<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>h</mi><mn>9</mn></msub><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">h_9=1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">h</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">9</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">1</span></span></span></span>（在它取非零值时），然后根据第三行去掉非零因子，整理得：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323102202153.png" alt="image-20220323102202153" class="lazyload"></p>
+<p>即一堆匹配点构造出两个约束，则自由度为8的单应矩阵可以通过4对匹配特征点计算。写成类似八点法的形式：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220323102253945.png" alt="image-20220323102253945" class="lazyload"></p>
+<p>那么方法同上。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/03/23/SLAM%E5%85%A5%E9%97%A8-5-1%EF%BC%9A%E7%89%B9%E5%BE%81%E7%82%B9%E6%B3%95%E4%B8%8E%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;03&#x2F;23&#x2F;SLAM%E5%85%A5%E9%97%A8-5-1%EF%BC%9A%E7%89%B9%E5%BE%81%E7%82%B9%E6%B3%95%E4%B8%8E%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;03&#x2F;23&#x2F;SLAM%E5%85%A5%E9%97%A8-5-1%EF%BC%9A%E7%89%B9%E5%BE%81%E7%82%B9%E6%B3%95%E4%B8%8E%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/SLAM%E5%85%A5%E9%97%A8/">SLAM入门</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E7%82%B9%E6%8F%90%E5%8F%96%E4%B8%8E%E5%8C%B9%E9%85%8D"><span class="toc-number">1.</span> <span class="toc-text"> 特征点提取与匹配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text"> 特征点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#orb%E7%89%B9%E5%BE%81"><span class="toc-number">1.2.</span> <span class="toc-text"> ORB特征</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#fast%E5%85%B3%E9%94%AE%E7%82%B9"><span class="toc-number">1.2.1.</span> <span class="toc-text"> FAST关键点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#brief%E6%8F%8F%E8%BF%B0%E5%AD%90"><span class="toc-number">1.2.2.</span> <span class="toc-text"> BRIEF描述子</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E5%8C%B9%E9%85%8D"><span class="toc-number">1.3.</span> <span class="toc-text"> 特征匹配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95"><span class="toc-number">2.</span> <span class="toc-text"> 对极几何</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E6%9E%81%E7%BA%A6%E6%9D%9F"><span class="toc-number">2.1.</span> <span class="toc-text"> 对极约束</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E8%B4%A8%E7%9F%A9%E9%98%B5%E7%9A%84%E6%B1%82%E8%A7%A3"><span class="toc-number">2.2.</span> <span class="toc-text"> 本质矩阵的求解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%BA%94%E7%9F%A9%E9%98%B5"><span class="toc-number">2.3.</span> <span class="toc-text"> 单应矩阵</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1648002347419"></script>
+
+
+	<script async src="/js/search.js?v=1648002347419"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
