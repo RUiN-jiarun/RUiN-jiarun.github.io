@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>SLAM入门#8：回环检测 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="回环检测概述  回环检测的意义 前端提供特征点的提取和轨迹、地图的初值，后端负责对所有数据的优化。然而，如果像视觉里程计那样仅考虑相邻时间上的关键帧，那么之前产生的误差将不可避免地累积到下一时刻，使得SLAM出现累计误差，长期估计的结果将不可靠。或者说我们无法构建全局一致的轨迹和地图。  以上图为例，（a）为真实轨迹，（b）由于前端只给出了相邻帧之间的估计，所以优化后的位姿图出现了漂移现象。我们">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SLAM入门#8：回环检测">
+<meta property="og:url" content="http://ruin.net.cn/2022/04/07/SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="回环检测概述  回环检测的意义 前端提供特征点的提取和轨迹、地图的初值，后端负责对所有数据的优化。然而，如果像视觉里程计那样仅考虑相邻时间上的关键帧，那么之前产生的误差将不可避免地累积到下一时刻，使得SLAM出现累计误差，长期估计的结果将不可靠。或者说我们无法构建全局一致的轨迹和地图。  以上图为例，（a）为真实轨迹，（b）由于前端只给出了相邻帧之间的估计，所以优化后的位姿图出现了漂移现象。我们">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407145559362.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407150710771.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407151052061.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407151203246.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407152245688.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153336680.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153427004.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153501206.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153612700.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153655066.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153908776.png">
+<meta property="article:published_time" content="2022-04-07T07:40:17.000Z">
+<meta property="article:modified_time" content="2022-04-07T07:40:44.788Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407145559362.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1649317250099">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1649317250099">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>41</div>
+        <div><span>Tags</span>11</div>
+        <div><span>Categories</span>5</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">9</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 18px;">计算机视觉</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/04/07/SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B/">SLAM入门#8：回环检测</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/04/SLAM%E5%85%A5%E9%97%A8-7%EF%BC%9A%E5%90%8E%E7%AB%AF/">SLAM入门#7：后端</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/29/SLAM%E5%85%A5%E9%97%A8-6%EF%BC%9A%E5%85%89%E6%B5%81%E6%B3%95%E4%B8%8E%E7%9B%B4%E6%8E%A5%E6%B3%95/">SLAM入门#6：光流法与直接法</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/26/SLAM%E5%85%A5%E9%97%A8-5-2%EF%BC%9APnP%E4%B8%8EICP/">SLAM入门#5-2：PnP与ICP</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/23/SLAM%E5%85%A5%E9%97%A8-5-1%EF%BC%9A%E7%89%B9%E5%BE%81%E7%82%B9%E6%B3%95%E4%B8%8E%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95/">SLAM入门#5-1：特征点法与对极几何</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407145559362.png" data-sizes="auto" alt="SLAM入门#8：回环检测" class="lazyload">
+              <h1>SLAM入门#8：回环检测</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年04月07日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.5k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 6 分钟</a>
+</div>
+
+      
+
+      <h2 id="回环检测概述"><a class="markdownIt-Anchor" href="#回环检测概述"></a> 回环检测概述</h2>
+<h3 id="回环检测的意义"><a class="markdownIt-Anchor" href="#回环检测的意义"></a> 回环检测的意义</h3>
+<p>前端提供特征点的提取和轨迹、地图的初值，后端负责对所有数据的优化。然而，如果像视觉里程计那样仅考虑相邻时间上的关键帧，那么之前产生的误差将不可避免地累积到下一时刻，使得SLAM出现<strong>累计误差</strong>，长期估计的结果将不可靠。或者说我们无法构建<strong>全局一致</strong>的轨迹和地图。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407145559362.png" alt="image-20220407145559362" class="lazyload"></p>
+<p>以上图为例，（a）为真实轨迹，（b）由于前端只给出了相邻帧之间的估计，所以优化后的位姿图出现了漂移现象。我们需要加入回环检测（c），消除累计误差。</p>
+<p>回环检测对于SLAM的意义很重要：</p>
+<ol>
+<li>关系到估计的轨迹和地图在长时间下的正确性。</li>
+<li>利用回环检测提供的当前数据于所有历史数据的关联，可以进行重定位。</li>
+</ol>
+<p>一个基本的loop losing步骤：</p>
+<ol>
+<li>检测回环发生（即经过同一位置）</li>
+<li>计算回环修选帧与当前帧的运动</li>
+<li>验证回环是否成立</li>
+<li>闭环</li>
+</ol>
+<h3 id="回环检测的方法"><a class="markdownIt-Anchor" href="#回环检测的方法"></a> 回环检测的方法</h3>
+<p>最简单的方法：对任意两个关键帧进行特征匹配。然而这么做的复杂度是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><msup><mi>N</mi><mn>2</mn></msup><mo>)</mo></mrow><annotation encoding="application/x-tex">O(N^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8141079999999999em;"></span><span class="strut bottom" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span></span></span></span>。</p>
+<p>两种主流思路：</p>
+<ul>
+<li>基于里程计的方法（Odometry based）：当我们发现当前相机运动到了之前的某个位置附近时，检测有没有回环关系。然而由于累计误差，我们往往无法判断。</li>
+<li>基于外观的方法（Appearance based）：与前后端估计都没有关系，仅根据两幅图像的相似性确定回环检测关系。</li>
+</ul>
+<p>基于外观的方法的核心在于<strong>衡量图像之间的相似性</strong>。一个朴素的想法是使用灰度值的差。但是灰度值严重受环境影响，并且由于相机视角变化引起的像素位移，也会常常引起巨大的差异值。因此，灰度值作差不能很好地反应图像间的相似关系。</p>
+<h3 id="回环检测的指标"><a class="markdownIt-Anchor" href="#回环检测的指标"></a> 回环检测的指标</h3>
+<p>我们可以简单地分类回环检测的结果：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407150710771.png" alt="image-20220407150710771" class="lazyload">
+<p>其中，假阳性也被称为<strong>感知偏差</strong>（Perceptual Aliasing），假阴性又被称为<strong>感知变异</strong>（Perceptual Variability）。这四种情况也被简写为TP、FP、FN、TN。显然，我们希望TP、TN尽可能地多，FP、FN尽可能地少。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407151052061.png" alt="image-20220407151052061" class="lazyload"></p>
+<p>同时定义两个统计量：<strong>准确率</strong>（Precision）和<strong>召回率</strong>（Recall）：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407151203246.png" alt="image-20220407151203246" class="lazyload">
+<p>准确率反映了所有回环中确实是真实回环的概率，而召回率反映了在所有回环中被正确检测出来的概率。PR通常是一对矛盾量，一般SLAM模型对准确率要求比较高，对召回率相对宽容。</p>
+<h2 id="相似度计算"><a class="markdownIt-Anchor" href="#相似度计算"></a> 相似度计算</h2>
+<h3 id="词袋模型"><a class="markdownIt-Anchor" href="#词袋模型"></a> 词袋模型</h3>
+<p>使用Bag-of-Words（BoW）方法，可以作为比较好的相似度计算函数。</p>
+<p>BoW是对于特征的聚类。特征聚类形成了词汇（Word），Word组成字典（Dictionary）。图像的相似性即词汇的相似性，我们只关注词汇的存在与否，不关注词汇的顺序。</p>
+<p>一个经典的词汇形成为K-means聚类方法：</p>
+<ol>
+<li>随机选取k个中心点。</li>
+<li>对每一个样本，计算它与每个中心点之间的距离，取最小的作为它的归类。</li>
+<li>重新计算每个类的中心点。</li>
+<li>如果每个中心点变化都很小，则算法收敛，退出，否则返回第二步。</li>
+</ol>
+<p>构建的字典的结构通常可以用k叉树来表示：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407152245688.png" alt="image-20220407152245688" class="lazyload"></p>
+<p>实际建法：</p>
+<ol>
+<li>在根节点，用K-means把所有样本聚成K类（实际中为保证聚类可以使用K-means++）,这样得到第一层。</li>
+<li>对第一层的每个节点，把属于该节点的样本再聚成K类，得到下一层。</li>
+<li>依次类推，最后得到叶子层，叶子层即为所谓的Words。</li>
+</ol>
+<h3 id="tf-idf算法"><a class="markdownIt-Anchor" href="#tf-idf算法"></a> TF-IDF算法</h3>
+<p>TF-IDF（Term Frequency-Inverse Document Frequency，频率-逆文档频率）是一个常用的BoW加权检索方式。TF的思想是，某个单词在一幅图像中经常出现，它的区分度就高；IDF的思想史，某单词在字典中出现的频率越低，分类图象时区分度越高。TF部分需要对图像特征进行计算，IDF部分可以在字典训练中计算。</p>
+<p>TF计算的是特征<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">i</span></span></span></span>在图像A中出现的频率（也就是单词<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">i</span></span></span></span>在句子中出现的频率）：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153336680.png" alt="image-20220407153336680" class="lazyload">
+<p>IDF在构建字典时建立：统计某个叶子节点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">w_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>中的特征数量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>n</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">n_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">n</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>相对于所有特征数量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">n</span></span></span></span>的比例：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153427004.png" alt="image-20220407153427004" class="lazyload">
+<p>于是，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">w_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的权重等于TF与IDF之积：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153501206.png" alt="image-20220407153501206" class="lazyload">
+<p>最后根据两张图像的向量进行距离计算即可得到相似度。</p>
+<p>对于某幅图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">A</span></span></span></span>，考虑权重后，可以通过特征点对应许多单词，组成其BoW：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153612700.png" alt="image-20220407153612700" class="lazyload">
+<p>通过两个图像的向量，可以计算相似度。例如使用L1范数形式：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153655066.png" alt="image-20220407153655066" class="lazyload">
+<p>最终SLAM使用相对评分来评价相似度。相邻关键帧是相似的，而回环的相似度应该约等于相邻关键帧。</p>
+<p>实际比较时取先验相似度：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407153908776.png" alt="image-20220407153908776" class="lazyload">
+<p>表示此时与上一时刻关键帧的相似性，将其他分值根据这个值进行归一化。认为如果当前帧与之前某关键帧的相似度超过了当前帧与上一帧相似度的3倍，则可能存在回环。</p>
+<p>检测成功后，即可根据PnP等算法计算运动关系，利用重投影关系验证回环是否成立，利用全局BA或位姿图进行优化。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://ruin.net.cn/2022/04/07/SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B/" title="http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;04&#x2F;07&#x2F;SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;ruin.net.cn&#x2F;2022&#x2F;04&#x2F;07&#x2F;SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/SLAM%E5%85%A5%E9%97%A8/">SLAM入门</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 回环检测概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text"> 回环检测的意义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.</span> <span class="toc-text"> 回环检测的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B%E7%9A%84%E6%8C%87%E6%A0%87"><span class="toc-number">1.3.</span> <span class="toc-text"> 回环检测的指标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97"><span class="toc-number">2.</span> <span class="toc-text"> 相似度计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%8D%E8%A2%8B%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.1.</span> <span class="toc-text"> 词袋模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tf-idf%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text"> TF-IDF算法</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1649317250104"></script>
+
+
+	<script async src="/js/search.js?v=1649317250104"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
