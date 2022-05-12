@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>最近邻CUDA算子阅读记录 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="前言 近期学习发现继续提升码力……一边是毕设复现一个L-BFGS优化器头疼搞不定，一边是未来的硕士组给了个项目看半天看不懂……深刻认识到了本科学习的肤浅。总之是要即刻需要补补课…… 打算先从CUDA编程入手，然后第一个手边可以拿来的项目就是VS-Net里的一个C++扩展算子nn_cuda，利用CUDA编程加速了最近邻计算，并且与Pytorch结合了起来。就从这里入手，迈出学习的第一步吧。  文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最近邻CUDA算子阅读记录">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/05/12/%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="前言 近期学习发现继续提升码力……一边是毕设复现一个L-BFGS优化器头疼搞不定，一边是未来的硕士组给了个项目看半天看不懂……深刻认识到了本科学习的肤浅。总之是要即刻需要补补课…… 打算先从CUDA编程入手，然后第一个手边可以拿来的项目就是VS-Net里的一个C++扩展算子nn_cuda，利用CUDA编程加速了最近邻计算，并且与Pytorch结合了起来。就从这里入手，迈出学习的第一步吧。  文件">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220509154634346.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220509210806395.png">
+<meta property="article:published_time" content="2022-05-12T03:16:37.000Z">
+<meta property="article:modified_time" content="2022-05-12T03:16:44.511Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220509154634346.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1652325413642">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1652325413642">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>43</div>
+        <div><span>Tags</span>11</div>
+        <div><span>Categories</span>5</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12.5px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 20px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 17.5px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 15px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/05/12/%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">最近邻CUDA算子阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/20/SLAM%E5%85%A5%E9%97%A8-9%EF%BC%9A%E5%BB%BA%E5%9B%BE/">SLAM入门#9：建图</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/07/SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B/">SLAM入门#8：回环检测</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/04/SLAM%E5%85%A5%E9%97%A8-7%EF%BC%9A%E5%90%8E%E7%AB%AF/">SLAM入门#7：后端</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/29/SLAM%E5%85%A5%E9%97%A8-6%EF%BC%9A%E5%85%89%E6%B5%81%E6%B3%95%E4%B8%8E%E7%9B%B4%E6%8E%A5%E6%B3%95/">SLAM入门#6：光流法与直接法</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220509210806395.png" data-sizes="auto" alt="最近邻CUDA算子阅读记录" class="lazyload">
+              <h1>最近邻CUDA算子阅读记录</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年05月12日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.9k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 9 分钟</a>
+</div>
+
+      
+
+      <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>近期学习发现继续提升码力……一边是毕设复现一个L-BFGS优化器头疼搞不定，一边是未来的硕士组给了个项目看半天看不懂……深刻认识到了本科学习的肤浅。总之是要即刻需要补补课……</p>
+<p>打算先从CUDA编程入手，然后第一个手边可以拿来的项目就是VS-Net里的一个C++扩展算子<code>nn_cuda</code>，利用CUDA编程加速了最近邻计算，并且与Pytorch结合了起来。就从这里入手，迈出学习的第一步吧。</p>
+<h2 id="文件结构"><a class="markdownIt-Anchor" href="#文件结构"></a> 文件结构</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220509154634346.png" alt="image-20220509154634346" class="lazyload"></p>
+<p>在 <code>src</code> 文件夹下有三个文件：</p>
+<ul>
+<li><code>.cu</code> 文件：CUDA kernel文件，即内核，也是Pytorch调用的接口。而且要求这个文件的名称<strong>要与cpp文件名不同</strong>。</li>
+<li><code>.h</code>文件：不是必须的，此处是用于<code>.cu</code>文件引用。</li>
+<li><code>.cpp</code>文件：进行CUDA实现并绑定到python中使用。</li>
+</ul>
+<p>外部的必要文件：</p>
+<ul>
+<li><code>setup.py</code>：导入Pytorch中预设的<code>CUDAExtension</code>类来编译C++和CUDA。</li>
+</ul>
+<h2 id="源码解析"><a class="markdownIt-Anchor" href="#源码解析"></a> 源码解析</h2>
+<h3 id="setuppy"><a class="markdownIt-Anchor" href="#setuppy"></a> <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a></h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> setuptools <span class="hljs-keyword">import</span> setup<br><span class="hljs-keyword">from</span> torch.utils.cpp_extension <span class="hljs-keyword">import</span> BuildExtension, CUDAExtension<br><br>setup(<br>    name=<span class="hljs-string">&quot;nn_cuda&quot;</span>,<br>    ext_modules=[<br>        CUDAExtension(<span class="hljs-string">&quot;nn_cuda&quot;</span>, [<br>            <span class="hljs-string">&quot;src/nn_cuda.cpp&quot;</span>,<br>            <span class="hljs-string">&quot;src/nn_cuda_kernel.cu&quot;</span>,<br>        ])<br>    ],<br>    cmdclass=&#123;<span class="hljs-string">&quot;build_ext&quot;</span>: BuildExtension&#125;)<br></code></pre></td></tr></table></figure>
+<p>总体结构是使用<code>setuptools</code>模块的<code>setup</code>函数进行编译。在这里，<code>CUDAExtension</code>是一个包装器，对其传递正确的引用路径，并将扩展包语言设置为Pytorch内带的cpp语言扩展。</p>
+<h3 id="nn_cudacpp"><a class="markdownIt-Anchor" href="#nn_cudacpp"></a> nn_cuda.cpp</h3>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;torch/torch.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cmath&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;vector&gt;</span></span><br><br><span class="hljs-comment">// CUDA函数声明，一般我们将其写成Launcher形式</span><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">cuNearestNeighborLaucher</span><span class="hljs-params">(<span class="hljs-keyword">const</span> at::Tensor pred, <span class="hljs-keyword">const</span> at::Tensor embedding,</span></span><br><span class="hljs-params"><span class="hljs-function">                          at::Tensor output)</span></span>;<br><br><span class="hljs-comment">// 宏定义</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x <span class="hljs-meta-string">&quot; must be a CUDA tensor&quot;</span>)</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x <span class="hljs-meta-string">&quot; must be contiguous&quot;</span>)</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)</span><br><br><span class="hljs-comment">// C++函数包装</span><br><span class="hljs-function">at::Tensor <span class="hljs-title">nn_cuda</span><span class="hljs-params">(at::Tensor pred, at::Tensor embedding, at::Tensor output)</span> </span>&#123;<br>  <span class="hljs-built_in">CHECK_INPUT</span>(pred);<br>  <span class="hljs-built_in">CHECK_INPUT</span>(embedding);<br>  <span class="hljs-built_in">CHECK_INPUT</span>(output);<br><br>  <span class="hljs-built_in">cuNearestNeighborLaucher</span>(pred, embedding, output);<br><br>  <span class="hljs-keyword">return</span> output;<br>&#125;<br><br><span class="hljs-comment">// 绑定</span><br><span class="hljs-built_in">PYBIND11_MODULE</span>(TORCH_EXTENSION_NAME, m) &#123;<br>  m.<span class="hljs-built_in">def</span>(<span class="hljs-string">&quot;NearestNeighbor&quot;</span>, &amp;nn_cuda, <span class="hljs-string">&quot;NearestNeighbor Laucher (CUDA)&quot;</span>);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>逐部分解析</p>
+<ul>
+<li>CUDA函数声明：这里是真正运算发生的地方，将在 <code>.cu</code> 文件中具体实现。</li>
+<li>宏定义：
+<ul>
+<li>第一行 <code>CHECK_CUDA</code> 检查输入是否在GPU上，可以在CUDA上运算；</li>
+<li>第二行 <code>CHECK_CONTIGUOUS</code> 检查输入是否连续排列存储；</li>
+<li>第三行 <code>CHECK_INPUT</code> 同时检查以上两个条件。</li>
+</ul>
+</li>
+<li>C++函数包装：编译出动态链接库可调用的函数名。显然，这个函数接受三个参数：<code>pred</code>、<code>embedding</code>、<code>output</code>。其中<code>pred</code>是一个向量，<code>embedding</code>是一个码本，最终将在<code>output</code>中返回<code>pred</code>在<code>embedding</code>中最近邻的索引。</li>
+<li>Pybind实现绑定：在<code>m.def</code>中参入参数：绑定的python函数名称，绑定的C++函数引用，说明。</li>
+</ul>
+<h3 id="cuda_commonh"><a class="markdownIt-Anchor" href="#cuda_commonh"></a> cuda_common.h</h3>
+<p>这个头文件中包含了CUDA编程模型一些基本元素。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;float.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cuda.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cuda_runtime.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cuda_runtime_api.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">ifndef</span> CUDA_COMMON_H_</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> CUDA_COMMON_H_</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> __cplusplus</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> &#123;<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> DIST(x1,y1,z1,x2,y2,z2) (((x1)-(x2))*((x1)-(x2))+((y1)-(y2))*((y1)-(y2))+((z1)-(z2))*((z1)-(z2)))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> DIST2D(x1,y1,x2,y2) (((x1)-(x2))*((x1)-(x2))+((y1)-(y2))*((y1)-(y2)))</span><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> gpuErrchk(ans) &#123; gpuAssert((ans), __FILE__, __LINE__); &#125;</span><br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">gpuAssert</span><span class="hljs-params">(cudaError_t code, <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *file, <span class="hljs-keyword">int</span> line, <span class="hljs-keyword">bool</span> abort=<span class="hljs-literal">true</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (code != cudaSuccess)<br>    &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr,<span class="hljs-string">&quot;GPUassert: %s %s %d\n&quot;</span>, <span class="hljs-built_in">cudaGetErrorString</span>(code), file, line);<br>        <span class="hljs-keyword">if</span> (abort) <span class="hljs-built_in">exit</span>(code);<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">infTwoExp</span><span class="hljs-params">(<span class="hljs-keyword">int</span> val)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">int</span> inf=<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">while</span>(val&gt;inf) inf&lt;&lt;=<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">return</span> inf;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">getGPULayout</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">        <span class="hljs-keyword">int</span> dim0,<span class="hljs-keyword">int</span> dim1,<span class="hljs-keyword">int</span> dim2,				<span class="hljs-comment">// 输入张量大小</span></span></span><br><span class="hljs-params"><span class="hljs-function">        <span class="hljs-keyword">int</span>* bdim0,<span class="hljs-keyword">int</span>* bdim1,<span class="hljs-keyword">int</span>* bdim2,		<span class="hljs-comment">// 分配block大小</span></span></span><br><span class="hljs-params"><span class="hljs-function">        <span class="hljs-keyword">int</span>* tdim0,<span class="hljs-keyword">int</span>* tdim1,<span class="hljs-keyword">int</span>* tdim2		<span class="hljs-comment">// 分配thread数量</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span><br><span class="hljs-function"></span>&#123;<br>    (*tdim2)=<span class="hljs-number">64</span>;	<span class="hljs-comment">// 每个block的thread数目</span><br>    <span class="hljs-keyword">if</span>(dim2&lt;(*tdim2)) (*tdim2)=<span class="hljs-built_in">infTwoExp</span>(dim2);<br>    (*bdim2)=dim2/(*tdim2);<br>    <span class="hljs-keyword">if</span>(dim2%(*tdim2)&gt;<span class="hljs-number">0</span>) (*bdim2)++;<br><br>    (*tdim1)=<span class="hljs-number">1024</span>/(*tdim2);<br>    <span class="hljs-keyword">if</span>(dim1&lt;(*tdim1)) (*tdim1)=<span class="hljs-built_in">infTwoExp</span>(dim1);<br>    (*bdim1)=dim1/(*tdim1);<br>    <span class="hljs-keyword">if</span>(dim1%(*tdim1)&gt;<span class="hljs-number">0</span>) (*bdim1)++;<br><br>    (*tdim0)=<span class="hljs-number">1024</span>/((*tdim1)*(*tdim2));<br>    <span class="hljs-keyword">if</span>(dim0&lt;(*tdim0)) (*tdim0)=<span class="hljs-built_in">infTwoExp</span>(dim0);<br>    (*bdim0)=dim0/(*tdim0);<br>    <span class="hljs-keyword">if</span>(dim0%(*tdim0)&gt;<span class="hljs-number">0</span>) (*bdim0)++;<br>&#125;<br><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> __cplusplus</span><br>&#125;<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+<p>其中我们主要关注最后一个函数<code>getGPULayout()</code>。这一部分的作用是根据输入大小分配block数和thread数。在这里显然，每个block的thread数目初始设置为64，总共分配了1024个thread。</p>
+<p>首先回顾一下CUDA编程中的几个重要概念：<strong>Thread</strong>、<strong>Block</strong>、<strong>Grid</strong>。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220509210806395.png" alt="image-20220509210806395" class="lazyload">
+<ul>
+<li>Thread：线程。一个CUDA并行程序会被分为若干个thread来执行。CUDA的每个线程都有唯一的ID标识<code>threadIdx</code>。</li>
+<li>Block：块。数个thread会被组成一个block。同一个block中的thread可以同步或通过内存共享来通讯。</li>
+<li>Grid：网格。多个block会组成一个grid。</li>
+<li>每个群组内的子结构的组织形式可以是一维二维或三维。通过索引来逐层计算。</li>
+</ul>
+<p>我们回过头来看例程中的线程和块的分配。可以理解，使用了三维的组织结构。在线程分配的时候，根据输入的dim来调整分配的情况。目前来说，一个GPUblock里可以包含多达1024个线程。然而，一个内核可以由多个相同形状的线程块执行，因此线程的总数等于每个块的线程数和块的个数。</p>
+<h3 id="nn_cuda_kernelcu"><a class="markdownIt-Anchor" href="#nn_cuda_kernelcu"></a> nn_cuda_kernel.cu</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&quot;cuda_common.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;ATen/ATen.h&gt;</span></span><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cuda.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cuda_runtime.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;queue&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> <span class="hljs-keyword">scalar_t</span>&gt;<br><span class="hljs-function">__global__ <span class="hljs-keyword">void</span> <span class="hljs-title">cuNearestNeighborKernel</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-keyword">const</span> <span class="hljs-keyword">scalar_t</span>* __restrict__ pred,</span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-keyword">const</span> <span class="hljs-keyword">const</span> <span class="hljs-keyword">scalar_t</span>* __restrict__ embedding, </span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-keyword">scalar_t</span>* __restrict__ output, </span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-keyword">size_t</span> batch_size, <span class="hljs-keyword">size_t</span> height, <span class="hljs-keyword">size_t</span> width,</span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-keyword">size_t</span> num_embedding, <span class="hljs-keyword">size_t</span> size_embedding)</span> </span>&#123;<br><br>    <span class="hljs-keyword">int</span> hi = threadIdx.x + blockIdx.x * blockDim.x;<br>    <span class="hljs-keyword">int</span> wi = threadIdx.y + blockIdx.y * blockDim.y;<br>    <span class="hljs-keyword">if</span>(hi&gt;=batch_size*height||wi&gt;=width) <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> index = (hi * width) + wi;			<span class="hljs-comment">// 获取线程索引</span><br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> s1 = index * size_embedding;		<span class="hljs-comment">// 获取这个地方对应的下标</span><br><br>    <span class="hljs-keyword">scalar_t</span> min_val = <span class="hljs-number">1000000000000000</span>;<br>    <span class="hljs-keyword">size_t</span> min_index = <span class="hljs-number">-1</span>;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>; i&lt;num_embedding; ++i) &#123;<br>        <span class="hljs-keyword">scalar_t</span> sum = <span class="hljs-number">0</span>;<br>        <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> s2 = i * size_embedding;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> j=<span class="hljs-number">0</span>; j&lt;size_embedding; ++j) &#123;<br><span class="hljs-comment">//          sum += (pred[s1 + j] - embedding[s2 + j]) * (pred[s1 + j] - embedding[s2 + j]);	// 向量距离</span><br>          sum += - pred[s1 + j] * embedding[s2 + j];<br>        &#125;<br>        <span class="hljs-keyword">if</span>(min_val &gt; sum) &#123;<br>          min_index = i;<br>          min_val = sum;<br>        &#125;<br>    &#125;<br>    output[index] = min_index;						<span class="hljs-comment">// 返回对应最小sum的下标</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">cuNearestNeighborLaucher</span><span class="hljs-params">(<span class="hljs-keyword">const</span> at::Tensor pred, <span class="hljs-keyword">const</span> at::Tensor embedding,</span></span><br><span class="hljs-params"><span class="hljs-function">                          at::Tensor output)</span> </span>&#123;<br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> batch_size = pred.<span class="hljs-built_in">size</span>(<span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> height = pred.<span class="hljs-built_in">size</span>(<span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> width = pred.<span class="hljs-built_in">size</span>(<span class="hljs-number">2</span>);<br><br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> num_embedding = embedding.<span class="hljs-built_in">size</span>(<span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> size_embedding = embedding.<span class="hljs-built_in">size</span>(<span class="hljs-number">1</span>);<br><br>    <span class="hljs-built_in">AT_DISPATCH_FLOATING_TYPES</span>(<br>        pred.<span class="hljs-built_in">type</span>(), <span class="hljs-string">&quot;NearestNeighborKernel_cuda&quot;</span>, ([&amp;] &#123;<br>            <span class="hljs-keyword">const</span> <span class="hljs-keyword">scalar_t</span> *pred_data = pred.data&lt;<span class="hljs-keyword">scalar_t</span>&gt;();<br>            <span class="hljs-keyword">const</span> <span class="hljs-keyword">scalar_t</span> *embedding_data = embedding.data&lt;<span class="hljs-keyword">scalar_t</span>&gt;();<br>            <span class="hljs-keyword">scalar_t</span> *output_data = output.data&lt;<span class="hljs-keyword">scalar_t</span>&gt;();<br><br>            <span class="hljs-keyword">int</span> bdim0, bdim1, bdim2;<br>            <span class="hljs-keyword">int</span> tdim0, tdim1, tdim2;<br><br>            <span class="hljs-built_in">getGPULayout</span>(batch_size * height, width, <span class="hljs-number">1</span>, &amp;bdim0, &amp;bdim1, &amp;bdim2, &amp;tdim0, &amp;tdim1, &amp;tdim2);<br><br>            dim3 <span class="hljs-built_in">bdim</span>(bdim0, bdim1, bdim2);<br>            dim3 <span class="hljs-built_in">tdim</span>(tdim0, tdim1, tdim2);<br><br>            cuNearestNeighborKernel&lt;<span class="hljs-keyword">scalar_t</span>&gt;<br>                &lt;&lt;&lt; bdim, tdim&gt;&gt;&gt;(<br>                    pred_data, embedding_data, output_data,<br>                    batch_size, height, width,<br>                    num_embedding, size_embedding<br>                    );<br>        &#125;));<br>    cudaError_t err = <span class="hljs-built_in">cudaGetLastError</span>();<br>    <span class="hljs-keyword">if</span> (cudaSuccess != err) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;cudaCheckError() failed : %s\n&quot;</span>, <span class="hljs-built_in">cudaGetErrorString</span>(err));<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>首先看一下启动函数<code>cuNearestNeighborLaucher()</code>的实现。首先拿到输入参数为<code>at::Tensor</code>类型的元数据以及数据的维度。<code>pred</code>张量是一个四维张量，格式为<code>batch * height * width * channel</code>，<code>embedding</code>张量是一个二维张量，格式为<code>num * size</code>。关于线程分配的部分。这里分配了每个块的线程数为1。随后看到启动内核部分，调用了<code>&lt;&lt;&lt; &gt;&gt;&gt;</code>这一方法来启动内核。其中传入的参数为分配的block数量与每个block的thread数。</p>
+<p>看到第一部分内核函数<code>cuNearestNeighborKernel()</code>。首先获取到index——绝对索引。绝对索引是数据中的某个位置，因此只需要关注单个线程计算过程，不需要串行循环。根据绝对索引获取<code>embedding</code>的对应下标与值。接下来通过循环，向临时sum中累加负乘积，比较最小值并记录索引。</p>
+<p>关于最近邻的搜索算法有很多近似算法。这里直接省略了向量距离公式中的两个平方项，并且交叉项只保留了一倍。这是因为实际操作的时候会进行norm处理。</p>
+<h2 id="安装与运行"><a class="markdownIt-Anchor" href="#安装与运行"></a> 安装与运行</h2>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sh">$ python setup.py install<br></code></pre></td></tr></table></figure>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/05/12/%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;05&#x2F;12&#x2F;%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;05&#x2F;12&#x2F;%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text"> 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text"> 文件结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text"> 源码解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#setuppy"><span class="toc-number">3.1.</span> <span class="toc-text"> setup.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nn_cudacpp"><span class="toc-number">3.2.</span> <span class="toc-text"> nn_cuda.cpp</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cuda_commonh"><span class="toc-number">3.3.</span> <span class="toc-text"> cuda_common.h</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nn_cuda_kernelcu"><span class="toc-number">3.4.</span> <span class="toc-text"> nn_cuda_kernel.cu</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E4%B8%8E%E8%BF%90%E8%A1%8C"><span class="toc-number">4.</span> <span class="toc-text"> 安装与运行</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1652325413654"></script>
+
+
+	<script async src="/js/search.js?v=1652325413654"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
