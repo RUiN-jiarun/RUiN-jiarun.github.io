@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NeRF学习#1：论文阅读 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：NeRF: Neural Radiance Fields (matthewtancik.com) 关键词：场景表示、视图合成、基于图像的渲染、体绘制、3D深度学习  综述 针对的问题是：如何通过使用稀疏的输入视图集优化基础的连续体积场景函数，从而获得合成复杂场景的新视图。以下图所示，给出了100个离散而随机的的不同视角观测图像，通过优化NeRF（神经辐射场）方法，可以计算出这个连续的5D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NeRF学习#1：论文阅读">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/05/24/NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：NeRF: Neural Radiance Fields (matthewtancik.com) 关键词：场景表示、视图合成、基于图像的渲染、体绘制、3D深度学习  综述 针对的问题是：如何通过使用稀疏的输入视图集优化基础的连续体积场景函数，从而获得合成复杂场景的新视图。以下图所示，给出了100个离散而随机的的不同视角观测图像，通过优化NeRF（神经辐射场）方法，可以计算出这个连续的5D">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220517161234798.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220517161705527.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522170202641.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522171334076.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522171458228.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522171619202.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522172400134.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220523154630186.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220523155300398.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220523155733226.png">
+<meta property="article:published_time" content="2022-05-24T02:20:15.000Z">
+<meta property="article:modified_time" content="2022-05-24T01:15:57.436Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220517161234798.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1653354966713">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1653354966713">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>44</div>
+        <div><span>Tags</span>11</div>
+        <div><span>Categories</span>6</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/3DV/">3DV</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/05/24/NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeRF学习#1：论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/12/%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">最近邻CUDA算子阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/20/SLAM%E5%85%A5%E9%97%A8-9%EF%BC%9A%E5%BB%BA%E5%9B%BE/">SLAM入门#9：建图</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/07/SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B/">SLAM入门#8：回环检测</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/04/SLAM%E5%85%A5%E9%97%A8-7%EF%BC%9A%E5%90%8E%E7%AB%AF/">SLAM入门#7：后端</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220517161705527.png" data-sizes="auto" alt="NeRF学习#1：论文阅读" class="lazyload">
+              <h1>NeRF学习#1：论文阅读</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年05月24日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.3k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 9 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://www.matthewtancik.com/nerf">NeRF: Neural Radiance Fields (matthewtancik.com)</a></p>
+<p>关键词：场景表示、视图合成、基于图像的渲染、体绘制、3D深度学习</p>
+<h2 id="综述"><a class="markdownIt-Anchor" href="#综述"></a> 综述</h2>
+<p>针对的问题是：如何通过使用稀疏的输入视图集优化基础的连续体积场景函数，从而获得合成复杂场景的新视图。以下图所示，给出了100个离散而随机的的不同视角观测图像，通过优化NeRF（神经辐射场）方法，可以计算出这个连续的5D空间，并得出任意一个新的角度观测的图像。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220517161234798.png" alt="image-20220517161234798" class="lazyload"></p>
+<p>文章将一个静态场景表示为一个连续的5D函数，该函数输出3D的空间位置<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo separator="true">,</mo><mi>z</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(x,y,z)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="mclose">)</span></span></span></span>以及2D的每个方向<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>θ</mi><mo separator="true">,</mo><mi>ϕ</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(\theta,\phi)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.02778em;">θ</span><span class="mpunct">,</span><span class="mord mathit">ϕ</span><span class="mclose">)</span></span></span></span>的辐射，以及每个点处的体积密度，用于控制光线透过这个点累计多少辐射。函数的输出可以理解为该<strong>空间的位置和体积密度和依赖于视图的发射辐射</strong>。上述的映射通过MLP（多层感知器，也就是全连接的神经网络）来表示。</p>
+<p>文章提出方法的有点在于，使用体积表示，可以表示复杂的几何外观，同时适合使用投影图像进行基于梯度的优化，并且在复杂场景高分辨率建模时克服了离散网络体积的高昂存储成本。</p>
+<p>本文的研究内容与贡献包括：</p>
+<ol>
+<li>NeRF（神经辐射场）的表示方法与参数化；</li>
+<li>可渲染过程，将MLP内容转化为可见内容；</li>
+<li>位置编码方式，以优化NeRF表示复杂场景。</li>
+</ol>
+<h2 id="相关工作"><a class="markdownIt-Anchor" href="#相关工作"></a> 相关工作</h2>
+<h3 id="3d重建"><a class="markdownIt-Anchor" href="#3d重建"></a> 3D重建</h3>
+<p>原有的3D重建工作的基本思想是：把3D坐标映射到*signed distance functions（有符号的距离函数）<em>或</em>occupancy field（占有域）*的深度网络，进行连续3D形状的隐式表示。这些方法需要有3D集合形状的地面真值作为输入。</p>
+<p>后来的2D-3D表示的可微渲染函数思想是：将物体表面表示为3D占有域，并使用数值方法找到每条射线的表面角点，然后使用隐式微分计算精确导数。每个光线交点作为神经3D纹理域输入，并根据该field预测该点的漫反射颜色。</p>
+<h3 id="视觉合成与基于图像的渲染"><a class="markdownIt-Anchor" href="#视觉合成与基于图像的渲染"></a> 视觉合成与基于图像的渲染</h3>
+<p>问题描述：给定视图的密集采样，通过简单的光场采样插值技术重建照片级的真实感新视图。</p>
+<p>流行方法1：使用基于网格（mesh）的场景表示，这些场景具有漫反射或依赖于视图的外观；可微分光栅器或路径跟踪算法可以优化网格表示，使用梯度下降法来再现一组输入图像。然而基于图像重投影的梯度下降优化法往往比较困难，因为局部极小值或损失条件差。</p>
+<p>流行方法2：使用体积表示来解决从一组输入RGB图像合成高质量照片及真实感视图。基于体积的方法可以真实地表示复杂形状和材料，适合梯度优化，产生的视觉干扰较小。一些方法使用多个场景的大型数据集来训练深层网络，从一组输入图像预测采样的提及表示，使用alpha合成或沿光线学习合成来测试渲染新视图。其他方法优化了每个特定场景的卷积网络（CNN）和采样体素网格的组合，以便CNN可以补偿来自低分辨率体素网格的离散化伪影，或者允许预测的体素网格根据输入时间或动画控制发生变化。</p>
+<h2 id="nerf原理"><a class="markdownIt-Anchor" href="#nerf原理"></a> NeRF原理</h2>
+<h3 id="nerf的表示"><a class="markdownIt-Anchor" href="#nerf的表示"></a> NeRF的表示</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220517161705527.png" alt="image-20220517161705527" class="lazyload"></p>
+<ul>
+<li>使用5D参数来表示合成图像：3D的位置参数，2D的观测方向。事实上，通过5D的参数，可以确定这个点的观察结果（颜色）。</li>
+<li>将5D参数输入MLP网络生成颜色RGB和体积密度σ（与位置参数有关，观测方向无关，用来解决可见性积分问题）</li>
+<li>使用体绘制技术将这些值合成到图像，如图中，通过射线上的这些点的RGB和σ值来进行积分，得到一个体渲染函数。简单理解一下，©中上图，在一个地方体密度突然变高，可以理解为到达了物体的表面</li>
+<li>得到在这个空间位置的颜色，通过最小化合成图像和地面真值图像之间的误差来优化场景表示</li>
+</ul>
+<h3 id="通过辐射场进行体绘制"><a class="markdownIt-Anchor" href="#通过辐射场进行体绘制"></a> 通过辐射场进行体绘制</h3>
+<p>第一个公式：<strong>如何算这个像素点的颜色值</strong>？</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522170202641.png" alt="image-20220522170202641" class="lazyload"></p>
+<p>传入的自变量是一个射线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">r</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi mathvariant="bold">o</mi><mo>+</mo><mi mathvariant="bold">t</mi><mi>d</mi></mrow><annotation encoding="application/x-tex">\bold r(t)=\bold o+\bold td</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">r</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord mathbf">o</span><span class="mbin">+</span><span class="mord mathbf">t</span><span class="mord mathit">d</span></span></span></span>，其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">o</mi></mrow><annotation encoding="application/x-tex">\bold o</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">o</span></span></span></span>是观测点，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">d</mi></mrow><annotation encoding="application/x-tex">\bold d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">d</span></span></span></span>是观测方向。最远和最近点的界限为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>t</mi><mi>f</mi></msub><mo separator="true">,</mo><msub><mi>t</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">t_f,t_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span><span class="strut bottom" style="height:0.9011879999999999em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">t</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">t</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">n</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。看到公式中积分主体的后两部分，分别为体密度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span></span></span>和颜色<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">c</mi></mrow><annotation encoding="application/x-tex">\bold c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">c</span></span></span></span>，前面的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">T(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span></span></span>是利用体密度计算的<em>指数衰减函数</em>，由于体密度在大多数空间中是很小的值，只有在接触到物体的时候会突变，因此衰减函数也只会在射线打到物体表面的时候突然减小，这样可以防止射线穿过中间空心物体的前后两个表面的时候积分值特别大。</p>
+<p>第二个公式：<strong>离散化</strong>。使用数值方法来估计连续积分。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522171334076.png" alt="image-20220522171334076" class="lazyload"></p>
+<p>均匀划分自变量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span><span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">t</span></span></span></span>的点，然后对几个函数进行离散化，积分变求和，得到第三个公式：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522171458228.png" alt="image-20220522171458228" class="lazyload"></p>
+<p>通过图来理解一下这个过程：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522171619202.png" alt="image-20220522171619202" class="lazyload"></p>
+<p>(a)和(b)给出了两个固定的三维空间点在不同视角下观察到的颜色。通过上述方法，可以预测这两个点的镜面反射外观变化，©给出了观察方向的半球上的变化过程。</p>
+<h2 id="优化nerf"><a class="markdownIt-Anchor" href="#优化nerf"></a> 优化NeRF</h2>
+<p>到此为止，我们已经可以将场景建模为NeRF，然后从该表示中渲染新的视图的过程，然而这些还不足以达到预期质量，因此需要一些优化方式来支持高分辨率复杂场景的表示。</p>
+<h3 id="位置编码"><a class="markdownIt-Anchor" href="#位置编码"></a> 位置编码</h3>
+<p>目的：将高频特征投影。如果仅仅在MLP网络中输入5D信息，网络更倾向于学到低频的信息。例如，可能只能学习到平面信息，而高维曲面的信息则学不到。因此要在输入的时候主动输入一些高频的信息。具体的方法，就是对输入的空间坐标进行类似与傅里叶分解的展开，得到高次项（三角函数的频率更高），这样MLP是关于3D点的更高维函数。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220522172400134.png" alt="image-20220522172400134" class="lazyload"></p>
+<p>文中还提到这种映射方式在Transformer网络中也有类似的实现，然而，Transformers将其用于一个不同的目标，即提供序列中令牌的离散位置，作为不包含任何顺序概念的架构的输入。</p>
+<h3 id="分层采样"><a class="markdownIt-Anchor" href="#分层采样"></a> 分层采样</h3>
+<p>原始的方法是在每个摄影机光纤的N个查询点处密集评估神经辐射场网络，但是这种方法效率很低。因此提出了一种分层表示法，通过按最终渲染的预期效果按比例分配样本来提高渲染效率。</p>
+<p>作者使用两个网络来优化表示场景，一个进行粗粒度表示，一个进行细粒度表示。首先进行分层抽样，对一组位置点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">N_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>进行抽样，并及逆行粗粒度表示。具体方法在前面已经描述。然后沿着每条射线生成一个更加精确的点的采样，使得样本偏差值（bias）偏向于体积的相关部分。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220523154630186.png" alt="image-20220523154630186" class="lazyload"></p>
+<p>具体的做法是重写之前的第3个公式中的alpha合成的颜色，使用射线撒谎给你所有采样颜色<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>c</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">c_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">c</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的加权和。权重的泛化是沿射线生成的分段常数函数。然后使用逆变换采样从该分布中采样出第二组位置<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>f</mi></msub></mrow><annotation encoding="application/x-tex">N_f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，在这两组的并集中评估细粒度网络，并使用全部的样本点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>c</mi></msub><mo>+</mo><msub><mi>N</mi><mi>f</mi></msub></mrow><annotation encoding="application/x-tex">N_c+N_f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>计算最终渲染的颜色。</p>
+<p>此过程会将更多样本分配给我们希望包含可见内容的区域。这与重要性抽样的目标类似，但我们将抽样值用作整个积分域的非均匀离散化，而不是将每个样本视为整个积分的独立概率估计。</p>
+<h3 id="实现细节"><a class="markdownIt-Anchor" href="#实现细节"></a> 实现细节</h3>
+<p>损失函数：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220523155300398.png" alt="image-20220523155300398" class="lazyload"></p>
+<p>批大小为4096条射线，粗粒度网络每条射线在<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>c</mi></msub><mo>=</mo><mn>6</mn><mn>4</mn></mrow><annotation encoding="application/x-tex">N_c=64</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">6</span><span class="mord mathrm">4</span></span></span></span>个坐标处采样，细粒度网络每条射线在<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>N</mi><mi>f</mi></msub><mo>=</mo><mn>1</mn><mn>2</mn><mn>8</mn></mrow><annotation encoding="application/x-tex">N_f=128</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">1</span><span class="mord mathrm">2</span><span class="mord mathrm">8</span></span></span></span>个附加坐标处采样，使用Adam优化器，初始学习率为5e-5，超参数为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>=</mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>9</mn><mo separator="true">,</mo><msub><mi>β</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>9</mn><mn>9</mn><mn>9</mn><mo separator="true">,</mo><mi>e</mi><mo>=</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>7</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\beta_1=0.9,\beta_2=0.999,e=10^{-7}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8141079999999999em;"></span><span class="strut bottom" style="height:1.008548em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05278em;">β</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05278em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">0</span><span class="mord mathrm">.</span><span class="mord mathrm">9</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.05278em;">β</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05278em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">0</span><span class="mord mathrm">.</span><span class="mord mathrm">9</span><span class="mord mathrm">9</span><span class="mord mathrm">9</span><span class="mpunct">,</span><span class="mord mathit">e</span><span class="mrel">=</span><span class="mord mathrm">1</span><span class="mord"><span class="mord mathrm">0</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord">−</span><span class="mord mathrm">7</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。单个场景的优化通常需要100~300k次迭代。</p>
+<h2 id="效果"><a class="markdownIt-Anchor" href="#效果"></a> 效果</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220523155733226.png" alt="image-20220523155733226" class="lazyload"></p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/05/24/NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;05&#x2F;24&#x2F;NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;05&#x2F;24&#x2F;NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/3DV/">3DV</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%BC%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 综述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text"> 相关工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3d%E9%87%8D%E5%BB%BA"><span class="toc-number">2.1.</span> <span class="toc-text"> 3D重建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E8%A7%89%E5%90%88%E6%88%90%E4%B8%8E%E5%9F%BA%E4%BA%8E%E5%9B%BE%E5%83%8F%E7%9A%84%E6%B8%B2%E6%9F%93"><span class="toc-number">2.2.</span> <span class="toc-text"> 视觉合成与基于图像的渲染</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nerf%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text"> NeRF原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nerf%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="toc-number">3.1.</span> <span class="toc-text"> NeRF的表示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E8%BE%90%E5%B0%84%E5%9C%BA%E8%BF%9B%E8%A1%8C%E4%BD%93%E7%BB%98%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text"> 通过辐射场进行体绘制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96nerf"><span class="toc-number">4.</span> <span class="toc-text"> 优化NeRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81"><span class="toc-number">4.1.</span> <span class="toc-text"> 位置编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E9%87%87%E6%A0%B7"><span class="toc-number">4.2.</span> <span class="toc-text"> 分层采样</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc-number">4.3.</span> <span class="toc-text"> 实现细节</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text"> 效果</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1653354966730"></script>
+
+
+	<script async src="/js/search.js?v=1653354966730"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
