@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>代码审查的最佳实践 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="摘要 代码审查是指通过检查源代码与编码标准的符合性以及代码质量的活动。尽管人们早已认识到代码审查在学术界和工业界的重要指导作用，其复杂性和繁琐的工期还是经常影响着软件的实际开发周期。一些实践和经验表明，当一个软件开发项目团队遵循最佳实践并创造一个有利的环境时，代码审查往往能够更加有效地进行。本调研报告将结合近年来多篇针对代码审查的综述和方法创新论文，汇总代码审查过程中常见的困境与实践中的难题，并">
+<meta property="og:type" content="article">
+<meta property="og:title" content="代码审查的最佳实践">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/06/08/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="摘要 代码审查是指通过检查源代码与编码标准的符合性以及代码质量的活动。尽管人们早已认识到代码审查在学术界和工业界的重要指导作用，其复杂性和繁琐的工期还是经常影响着软件的实际开发周期。一些实践和经验表明，当一个软件开发项目团队遵循最佳实践并创造一个有利的环境时，代码审查往往能够更加有效地进行。本调研报告将结合近年来多篇针对代码审查的综述和方法创新论文，汇总代码审查过程中常见的困境与实践中的难题，并">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412100447791.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407162939119.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412085945819.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412095356379.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412095840138.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412100712222.png">
+<meta property="article:published_time" content="2022-06-08T08:33:11.000Z">
+<meta property="article:modified_time" content="2022-06-08T08:37:50.390Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="软件工程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412100447791.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1654677476243">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1654677476243">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>45</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>6</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/3DV/">3DV</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">25</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/06/08/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">代码审查的最佳实践</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/24/NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeRF学习#1：论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/12/%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">最近邻CUDA算子阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/20/SLAM%E5%85%A5%E9%97%A8-9%EF%BC%9A%E5%BB%BA%E5%9B%BE/">SLAM入门#9：建图</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/07/SLAM%E5%85%A5%E9%97%A8-8%EF%BC%9A%E5%9B%9E%E7%8E%AF%E6%A3%80%E6%B5%8B/">SLAM入门#8：回环检测</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412100712222.png" data-sizes="auto" alt="代码审查的最佳实践" class="lazyload">
+              <h1>代码审查的最佳实践</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年06月08日</a>
+    <a><i class="nexmoefont icon-areachart"></i>9.2k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 38 分钟</a>
+</div>
+
+      
+
+      <h2 id="摘要"><a class="markdownIt-Anchor" href="#摘要"></a> 摘要</h2>
+<p>代码审查是指通过检查源代码与编码标准的符合性以及代码质量的活动。尽管人们早已认识到代码审查在学术界和工业界的重要指导作用，其复杂性和繁琐的工期还是经常影响着软件的实际开发周期。一些实践和经验表明，当一个软件开发项目团队遵循最佳实践并创造一个有利的环境时，代码审查往往能够更加有效地进行。本调研报告将结合近年来多篇针对代码审查的综述和方法创新论文，汇总代码审查过程中常见的困境与实践中的难题，并总结出代码审查的最佳实践过程与环境。</p>
+<p>**关键词：**代码审查 最佳实践 软件开发</p>
+<h2 id="1-背景介绍"><a class="markdownIt-Anchor" href="#1-背景介绍"></a> 1 背景介绍</h2>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412100447791.png" alt="image-20220412100447791" class="lazyload">
+<p>图1 一个典型的代码审查流程</p>
+<p>代码审查（code review），有时也译作代码评审、代码审计，是开发人员对源代码的手动检查。长期以来，代码审查被人为是减少软件缺陷并提高软件项目质量的一种非常有价值的工具和方法[1]。最早的代码审查规范与程式可以追溯到Fagan[2]在1976年提出的方法。这种方法基于逐行分组审查，被称为code inspection。随着科技发展与软件复杂性的增长，越来越多的IT公司意识到代码审查的重要意义，并制定自己的规则与章程应用到工业实践中。然而，代码审查本身十分依赖于开发者本身的理解能力、专业程度以及参与程度。除此以外，代码审查还面临着一些困难，例如耗费时间[3]甚至导致错误或模糊的认知[4]。</p>
+<p>如今，许多公司与组织正在采用更为轻量级的代码审查实践来限制检查的低效性，并阐述了它们自己在代码审查实践中的经验与判断。这些经验性知识被称为最佳实践[5]。最佳实践已经得到了普遍的验证，被普遍认为是执行代码审查的一种较好方法。</p>
+<p>一些近期的研究与综述[6,7]重点关注工业企业界以及OSS社区推选出的有效代码审查最佳实践。代码审查的实际效果和实践问题一方面需要学术刊物和研究的验证，另一方面需要大量的实证研究来支持。这些结论从代码评审流程的角度为我们提供了代码评审最佳实践的广泛列表，以及可用于支持代码评审最佳实践实施的可用自动策略。使用代码审查最佳实践，我们将检查哪些代码审查中的常见问题可以得到缓解。同时，了解这些组织和OSS项目面临的具体挑战，可以研究推广哪些最佳实践来应对这些难题。</p>
+<h2 id="2-代码审查技术现状"><a class="markdownIt-Anchor" href="#2-代码审查技术现状"></a> 2 代码审查技术现状</h2>
+<h3 id="21-代码审查方式"><a class="markdownIt-Anchor" href="#21-代码审查方式"></a> 2.1 代码审查方式</h3>
+<p>从宏观角度，可以将代码审查归纳为两个类别：正式代码审查（Formal Code Review）和轻量级代码审查（Light-weight Code Review）。</p>
+<p>正式代码审查基于正式开发流程，以Fagan等人提出的检查法[2,8]为代表。它为试图寻找代码的缺陷提供了一种结构化流程，并可以发现规范设计中的缺陷。Fagan的方法由六个步骤组成，包括计划（Planning）、概述（Overview）、准备（Preparation）、检查会议（Inspection Meeting）、重做（Rework）和追查（Follow-up）。这种流程的基本思想是通过预制定方案，确保每一步的输出符合预期。这么做的流程开销很大，所以在工业生产中多数情况只是作为理论依据出现，而并不具备很重要的实际操作价值。</p>
+<p>轻量级代码审查也包括很多子方法。</p>
+<p>结对编程（Pair Programming）是一种瞬时代码审查[9]。是一种常用的敏捷软件开发方式，即两个程序员同时工作，一人（驾驶员）负责编程，一人（观察员）负责审查。在结对编程中，观察员同时考虑工作的战略性方向，提出改进的意见，或将来可能出现的问题以便处理。这是一种适用于两个有相似经验水平的开发者处理复杂业务问题的情况。类似的代码审查方式还包括即时代码审查（Over-the-shoulder Code Review）[10]，这是一种几乎同步的代码审查方式。</p>
+<p>相对应地，一些异步代码审查方式也在工业实践中占据重要组分。这一类型的审查不是在同一时间、同一块屏幕上完成的，而是异步的。开发者在写完代码后，让这些代码对审查者可见，然后开始他的下一个任务。例如基于工具的代码审查（Tool-based Code Review）[11]。基于工具的代码审查的基本思想是使得审查补丁（Reviewing Patches）的过程有条理。这写工具的基本作用为：（1）补丁的作者将其提交给代码审查工具，（2）审查者可以看到提议的代码更改的差异，（3）可以与作者和其他审查者在特定行上开始一个线程讨论，然后（4）作者可以提出修改，以解决审查者的评论。生产中一个非常经典的代码审查与管理工具就是Git。这是一种循环审查的模式——以代码改动再次被提交到审查者为一次循环。开发者修改代码，直到审查者没有更新的改进要求，改动得到同意，并提交到主分支。</p>
+<p>现代代码审查（Modern Code Review，MCR）是一项社会技术软件工程活动，被公认为缺陷识别、代码改进和软件质量增强的轻量级过程。Bacchelli[6]等人将现代代码审查定义为：（1）非正式的（与Fagan风格相反），（2）基于工具的，以及（3）在当今实践中经常发生的评审，例如在微软、谷歌、Facebook等公司，以及其他组织和开源软件（OSS）项目中。</p>
+<p>Rigby等人[12]提出了重要的确定跨多代码审查过程和上下文的聚合实践。他们分析了这些项目的过程和可用数据，以描述几个角度，如迭代开发、评审员选择和评审讨论。他们确定了五种现代代码审查实践（表1），所有考虑过的项目都与之融合。</p>
+<p>表1 五种现代代码审查趋同实践</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">id</th>
+<th style="text-align:left">趋同性实践（Convergent Practice）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">CP1</td>
+<td style="text-align:left">当代结对评审（Peer Review）遵循轻量级、灵活的流程</td>
+</tr>
+<tr>
+<td style="text-align:center">CP2</td>
+<td style="text-align:left">评审发生得很早（在做出变更之前），很快，也很频繁</td>
+</tr>
+<tr>
+<td style="text-align:center">CP3</td>
+<td style="text-align:left">每次改变的程度很小</td>
+</tr>
+<tr>
+<td style="text-align:center">CP4</td>
+<td style="text-align:left">两位评审员就能够找到最佳缺陷数量</td>
+</tr>
+<tr>
+<td style="text-align:center">CP5</td>
+<td style="text-align:left">评审已从缺陷发现活动转变为小组问题解决活动</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-代码审查的实践模式以google为例"><a class="markdownIt-Anchor" href="#22-代码审查的实践模式以google为例"></a> 2.2 代码审查的实践模式——以Google为例</h3>
+<p>以针对Google代码审查系统的调研[13]为例，可以分析现代代码审查在应用当中的意义。Google是第一个正式使用MCR的企业之一，他们的MCR方式为轻量级的、基于工具的代码更改评审。根据Rigby等人的趋同性实践排序，属于CP5级别。</p>
+<p>研究指出，Google的代码审查目的不针对与解决问题。由调查指出，Google的代码审查是为了确保代码的可读性和可维护性。这种思想更多是前瞻的、预防性的。查找漏洞知识代码审查中的一个方面，而不是唯一的关注点。另外，代码审查的特定目的也依赖于代码作者和审查者之间的关系。例如，开发者和审查者如果是项目成员和负责人的关系，那么身为项目负责人的代码审查目的在于教育意义以及维持代码的可维护性；如果开发者和审查者是不同团队的成员，那么代码审查更多在于预防漏洞的作用。</p>
+<p>Google代码审查的流程如下：（1）创建：开发者进行代码写作并可能进行修改；（2）预览：开发者通过评论查看更改差异并查看自动代码分析器（如Tricorder[14]）结果，准备发送给审查者；（3）评论：审查者在Web UI进行分析与评价并做注释；（4）处理反馈：开发者通过评论进行更新或回复，并进行新的更改；（5）批准：一旦所有评论得到解决，审查者就会批准更改并最终提交。</p>
+<p>Google代码审查流程与轻量级和灵活性的趋同实践相一致。然而，与其他研究的系统相比，所有权和可读性是明确的，并发挥着关键作用。审查工具包括审查者建议和代码分析结果。同时，与其他项目相比，Google的代码审查已经收敛到一个审查速度明显更快、更改更小的过程。此外，与其他项目中的两名评审员相比，一名评审员就可以完成任务。</p>
+<h3 id="23-代码审查的意义"><a class="markdownIt-Anchor" href="#23-代码审查的意义"></a> 2.3 代码审查的意义</h3>
+<p>Bacchelli[6]等人的文献中，对于代码审查的重要意义做了如下归纳。</p>
+<p>查找并发现代码缺陷。查找漏洞一般来说都是代码审查的首要任务与直接目的。多数团队将漏洞挖掘和缺陷查找作为代码审查的首要动机。</p>
+<p>提高代码质量。代码改进是在可读性、注释、一致性、死代码删除等方面对代码的注释或更改，但不涉及正确性或缺陷。调查显示，代码审查质量和代码改进评论之间的联系十分紧密。良好的代码注释、更改评价，时提高代码质量的重要因素。</p>
+<p>寻找可替代解决方案。替代解决方案考虑通过采纳一个能够更好地实现的想法来改进提交的代码的更改和评论。</p>
+<p>知识迁移。从学习或者知识迁移的角度来考虑，代码审查这一过程其实推动了知识的循环、流动以及提炼。许多程序员明确遵循代码审查流程或结果的出发点来自于学习。</p>
+<p>提高团队意识与透明度。无论是原始的结对编程模式还是后面衍生的各种代码审查模式，代码审查这一过程对于团队内部的提升、团队之间的联系等都是具有促进意义的。</p>
+<p>代码所有权共享。共享代码所有权的概念与团队意识和透明度密切相关，但它对积极协作和重叠的编码活动有着更强的内涵。代码评审不仅是通知其他团队成员即将到来的更改的一个机会，也是让多个知识储备高的人了解代码库的特定部分的一种手段。此外，实践代码审查还可以提高团队成员对共享代码所有权的个人看法。</p>
+<h3 id="24-代码审查的困难与挑战"><a class="markdownIt-Anchor" href="#24-代码审查的困难与挑战"></a> 2.4 代码审查的困难与挑战</h3>
+<p>接之前的环节，在针对Google的调研[13]中，也发现了一些问题和困境。尽管经过多年的改进，Google的代码审查仍面临着很重要的困境。其根源来自于代码审查流程中评论与互动的复杂性。开发人员与审查人员之间的联系和互动虽然是有用的，但是在很多情况下是低效的。</p>
+<p>Fatima等人[3]的工作描述了现代代码审查过程中产生的浪费（Waste）。MCR涉及多个具有不同个性、偏好和技术技能的软件工程师之间的协调和沟通，因此它可以产生多种类型的浪费。</p>
+<p>MacLeod等人[5]的工作针对代码作者和审查者的调研、跟踪采访与分析，总结了13项代码审查面临的主要挑战（表2）。总体而言，对于代码作者（开发者）而言，反馈的时效性是重中之重。其次是反馈的有效性和建设意义，因为许多评论关注于细节而不是寻找重要的问题。另外，对于审查人员的选择、交流沟通以及对于代码改变、文档改变的追踪和评价都是代码审查实践中常常引起重要问题的来源。另一方面，对于代码审查者而言，审查代码的体量往往是导致审查质量下降的原因，因为大体量的代码对于审查造成了很大的困难。对于代码追查、文档追查的困难也是造成代码审查困难的原因。</p>
+<p>表2 现代代码审查的主要挑战</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">挑战</th>
+<th style="text-align:center">排名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">及时收到反馈</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:left">审查的体量</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:left">管理时间限制</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:left">理解代码的目的</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:left">理解代码改动的动机</td>
+<td style="text-align:center">5</td>
+</tr>
+<tr>
+<td style="text-align:left">获得有建设性的反馈</td>
+<td style="text-align:center">6</td>
+</tr>
+<tr>
+<td style="text-align:left">不要争论小问题而忽略更严重的问题</td>
+<td style="text-align:center">7</td>
+</tr>
+<tr>
+<td style="text-align:left">了解代码改变时如何实施的</td>
+<td style="text-align:center">8</td>
+</tr>
+<tr>
+<td style="text-align:left">维持代码质量</td>
+<td style="text-align:center">9</td>
+</tr>
+<tr>
+<td style="text-align:left">达成共识</td>
+<td style="text-align:center">10</td>
+</tr>
+<tr>
+<td style="text-align:left">查找相关文件</td>
+<td style="text-align:center">11</td>
+</tr>
+<tr>
+<td style="text-align:left">管理多个沟通渠道</td>
+<td style="text-align:center">12</td>
+</tr>
+<tr>
+<td style="text-align:left">确定与谁交谈（寻找合适的审查人员）</td>
+<td style="text-align:center">13</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-现代代码审查最佳实践"><a class="markdownIt-Anchor" href="#3-现代代码审查最佳实践"></a> 3 现代代码审查最佳实践</h2>
+<p>本节将首先讨论代码审查最佳实践的基本要求与本质内容，并介绍一些现代代码审查最佳实践中常用的辅助技术与工具。最后将结合若干最新研究，陈述研究者们总结的代码审查最佳实践技术路线与流程，并结合实证研究进行说明。</p>
+<h3 id="31-代码审查的可理解性与提高"><a class="markdownIt-Anchor" href="#31-代码审查的可理解性与提高"></a> 3.1 代码审查的可理解性与提高</h3>
+<p>一套作为“最佳实践”的代码审查流程或工作机制应当是具有很多优秀特征并且能够突破与克服一定的代码审查困境的。其中一个重要指标我们可以归结概括为“可理解性”。结合上一节中对于代码审查的困境的陈述与分析，可以将最佳实践的本质要求归结为对于可理解性的提升。</p>
+<p>可理解性包含多个尺度与不同等级的需求。例如，根据[6]的采访得知，人们普遍反映，最为迫切需求理解的一项内容之一就是理解提交更改的意义与内容。尽管日程安排和时间问题似乎也很有挑战性，但仍有大量测试人员反映理解代码占用了大部分审查时间。同样，在代码审查的评论也特别涉及理解性。这一类别包括希望掌握对代码所做更改的基本原理的审核人员提出的澄清问题和疑问，以及相应的澄清答案。[6]的图（图2）中给出了不同代码审查挑战对应的理解性等级要求。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220407162939119.png" alt="image-20220407162939119" class="lazyload"></p>
+<p>图2 不同代码审查挑战对应的可理解性的需求</p>
+<p>从多份调研与综述中，可以总结得出，软件开发团队在代码审查中最迫切需求提高可理解性和增强理解程度的环节根本在于对代码和代码文档的理解。近年来一些研究也帮助从业人员提出了可以辅助代码审查提高理解性的方法。</p>
+<p>Huang等人[15]提出了显著类定位（Salient-class Location）方法，发现并证实了大多数提交包含一个显著类，该类被显著修改，并导致提交中其他类的修改，而针对这些显著类的识别、定位与分析可以帮助审阅者更好地理解代码的更改。他们将显著类识别建模为一个二元分类问题，并从提交记录中提取一些判别特征来描述一个类的显著性。初步实验结果表明，该方法可以提高代码评审人员在代码评审中理解代码变化的效率。</p>
+<p>Rao等人[16]提出了一种基于注释的注释（Comments on Comments）方法。他们通过调研与实证研究发现，实现对代码的共同理解是关键：审查者的评论通常侧重于澄清，然后指出需要修复的问题。然而审查者经常建议（通常是逐字逐句）澄清注释，这表明他们希望坚持在代码审阅期间获得的理解。他们的实际研究表明，通过对注释进一步说明，采用CRC的模式（Code Comment - Reviewer Comment - Code Comment）+link issue的格式，可以最好提高理解性（图3）。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412085945819.png" alt="image-20220412085945819" class="lazyload">
+<p>图3 一个CRC的注释模式示例</p>
+<p>类似的专注于提高代码审查可理解性的方法还有很多，如[17,18]。这些研究着重讨论了代码审查如何确保代码的可信度、可认证，以及代码审查这个过程如何提高了代码本身的可理解性。当有效的代码审查被应用于实践的时候，较为详细与专门化的代码审查内容将会反馈给工程源代码本身，例如基于代码审查者的知识改进代码的可理解性。在诸如机器学习系统的开发与训练中，这种方法甚至可以从代码审查中提取的代码可理解性改进数据集，并改进机器学习系统。</p>
+<h3 id="32-自动化代码审查工具"><a class="markdownIt-Anchor" href="#32-自动化代码审查工具"></a> 3.2 自动化代码审查工具</h3>
+<p>在现代代码审查实践当中，自动化代码审查主要是为了减少审查团队的工作量，而在某些环节进行过程自动化。</p>
+<p>早期的自动化环节主要包括代码样式和静态代码分析。例如PyLint[21]、ESLint[22]等。这些工具在代码规范性和统一化方面有较强的约束，可以直接在编写阶段进行一些检测与审查。诸如此类的代码分析工具虽然在识别直观漏洞和格式化问题方面做的很好，但是并不一定能够达到项目整体要求，甚至可能与预期目标相反。Dasgupta等人[23]的探索性研究中，检查了学生在Python编程入门课程的一项编程作业中编写的代码的质量。每个学生提交的内容都使用自动化工具Pylint进行评估。讲师还使用预定义的评估代码逻辑、语法和风格的评估标准对这些提交的内容进行评分。结果显示Pylint的得分低于讲师的手动评分。</p>
+<p>一些近年的方法结合最新的技术，在自动审查方面更加智能与科学。Li等人[24]提出的DeepReview是基于卷积神经网络（CNN）的深度学习模型，它是一种端到端的模型，通过学习特征表示来预测一个变更是否被批准或拒绝。如图所示，这是一个基于实例特征提取和多实例学习的神经网络，包括生成层和预测层。在开源项目上的实验结果表明，DeepReview在自动代码审查任务中是有效的。在F1得分和AUC方面，DeepReview的性能优于传统的基于单实例的TFIDF-SVM模型和最先进的基于深度特征的模型Deeper。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412095356379.png" alt="image-20220412095356379" class="lazyload">
+<p>图4 DeepReview架构示意图</p>
+<p>Shi等人[25]提出的DACE模型也是基于深度学习，能够通过对比原始源代码和修改后的源代码中修改后的大块与包含大块的代码上下文来学习修改特性。这种模型可以对两段代码之间的“差异”进行建模与分析。如图所示，这个网络在内容编辑进行了上下文丰富（Context Enrichment）。上下文丰富层包括了CNN和LSTM层，其中卷积和池化层的目的是基于语句中的术语来表示语句的语义，随后的LSTM层用于从相关的周围语句中丰富已更改的块的顺序信息。在编码解码部分，使用了Seq2Seq自动编码器和前向PAE结构。在六个开源软件项目上的实验结果表明，通过学习修订特性，DACE可以在自动代码审查方面优于其他方法。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412095840138.png" alt="image-20220412095840138" class="lazyload">
+<p>图5 DACE架构示意图</p>
+<p>Li和Lu等人[26]提出的CodeReviewer则提出了一个预先训练的模型，利用了专门的代码审查场景定制了四个预训练任务，并在评估时关注了与代码审查相关的几个关键任务，包括代码更改质量评估、评审注释生成和代码细化。如图所示，CodeReviewer的预训练任务基于不同标签的预测、代码差异的去噪、代码审查评论的去噪、代码审查评论的生成等。实验结果表明，CodeReviewer在所有任务中都优于以前最先进的预训练方法。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220412100712222.png" alt="image-20220412100712222" class="lazyload"></p>
+<p>图6 CodeReviewer的预训练场景模型</p>
+<p>随着机器学习以及深度学习的发展，借助神经网络进行代码分析与审查的工具在近年来的代码审查最佳实践中被更多的应用。这一方向也将有可能成为未来代码审查的重点研究方向。</p>
+<h3 id="33-最佳实践技术路线"><a class="markdownIt-Anchor" href="#33-最佳实践技术路线"></a> 3.3 最佳实践技术路线</h3>
+<p>Dong等人[7]在结合学术文献以及灰色文献（大量非公开出版的会议文献、科技报告、技术档案、企业资料），进行了详细的长达五个阶段的筛选与调研。这个筛选阶段包括（1）移除重复文件；（2）删除无关文献或技术博客；（3）根据选择标准筛选；（4）“反向滚雪球”：查找引用文献或技术博客。最终，他们得到了20+13份可以满足最佳实践的代码审查技术路线。</p>
+<p>这些被普遍应用并被证实行之有效的代码审查方法可以归结为六个步骤。这六个步骤分别为：（1）准备需要审查的代码更改；（2）选择并通知审查者；（3）接受pull request并执行代码审查；（4）提供反馈；（5）以迭代的形式处理和响应代码更改；（6）提交最终代码更改。在上述六个阶段中，1、2、5、6阶段的执行主体是代码作者，3、4阶段的执行主题是代码审查人员。几乎所有的代码审查最佳实践原理与目标都归结于上述六个阶段中的具体要求和应用优化。</p>
+<p><strong>准备需要审查的代码更改</strong>。这一环节也可以称为代码预更改。在代码预更改环节中，最佳实践专注于改善以下几个任务：提前保证代码质量、通过文档形式记录更改以及简化代码更改。一个细节是，为了提高代码可理解性并为后续工作铺垫，最佳实践通常会以微笑的、渐进增量式的变化为目标。静态代码分析（如上文提到的ESLint、PyLint等）工具常常会被要求必须使用以保证基本代码质量。另外，许多企业的标准中要求在代码审查之前进行试运行，或者首先进行自我审查。在文档记录方面，对于代码注释与提交的注释，各个企业也有着自己的规定。特别地，对于一系列类型相似或相关的代码更改的归类于聚合，也是某些最佳实践的具体要求。</p>
+<p><strong>选择并通知审查者</strong>。一言以蔽之，选择合适的开发人员进行审查，就是这一环节的核心目标。对于”合适“的开发人员的定义，可以用几个问题来进行甄别于判断：这个人熟悉更改的功能或组件吗？这个人在语言、框架或工具方面是否有很强的技能？有人对这个问题有强烈的看法吗？谁对于程序的结果最为看重？谁会从代码审查的过程当中受益？一些细节的问题包括审查者的人数、需要通知的相关人员、通知审查者的时间等。</p>
+<p><strong>接受pull request并执行代码审查</strong>。最佳实践在代码审查环节中，一般聚焦于实现以下几个方面的优化：（1）能够结合自动化工具；（2）优先进行审查；（3）对小的代码更改进行审查，而非整体；（4）检查代码更改项；（5）检查高级别问题。许多公司要求使用自动化代码审查工具来进行预审查（例如triggers、linters等），并要求在代码审查之前进行构建和测试，确保测试覆盖率。对于提高审查的优先级而言，显然提高审查效率与反馈的及时性会有很大的帮助。特别地，每次审查的代码量应当足够小，例如一些公司的规定为审查量为200-500行/小时，每次审查时间不超过60分钟，并检查70-90%的问题。这样做可以保证代码审查的质量以及反馈效率。追踪代码更改记录可以更好理解代码的结构以及代码更改的目标。另外，“review checklist”也是一些灰色文献所提到的重要概念。这个清单是逐步更新的，它可以帮助评审人员记住检查的标准，包括可读性、可维护性、正确性、可扩展性、可重用性、性能和安全性。随着代码审查的迭代和深入进行，审查人员应该寻找潜在的代码气味、架构气味和技术债务，考虑它们对未来代码质量的影响。通过这样做，评审人员将对整个程序流程有一个清晰的了解，从而更容易发现关键缺陷。</p>
+<p><strong>提供反馈</strong>。很多组织机构与公司甚至在代码审查意见反馈的格式和措辞上给出了详细的要求。例如，尽量给出积极（正面）的反馈而非指责与评判，给出合理、清晰的评论等。这样做的目的是减少评审过程中的主观性，而要求审查者遵循既定的规则和要求来进行客观评价，并且给出有建设性的意见。反馈的问题也要求按照重要性、优先级进行说明。一些公司（如Google）会要求在提供评价与建议时附带可执行方案的实现策略。</p>
+<p><strong>以迭代的形式处理和响应代码更改</strong>。在优化代码的环节，一般聚焦于以下几个目标：（1）编码者以耐心和开放的态度面对审查评价；（2）在每次迭代更改中清晰地回应审查评价；（3）提高审查回复率；（4）提高沟通效率；（5）追踪更改以及修复记录。代码评审过程中这一步总是给评审者留下不必要的延迟，导致他们将评审扩展到超出预期的范围。作为一种最佳实践，尽量减少审查周期之间的延迟。尽早回应关键问题将有助于审阅者跟踪代码更改，并验证建议是否得到了解决。可以跳过某些检查，例如注释、格式化问题或重命名局部变量。在某些情况下，代码审查者和作者更喜欢离线交流，在讨论高级架构问题时使用面对面电话或视频通话。建议开源社区公开所有通信、代码更改和评论，以鼓励讨论并提高通信效率。记录讨论和决策信息非常重要。这些来源的数据将用于将来的参考和审查。在代码作者升级到最新版本后，审阅者应确保当前代码中的代码更改可用。提交新代码后，他们还应验证建议的缺陷是否已得到修复。</p>
+<p><strong>提交最终代码更改</strong>。确认决策已经记录在案，并反思过程，考虑如何改进它。</p>
+<h3 id="34-组织中的最佳实践"><a class="markdownIt-Anchor" href="#34-组织中的最佳实践"></a> 3.4 组织中的最佳实践</h3>
+<p>无论组织是产品团队还是公司，它如何为评审活动设置平台，以及它如何支持和重视评审，对于代码评审的成功至关重要。</p>
+<p>除了上述内容之外，还有大量的针对组织者提出的代码审查最佳实践原则。这些原则包括收集指标、建立并保持积极的审查评价文化、推动和修订代码审查政策、为代码审查活动提供足够的培训、执行轻量级的代码审查以及异步审查、开发一种机制来监控流程中遇到的瓶颈等等。</p>
+<p>组织也应该考虑如何确保花在评审“计数”上的时间，并被视为开发生命周期的重要组成部分。但是组织应该注意与代码审查活动相关的员工评估或激励措施的负面影响。同样重要的是，确保作者和审稿人使用与期望的审稿文化和定义的流程（如果有）相匹配的适当工具。特别对于分布式的团队，组织者需要负责选择于维护合适的工具来进行沟通和审查。</p>
+<h2 id="4-总结与展望"><a class="markdownIt-Anchor" href="#4-总结与展望"></a> 4 总结与展望</h2>
+<p>通过对现代代码审查技术的学习、分析以及业界应用的调研，可以总结出这些我们“推崇”的最佳实践中的共性于个性。这些最佳实践可以缓解代码审查中遇到的困境，帮助从业者和研究人员改进代码。部分文献对于最佳实践的叙述仍然较为笼统，因为缺乏对最佳实践如何实施的详细讨论。因此，结合了多篇文章以及一些现代化的辅助工具方法的叙述，可以对一些实际场景有更好的应用。</p>
+<p>此外，使用自动化技术和工具来支持最佳实践的实现应该是代码评审最佳实践中的一个考虑因素。除了利用工具来检测低级问题并确保测试覆盖率之外，OSS和工业界还致力于继承自动化程序，以支持代码审查中高效实施最佳实践。自动代码评审变更集分解技术[27]可以支持实施最佳实践，以限制评审的变更大小和关注点。同时，根据之前的研究选择合适的审阅者的指导原则，自动代码审阅者推荐技术和工具（例如，Commission、ReviewBot等）可以根据审阅者的经验（例如源代码行的更改历史）提供适当审阅者的排名列表，以减少人为干预的需要。</p>
+<p>与此同时，在这些文献于规范中推荐的代码审查最佳实践中，仍有一些悬而未决的问题。例如，审查人员的数量，尽管“至少两人”的原则被认为是很实用的，然而在允许提交到主源代码树中之前，等待第二位审查者证实发现可能效率较低。其次，在许多企业中，代码作者需要在提交请求之前审查和测试自己的代码更改。然而由于实际操作可行性，这样有可能导致软件质量的低下。</p>
+<p>联系这些代码审查困境与最佳实践，大多数难题可以通过使用多个最佳实践来解决。随着工业研究界对自动代码审查策略的兴趣越来越高，在未来关于代码评审最佳实践的研究中，应考虑使用自动化技术和工具来支持最佳实践的实施。鉴于未来工程实践以及研究开发面对大工程量的团队开发项目，研究代码审查最佳实践的重要意义不言而喻。因此，有效的代码审查将大力支持生产力与创造力的迸发，我们也希望能够通过这一调研和学习能够对代码审查实践有全面和深入的理解。</p>
+<h2 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h2>
+<p>[1] Ackerman A F, Buchwald L S, Lewski F H. Software inspections: an effective verification process[J]. IEEE software, 1989, 6(3): 31-36</p>
+<p>[2] Fagan M. Design and code inspections to reduce errors in program development[M]//Software pioneers. Springer, Berlin, Heidelberg, 2002: 575-607</p>
+<p>[3] Fatima N, Nazir S, Chuprat S. Software Engineering Wastes-A Perspective of Modern Code Review[C]//Proceedings of the 3rd International Conference on Software Engineering and Information Management. 2020: 93-99</p>
+<p>[4] Shull F, Seaman C. Inspecting the history of inspections: An example of evidence-based technology diffusion[J]. IEEE software, 2008, 25(1): 88-90</p>
+<p>[5] MacLeod L, Greiler M, Storey M A, et al. Code reviewing in the trenches: Challenges and best practices[J]. IEEE Software, 2017, 35(4): 34-42</p>
+<p>[6] Bacchelli A, Bird C. Expectations, outcomes, and challenges of modern code review[C]//2013 35th International Conference on Software Engineering (ICSE). IEEE, 2013: 712-721</p>
+<p>[7] Dong L, Zhang H, Yang L, et al. Survey on Pains and Best Practices of Code Review[C]//2021 28th Asia-Pacific Software Engineering Conference (APSEC). IEEE, 2021: 482-491</p>
+<p>[8] Fagan M. Reviews and inspections[J]. Software Pioneers–Contributions to Software Engineering, 2002: 562-573</p>
+<p>[9] Williams L, Kessler R R, Cunningham W, et al. Strengthening the case for pair programming[J]. IEEE software, 2000, 17(4): 19-25</p>
+<p>[10] l Górecki P, Jureczko M, Kajda L. Experience impact on code review effectiveness-’On code review effectiveness: An empirical study on selected factors influence’appendix[J]. 2020</p>
+<p>[11] Jureczko M, Kajda Ł, Górecki P. Code review effectiveness: an empirical study on selected factors influence[J]. IET Software, 2021, 14(7): 794-805</p>
+<p>[12] Rigby P C, Bird C. Convergent contemporary software peer review practices[C]//Proceedings of the 2013 9th Joint Meeting on Foundations of Software Engineering. 2013: 202-212</p>
+<p>[13] Sadowski C, Söderberg E, Church L, et al. Modern code review: a case study at google[C]//Proceedings of the 40th International Conference on Software Engineering: Software Engineering in Practice. 2018: 181-190</p>
+<p>[14] Sadowski C, Van Gogh J, Jaspan C, et al. Tricorder: Building a program analysis ecosystem[C]//2015 IEEE/ACM 37th IEEE International Conference on Software Engineering. IEEE, 2015, 1: 598-608</p>
+<p>[15] Huang Y, Jia N, Chen X, et al. Salient-class location: Help developers understand code change in code review[C]//Proceedings of the 2018 26th ACM Joint Meeting on European Software Engineering Conference and Symposium on the Foundations of Software Engineering. 2018: 770-774</p>
+<p>[16] Rao N, Tsay J, Hirzel M, et al. Comments on Comments: Where Code Review and Documentation Meet[J]. arXiv preprint arXiv:2204.00107, 2022</p>
+<p>[17] Oliveira D. Recommending Code Understandability Improvements Based on Code Reviews[C]//2021 36th IEEE/ACM International Conference on Automated Software Engineering Workshops (ASEW). IEEE, 2021: 131-132</p>
+<p>[18] Nelson S, Schumann J. What makes a code review trustworthy?[C]//37th Annual Hawaii International Conference on System Sciences, 2004. Proceedings of the. IEEE, 2004: 10 pp</p>
+<p>[19] Shi S T, Li M, Lo D, et al. Automatic code review by learning the revision of source code[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2019, 33(01): 4910-4917</p>
+<p>[20] Li Z, Lu S, Guo D, et al. CodeReviewer: Pre-Training for Automating Code Review Activities[J]. arXiv preprint arXiv:2203.09095, 2022</p>
+<p>[21] Thenault S. Pylint—Code Analysis for Python[J]. 2006</p>
+<p>[22] Zakas N C. ESLint contributors. 2013. ESLint—Pluggable JavaScript linter[J]</p>
+<p>[23] Dasgupta S, Hooshangi S. Code quality: Examining the efficacy of automated tools[J]. 2017</p>
+<p>[24] Li H Y, Shi S T, Thung F, et al. Deepreview: automatic code review using deep multi-instance learning[C]//Pacific-Asia Conference on Knowledge Discovery and Data Mining. Springer, Cham, 2019: 318-330</p>
+<p>[25] Shi S T, Li M, Lo D, et al. Automatic code review by learning the revision of source code[C]//Proceedings of the AAAI Conference on Artificial Intelligence. 2019, 33(01): 4910-4917</p>
+<p>[26] Li Z, Lu S, Guo D, et al. CodeReviewer: Pre-Training for Automating Code Review Activities[J]. arXiv preprint arXiv:2203.09095, 2022</p>
+<p>[27] Barnett M, Bird C, Brunet J, et al. Helping developers help themselves: Automatic decomposition of code review changesets[C]//2015 IEEE/ACM 37th IEEE International Conference on Software Engineering. IEEE, 2015, 1: 134-144</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/06/08/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;08&#x2F;%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;08&#x2F;%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" rel="tag">软件工程</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%91%98%E8%A6%81"><span class="toc-number">1.</span> <span class="toc-text"> 摘要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%83%8C%E6%99%AF%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.</span> <span class="toc-text"> 1 背景介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E6%8A%80%E6%9C%AF%E7%8E%B0%E7%8A%B6"><span class="toc-number">3.</span> <span class="toc-text"> 2 代码审查技术现状</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E6%96%B9%E5%BC%8F"><span class="toc-number">3.1.</span> <span class="toc-text"> 2.1 代码审查方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#22-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E5%AE%9E%E8%B7%B5%E6%A8%A1%E5%BC%8F%E4%BB%A5google%E4%B8%BA%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text"> 2.2 代码审查的实践模式——以Google为例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#23-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-number">3.3.</span> <span class="toc-text"> 2.3 代码审查的意义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#24-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E5%9B%B0%E9%9A%BE%E4%B8%8E%E6%8C%91%E6%88%98"><span class="toc-number">3.4.</span> <span class="toc-text"> 2.4 代码审查的困难与挑战</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%8E%B0%E4%BB%A3%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">4.</span> <span class="toc-text"> 3 现代代码审查最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#31-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E5%8F%AF%E7%90%86%E8%A7%A3%E6%80%A7%E4%B8%8E%E6%8F%90%E9%AB%98"><span class="toc-number">4.1.</span> <span class="toc-text"> 3.1 代码审查的可理解性与提高</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#32-%E8%87%AA%E5%8A%A8%E5%8C%96%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E5%B7%A5%E5%85%B7"><span class="toc-number">4.2.</span> <span class="toc-text"> 3.2 自动化代码审查工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#33-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E6%8A%80%E6%9C%AF%E8%B7%AF%E7%BA%BF"><span class="toc-number">4.3.</span> <span class="toc-text"> 3.3 最佳实践技术路线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#34-%E7%BB%84%E7%BB%87%E4%B8%AD%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">4.4.</span> <span class="toc-text"> 3.4 组织中的最佳实践</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%80%BB%E7%BB%93%E4%B8%8E%E5%B1%95%E6%9C%9B"><span class="toc-number">5.</span> <span class="toc-text"> 4 总结与展望</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">6.</span> <span class="toc-text"> 参考文献</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1654677476250"></script>
+
+
+	<script async src="/js/search.js?v=1654677476250"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
