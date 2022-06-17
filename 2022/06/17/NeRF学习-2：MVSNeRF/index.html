@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NeRF学习#2：MVSNeRF - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：MVSNeRF: Fast Generalizable Radiance Field Reconstruction from Multi-View Stereo (apchenstu.github.io) 相较原始NeRF：加速、跨场景、使用通用深度网络快速从三个输入视图推理重建辐射场  概述 NeRF的一个重要缺陷是——需要通过很长的逐场景优化过程来获得高质量的辐射场。 MVSNeRF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NeRF学习#2：MVSNeRF">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/06/17/NeRF%E5%AD%A6%E4%B9%A0-2%EF%BC%9AMVSNeRF/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：MVSNeRF: Fast Generalizable Radiance Field Reconstruction from Multi-View Stereo (apchenstu.github.io) 相较原始NeRF：加速、跨场景、使用通用深度网络快速从三个输入视图推理重建辐射场  概述 NeRF的一个重要缺陷是——需要通过很长的逐场景优化过程来获得高质量的辐射场。 MVSNeRF">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617103612275.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220616201332247.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220616201811080.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617093933702.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617094454184.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617094900356.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617095206210.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617095608355.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617101437562.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617101752850.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617102911901.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617103507897.png">
+<meta property="article:published_time" content="2022-06-17T02:40:15.000Z">
+<meta property="article:modified_time" content="2022-06-17T02:41:15.638Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617103612275.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1655433698165">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1655433698165">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>46</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>6</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">2</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">26</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/06/17/NeRF%E5%AD%A6%E4%B9%A0-2%EF%BC%9AMVSNeRF/">NeRF学习#2：MVSNeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/08/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">代码审查的最佳实践</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/24/NeRF%E5%AD%A6%E4%B9%A0-1%EF%BC%9A%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeRF学习#1：论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/12/%E6%9C%80%E8%BF%91%E9%82%BBCUDA%E7%AE%97%E5%AD%90%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/">最近邻CUDA算子阅读记录</a>
+          </li>
+        
+          <li>
+            <a href="/2022/04/20/SLAM%E5%85%A5%E9%97%A8-9%EF%BC%9A%E5%BB%BA%E5%9B%BE/">SLAM入门#9：建图</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617103612275.png" data-sizes="auto" alt="NeRF学习#2：MVSNeRF" class="lazyload">
+              <h1>NeRF学习#2：MVSNeRF</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年06月17日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.4k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 10 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://apchenstu.github.io/mvsnerf/">MVSNeRF: Fast Generalizable Radiance Field Reconstruction from Multi-View Stereo (apchenstu.github.io)</a></p>
+<p>相较原始NeRF：加速、跨场景、使用通用深度网络快速从三个输入视图推理重建辐射场</p>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>NeRF的一个重要缺陷是——需要通过很长的逐场景优化过程来获得高质量的辐射场。</p>
+<p>MVSNeRF的宗旨：跨场景地从只有三个非结构化的多视图输入图像重建辐射场，并且具有泛化性，避免了单场景优化，并快速通过网络推理直接回归新视点下的真实图像。</p>
+<p>除了视觉合成，该项工作的一个重要借鉴来源是MVS（Multi-view stereo，多目立体视觉）。MVS问题的描述是利用从多个视点捕获的图像实现密集的几何重建。一项参考工作是MVSNet[<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1804.02505">1804.02505] MVSNet: Depth Inference for Unstructured Multi-view Stereo (arxiv.org)</a>。MVSNet在参考视图的平面扫描成本体积上应用3D CNN进行深度估计，实现了优于经典传统方法的高质量3D重建。本文的思路是基于MVS与可微体绘制结合，使用神经绘制的辐射场重建，仅仅针对新的视图合成使用图像损失来训练网络。</p>
+<p>与现有的MVS方法相比，该方法结合了可微神经渲染，在没有3D监控和推理时间优化的情况下进行训练，提高质量；与现有的神经渲染方法相比，该方法利用了MVS的结构，自然地对交叉视图对应推理，有助于对未知场景进行泛化，并更好地重建和渲染。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617103612275.png" alt="image-20220617103612275" class="lazyload"></p>
+<h2 id="原理"><a class="markdownIt-Anchor" href="#原理"></a> 原理</h2>
+<p>MVSNeRF与NeRF的最大区别在于，MVSNeRF学习的是通用网络，而NeRF是对每个场景的网络记忆进行重建辐射场。MVSNeRF的整体公式可以被抽象为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220616201332247.png" alt="image-20220616201332247" class="lazyload"></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>是3D位置，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">d</span></span></span></span>是观察方向。另外，有<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10903em;">M</span></span></span></span>个输入的图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>i</mi></msub><mo>(</mo><mi>i</mi><mo>=</mo><mn>1</mn><mo separator="true">,</mo><mn>2</mn><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><mi>M</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">I_i(i=1,2,...,M)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathit">i</span><span class="mrel">=</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">2</span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="mclose">)</span></span></span></span>，以及这些位置对应的相机参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="normal">Φ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\Phi_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathrm">Φ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。输出<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi><mo separator="true">,</mo><mi>r</mi></mrow><annotation encoding="application/x-tex">\sigma,r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span></span>分别是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>处体密度和输出辐射场（即观测条件下看到该处的RGB颜色）。网络输出的体积特性可以直接用于通过ray marching的方式在新的目标视点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="normal">Φ</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\Phi_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathrm">Φ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">t</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>下合成新的图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">I_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">t</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。</p>
+<p>MVSNeRF的流程图如下图：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220616201811080.png" alt="image-20220616201811080" class="lazyload"></p>
+<ol>
+<li>构建cost volume：将2D神经特征映射到多个扫描平面上，在参考视图处构建</li>
+<li>利用3D CNN重建神经编码体积，使用MLP回归体积渲染属性，表示辐射场</li>
+<li>利用模拟出来的辐射场，利用ray marching在新视点下对图像重建</li>
+<li>另外，可以独立快速微调重建的编码体积和MLP解码器提高渲染质量</li>
+</ol>
+<h3 id="cost-volume重建"><a class="markdownIt-Anchor" href="#cost-volume重建"></a> Cost volume重建</h3>
+<p>Cost volume是MVS深度估计中的一个环节，其目的是构建一个对同一物体不同视角下得到的图像的某种关联。使用深度学习的方法是使用CNN抽取特征<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>F</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">F_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，并隐式地约束这些特征那个与源图像特征<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>F</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">F_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的关联。例如，最小化方差等等。</p>
+<p><strong>特征提取</strong>。使用一个2D CNN网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>，对输入的图像I_i\in\R^{H_i\times W_i \times 3}进行了下采样，并得到特征图F_i\in\R^{H_i/4\times W_i/4\times C}，其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>H</mi><mo separator="true">,</mo><mi>W</mi></mrow><annotation encoding="application/x-tex">H,W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.13889em;">W</span></span></span></span>是图像尺寸，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.07153em;">C</span></span></span></span>是特征通道数。</p>
+<p><strong>特征图warping</strong>。已知相机的内外参<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Φ</mi><mo>=</mo><mo>[</mo><mi>K</mi><mo separator="true">,</mo><mi>R</mi><mo separator="true">,</mo><mi>t</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">\Phi=[K,R,t]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Φ</span><span class="mrel">=</span><span class="mopen">[</span><span class="mord mathit" style="margin-right:0.07153em;">K</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mpunct">,</span><span class="mord mathit">t</span><span class="mclose">]</span></span></span></span>，得到单应矩阵（homographic matrix）：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617093933702.png" alt="image-20220617093933702" class="lazyload"></p>
+<blockquote>
+<p>根据对极几何原理，只知道不同视点的相机参数是无法知道他们每个点的一一对应关系的，只能确定某个点在另一个投影平面的极线上。因此，这里的目的是确定投影平面到对象平面的深度。</p>
+</blockquote>
+<p>上式中，单应矩阵对应为<strong>从视角<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">i</span></span></span></span>到对象视角的深度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.04398em;">z</span></span></span></span></strong>。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.07153em;">K</span></span></span></span>为内参，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>R</mi><mo separator="true">,</mo><mi>t</mi></mrow><annotation encoding="application/x-tex">R,t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mpunct">,</span><span class="mord mathit">t</span></span></span></span>分别为相机的旋转和平移外参。这样，每个特征都可以被warp到目标视角：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617094454184.png" alt="image-20220617094454184" class="lazyload"></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>F</mi><mrow><mi>i</mi><mi mathvariant="normal">.</mi><mi>z</mi></mrow></msub></mrow><annotation encoding="application/x-tex">F_{i.z}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">i</span><span class="mord mathrm">.</span><span class="mord mathit" style="margin-right:0.04398em;">z</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是深度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.04398em;">z</span></span></span></span>处的warp后特征，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>u</mi><mo separator="true">,</mo><mi>v</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(u,v)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord mathit">u</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mclose">)</span></span></span></span>是目标视角平面的一个像素位置。这里使用了归一化设备坐标NDC，也就是将齐次坐标的每一项都除以了最后的分量。</p>
+<p><strong>Cost volume重建</strong>。我们用warp后的特征<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>F</mi><mrow><mi>i</mi><mo separator="true">,</mo><mi>z</mi></mrow></msub></mrow><annotation encoding="application/x-tex">F_{i,z}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">i</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.04398em;">z</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的方差作为3D cost volume特征，用于后续渲染，即：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617094900356.png" alt="image-20220617094900356" class="lazyload"></p>
+<blockquote>
+<p>u,v是像素，z就是沿着这个方向得到的一系列切片面，这样得到一个体数据。</p>
+</blockquote>
+<h3 id="辐射场重建"><a class="markdownIt-Anchor" href="#辐射场重建"></a> 辐射场重建</h3>
+<p><strong>神经编码体积</strong>。这一步提出了一个3D CNN网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05017em;">B</span></span></span></span>，它是一个3D的类U-Net结构，包括了下采样和上采样卷积层以及跳跃连接，这可以有效地推断和传播场景外观信息，从而生成有意义的场景编码体积<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span></span></span>：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617095206210.png" alt="image-20220617095206210" class="lazyload"></p>
+<p>这个网络可以学习在每个体素的神经特征中编码有意义的场景集合体和外观，这些特征可以被连续插值并转换为体积密度和基于视角的辐射度。</p>
+<p>由于之前提取2D特征的下采样，场景编码体即的分辨率较低。因此还可以将原始图像像素数据合并到后续阶段，当然也可以通过快速的逐场景微调优化来提高分辨率。</p>
+<p><strong>回归体积属性</strong>。这一步使用了一个MLP网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">A</span></span></span></span>来从编码体积<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span></span></span>中获得体密度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span></span></span>和辐射度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span></span>：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617095608355.png" alt="image-20220617095608355" class="lazyload"></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>是3D坐标，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">d</span></span></span></span>是目标视图下的单位坐标（即观测方向），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span></span>是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span></span></span>在<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>位置的三线性插值特征，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi></mrow><annotation encoding="application/x-tex">c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">c</span></span></span></span>是把<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">i</span></span></span></span>视角下所有颜色值<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mo>(</mo><msub><mi>u</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>v</mi><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">I(u_i,v_i)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">u</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span></span></span></span>进行concatenate操作成向量的操作（例如三张图）。</p>
+<blockquote>
+<p>这里的特征也就是把x带到编码后的体数据中，得到对应的特征值。c是这个点投影到各个视角下的已知的color值。</p>
+</blockquote>
+<p><strong>辐射场重建</strong>。那么根据很少的几张图片，就可以进行上述的全流程，并且得到辐射场参数。</p>
+<h3 id="体渲染与端到端训练"><a class="markdownIt-Anchor" href="#体渲染与端到端训练"></a> 体渲染与端到端训练</h3>
+<p>接下来的渲染就和NeRF的原理基本一样了。使用可微ray marching方法进行视觉合成。具体来说就是使用ray marching来累计该视角下某个坐标点的ray上面的采样辐射度。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617101437562.png" alt="image-20220617101437562" class="lazyload"></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>c</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">c_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">c</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">t</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是该像素最终的颜色输出，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">\tau_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.1132em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03148em;">k</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是体积透射比（衰减因子）。</p>
+<p>端到端训练非常直接，因为ray marching过程完全可微（可导），因此可以只是用三张输入视图从端到端回归新视点处的最终像素颜色。使用groundtruth像素颜色监控框架，使用L2损失：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617101752850.png" alt="image-20220617101752850" class="lazyload"></p>
+<p>全过程只优化这一个损失函数。该方法只需要在一个数据集上进行训练，就可以泛化到许多场景。</p>
+<h2 id="优化神经编码体"><a class="markdownIt-Anchor" href="#优化神经编码体"></a> 优化神经编码体</h2>
+<p>这一部分是针对以上完整流程之后的优化与微调，目的是获得质量更好的渲染效果。不同于原始的NeRF，该方法不针对每个场景进行优化，而是对神经编码提进行微调。</p>
+<ul>
+<li>附加颜色值。由于神经编码体与颜色值是绑定输入到MLP解码器中的，因此通过将体素中心的每个视图颜色作为附加通道加到编码提中可以实现独立的神经重建，这些颜色的特征也可以在逐场景优化汇总进行训练。一开始引入会导致模糊，在微调过程中逐渐解决这一问题。</li>
+<li>进一步微调。微调时不需要前面的步骤，只需要对最终得到的神经编码体就可以。因为神经编码体是一个显式的体积表达，对其进行优化和调整可以得到确实的效果提升。</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617102911901.png" alt="image-20220617102911901" class="lazyload"></p>
+<h2 id="实现细节与实验效果"><a class="markdownIt-Anchor" href="#实现细节与实验效果"></a> 实现细节与实验效果</h2>
+<p>预训练使用的数据集式DTU数据集，依照PixelNeRF这篇文章的数据预处理方法进行准备。提取32维特征，采用从近到远均匀采样的深度维128的假设来指定平面扫描体积。</p>
+<p>MLP部分与NeRF的MLP类似，使用了6层，并且没有像NeRF那样重建两个辐射场（粗粒度和细粒度），而是只重建一个辐射场。对于光线行进，在每条marching ray上采样128个着色点。采用Adam优化器。</p>
+<p>网络结构如图：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220617103507897.png" alt="image-20220617103507897" class="lazyload"></p>
+<p>效果证明很牛逼！</p>
+<p>本文最后提出了该工作的一些局限性。对于具有高光泽度/镜面反射度的极具挑战性的场景，通过网络推理很难直接恢复强视图相关的着色效果，并且需要更长的微调过程才能完全重建此类效果。</p>
+<p>另外，由于MVS的原理，辐射场表示只在目标视角的视锥内重建的，因此只有该视角的内容可以完整重建与还原，对于其他视角，没有办法直接重建。</p>
+<p>这篇文章的方法打败了PixelNeRF、MVSNet、IBRNet。那么这几篇就先不看了。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/06/17/NeRF%E5%AD%A6%E4%B9%A0-2%EF%BC%9AMVSNeRF/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;17&#x2F;NeRF%E5%AD%A6%E4%B9%A0-2%EF%BC%9AMVSNeRF&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;17&#x2F;NeRF%E5%AD%A6%E4%B9%A0-2%EF%BC%9AMVSNeRF&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/NeRF/">NeRF</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text"> 原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cost-volume%E9%87%8D%E5%BB%BA"><span class="toc-number">2.1.</span> <span class="toc-text"> Cost volume重建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%90%E5%B0%84%E5%9C%BA%E9%87%8D%E5%BB%BA"><span class="toc-number">2.2.</span> <span class="toc-text"> 辐射场重建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%93%E6%B8%B2%E6%9F%93%E4%B8%8E%E7%AB%AF%E5%88%B0%E7%AB%AF%E8%AE%AD%E7%BB%83"><span class="toc-number">2.3.</span> <span class="toc-text"> 体渲染与端到端训练</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E7%A5%9E%E7%BB%8F%E7%BC%96%E7%A0%81%E4%BD%93"><span class="toc-number">3.</span> <span class="toc-text"> 优化神经编码体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82%E4%B8%8E%E5%AE%9E%E9%AA%8C%E6%95%88%E6%9E%9C"><span class="toc-number">4.</span> <span class="toc-text"> 实现细节与实验效果</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1655433698170"></script>
+
+
+	<script async src="/js/search.js?v=1655433698170"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
