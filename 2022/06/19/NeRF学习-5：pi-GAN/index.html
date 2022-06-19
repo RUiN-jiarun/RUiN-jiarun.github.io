@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NeRF学习#5：pi-GAN - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：pi-GAN: Periodic Implicit Generative Adversarial Networks for 3D-Aware Image Synthesis (marcoamonteiro.github.io) 改进方向：复杂图形的3D视图不一致渲染问题，图像质量提高。结合生成对抗网络与神经渲染，将场景表示为视图一致的辐射场。   概述 本文试图结合两种方法的优点并尝试弥">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NeRF学习#5：pi-GAN">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：pi-GAN: Periodic Implicit Generative Adversarial Networks for 3D-Aware Image Synthesis (marcoamonteiro.github.io) 改进方向：复杂图形的3D视图不一致渲染问题，图像质量提高。结合生成对抗网络与神经渲染，将场景表示为视图一致的辐射场。   概述 本文试图结合两种方法的优点并尝试弥">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110253038.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110808733.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110820441.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619111557656.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619114227977.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619114406705.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619115140487.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619115219358.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619152423073.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619153031865.png">
+<meta property="article:published_time" content="2022-06-19T07:44:34.000Z">
+<meta property="article:modified_time" content="2022-06-19T07:44:29.029Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110253038.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1655624709479">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1655624709479">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>49</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>6</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN/">NeRF学习#5：pi-GAN</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-4%EF%BC%9AFastNeRF/">NeRF学习#4：FastNeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/18/NeRF%E5%AD%A6%E4%B9%A0-3%EF%BC%9AMip-NeRF/">NeRF学习#3：Mip-NeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/17/NeRF%E5%AD%A6%E4%B9%A0-2%EF%BC%9AMVSNeRF/">NeRF学习#2：MVSNeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/08/%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">代码审查的最佳实践</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110253038.png" data-sizes="auto" alt="NeRF学习#5：pi-GAN" class="lazyload">
+              <h1>NeRF学习#5：pi-GAN</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年06月19日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.3k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 5 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://marcoamonteiro.github.io/pi-GAN-website/">pi-GAN: Periodic Implicit Generative Adversarial Networks for 3D-Aware Image Synthesis (marcoamonteiro.github.io)</a></p>
+<p>改进方向：复杂图形的3D视图不一致渲染问题，图像质量提高。结合生成对抗网络与神经渲染，将场景表示为视图一致的辐射场。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110253038.png" alt="image-20220619110253038" class="lazyload"></p>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>本文试图结合两种方法的优点并尝试弥补其缺点。</p>
+<ul>
+<li>GAN——能够生成高分辨率照片真实度的图像，但是通常局限于二维，缺少三维训练数据；</li>
+<li>3D感知图像合成——能够通过无监督二维图像学习神经辐射场表示，但是容易产生不同视角的不一致性。</li>
+</ul>
+<p>下面展示了HoloGAN的生成效果和预期（本文）的生成效果。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110808733.png" alt="image-20220619110808733" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619110820441.png" alt="image-20220619110820441" class="lazyload"></p>
+<p>本文提出了周期隐式生成对抗网络（Periodic Implicit Generative Adversarial Networks，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>π</mi></mrow><annotation encoding="application/x-tex">\pi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">π</span></span></span></span>-GAN）。pi-GAN利用具有周期激活函数和体积渲染的神经表示，将场景表示为与视图一致的辐射场，能够得到SOTA的效果。</p>
+<p>本文主要贡献：</p>
+<ul>
+<li>引入基于SIREN激活函数的隐式GAN作为卷积GAN的替代方案；</li>
+<li>提出一种基于FiLM调节和渐进式增长鉴别器作为关键组建的<strong>映射网络</strong>，以实现基于SIREN的GAN的高质量结果；</li>
+<li>证明了基于隐性神经辐射场表示和经典渲染方法的优势，即视图一致性和显式相机控制；</li>
+<li>在多个无监督2D数据集的3D感知图像合成结果中达到state-of-the-art效果。</li>
+</ul>
+<blockquote>
+<p>关于映射函数的作用，可以看看StyleGAN</p>
+</blockquote>
+<h2 id="原理"><a class="markdownIt-Anchor" href="#原理"></a> 原理</h2>
+<h3 id="整体架构"><a class="markdownIt-Anchor" href="#整体架构"></a> 整体架构</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619111557656.png" alt="image-20220619111557656" class="lazyload"></p>
+<p>整体架构图中可以看出，还是一个类似NeRF的问题，有位置输入<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>，观察方向输入<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">d</mi></mrow><annotation encoding="application/x-tex">\bold d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">d</span></span></span></span>，内部也是类似MLP的结构，只不过多了FiLM SIREN这个部分。这个部分需要的外部输入由噪声<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">z</mi></mrow><annotation encoding="application/x-tex">\bold z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">z</span></span></span></span>和映射网络得到。</p>
+<p>一些传统的2D-GAN，采用隐式向量（latent vector，其实就是embedding，也就是用向量描述对象）直接生成2D图像。本文的生成器<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>G</mi><mrow><msub><mi>θ</mi><mi>G</mi></msub></mrow></msub><mo>(</mo><mi mathvariant="bold">z</mi><mo separator="true">,</mo><mi>ξ</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">G_{\theta_G}(\bold z,\xi)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.005em;vertical-align:-0.255em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">G</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">θ</span><span class="vlist"><span style="top:0.15em;margin-right:0.07142857142857144em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit">G</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">z</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.04601em;">ξ</span><span class="mclose">)</span></span></span></span>接受输入噪声<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">z</mi></mrow><annotation encoding="application/x-tex">\bold z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">z</span></span></span></span>，生成以之为条件的隐式辐射场。该辐射场使用体绘制渲染，从相机姿势<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\xi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.04601em;">ξ</span></span></span></span>生成2D图像。</p>
+<p>在训练时，生成的图像被定向到传统的卷积鉴别器进行对抗性训练。在测试时，可以从任意相机姿势渲染辐射场，以生成视图一致的图像。</p>
+<h3 id="基于siren的隐式辐射场"><a class="markdownIt-Anchor" href="#基于siren的隐式辐射场"></a> 基于SIREN的隐式辐射场</h3>
+<p>SIREN是一个周期性激活函数，可以表示为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619114227977.png" alt="image-20220619114227977" class="lazyload"></p>
+<p>即权重矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">W</mi></mrow><annotation encoding="application/x-tex">\bold W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.68611em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf" style="margin-right:0.01597em;">W</span></span></span></span>与输入<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>相乘，再加上偏移<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">b</mi></mrow><annotation encoding="application/x-tex">\bold b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">b</span></span></span></span>（到这一步都是线性层的输出），然后进行sin计算。由于sin导数为cos，cos函数又和sin函数仅有相位平移的关系，因此依然保持了sin函数的特性，能够监督复杂信号下的任何一个sin导数。</p>
+<p>本文使用了FiLM-ed SIREN，表示为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619114406705.png" alt="image-20220619114406705" class="lazyload"></p>
+<p>FiLM的意思是Feature-wise Linear Modulation（特征线性调制），即在SIREN的基础上限制了频率<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>γ</mi></mrow><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05556em;">γ</span></span></span></span>和相位移动<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05278em;">β</span></span></span></span>。用这样很多层组合成了总体的MLP。</p>
+<p>然后可以通过这样改进后的网络得到密度和颜色：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619115140487.png" alt="image-20220619115140487" class="lazyload"></p>
+<h3 id="神经渲染"><a class="markdownIt-Anchor" href="#神经渲染"></a> 神经渲染</h3>
+<p>没什么好说的，就是NeRF的渲染：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619115219358.png" alt="image-20220619115219358" class="lazyload"></p>
+<h3 id="判别器"><a class="markdownIt-Anchor" href="#判别器"></a> 判别器</h3>
+<p>本文没有使用基于patch的训练方法。本文使用了卷积判别器<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mrow><msub><mi>θ</mi><mi>D</mi></msub></mrow></msub></mrow><annotation encoding="application/x-tex">D_{\theta_D}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.93833em;vertical-align:-0.255em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">D</span><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">θ</span><span class="vlist"><span style="top:0.15em;margin-right:0.07142857142857144em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-scriptstyle scriptscriptstyle cramped"><span class="mord mathit" style="margin-right:0.02778em;">D</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，其中参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>θ</mi><mi>D</mi></msub></mrow><annotation encoding="application/x-tex">\theta_D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">θ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.02778em;">D</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是逐渐增长的，然后再低分辨率和高批量的情况下进行训练。这一过程生成器专注于粗粒度的形状生成。随着训练进行，分辨率逐渐提高，并在判别器中加入了新的层，以处理高分辨率和细节部分。</p>
+<p>例如，从32×32开始训练，并在训练期间将分辨率提高到128×128。在实践中，这种渐进式增长策略允许在培训开始时扩大批量，这有助于稳定和加快培训。最终通过采样512×512像素渲染最终结果。</p>
+<p>生成器架构没有增长，相反地，他们通过从相同的隐式表示中更密集地采样光线来提高生成器的分辨率。</p>
+<h2 id="实现细节"><a class="markdownIt-Anchor" href="#实现细节"></a> 实现细节</h2>
+<p>实验中采用的相机视角还是约束在球体表面范围的。</p>
+<p>使用R1正则化的非饱和GAN损失：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619152423073.png" alt="image-20220619152423073" class="lazyload"></p>
+<p>显然，生成器试图最小化该损失，而判别器试图最大化该损失。使用Adam优化器。</p>
+<h2 id="效果"><a class="markdownIt-Anchor" href="#效果"></a> 效果</h2>
+<p>对比HoloGAN和GRAF的工作，pi-GAN拥有更好的效果。量化指标来看，也是如此。</p>
+<p>另外，pi-GAN的方法在外延到无法预测的相机姿势的时候，也会有合理的推测。pi-GAN依赖于底层的三维结构表示，并提供显式的相机控制。因此，它比依赖于黑盒表示或投影的方法更容易在训练数据集分布之外渲染视图和姿势。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220619153031865.png" alt="image-20220619153031865" class="lazyload">
+<p>至于局限性，有以下几点：</p>
+<ul>
+<li>提取的网格质量一般</li>
+<li>3D网格产生错误的凹凸面</li>
+<li>剩余视觉伪影的产生</li>
+<li>计算成本很高</li>
+</ul>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;19&#x2F;NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;19&#x2F;NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/NeRF/">NeRF</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text"> 原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text"> 整体架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Esiren%E7%9A%84%E9%9A%90%E5%BC%8F%E8%BE%90%E5%B0%84%E5%9C%BA"><span class="toc-number">2.2.</span> <span class="toc-text"> 基于SIREN的隐式辐射场</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A5%9E%E7%BB%8F%E6%B8%B2%E6%9F%93"><span class="toc-number">2.3.</span> <span class="toc-text"> 神经渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A4%E5%88%AB%E5%99%A8"><span class="toc-number">2.4.</span> <span class="toc-text"> 判别器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc-number">3.</span> <span class="toc-text"> 实现细节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C"><span class="toc-number">4.</span> <span class="toc-text"> 效果</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1655624709506"></script>
+
+
+	<script async src="/js/search.js?v=1655624709506"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
