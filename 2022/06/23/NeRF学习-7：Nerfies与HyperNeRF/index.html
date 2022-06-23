@@ -15,7 +15,7 @@
     <meta name="description" content="论文来源：Nerfies     HyperNeRF 改进方向：利用手机拍摄的视频真实地重建可变形场景。动态NeRF。  Nerfies  概述 Nerfies的名字来源于Selfies，显然，这是期望从手机自拍的一系列照片中重建三维场景。这项工作有以下挑战：  非刚性：无法保持完全禁止 头发、耳环、眼镜等材料重建的复杂程度  为了对非刚性变形场建模，引入了一个附加组件来推广NeRF：canoni">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NeRF学习#7：Nerfies与HyperNeRF">
-<meta property="og:url" content="http://blog.ruin.net.cn/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/index.html">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/06/23/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/index.html">
 <meta property="og:site_name" content="RUiN&#39;s Blog">
 <meta property="og:description" content="论文来源：Nerfies     HyperNeRF 改进方向：利用手机拍摄的视频真实地重建可变形场景。动态NeRF。  Nerfies  概述 Nerfies的名字来源于Selfies，显然，这是期望从手机自拍的一系列照片中重建三维场景。这项工作有以下挑战：  非刚性：无法保持完全禁止 头发、耳环、眼镜等材料重建的复杂程度  为了对非刚性变形场建模，引入了一个附加组件来推广NeRF：canoni">
 <meta property="og:locale" content="en_US">
@@ -47,17 +47,17 @@
 <meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623144151938.png">
 <meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623144517307.png">
 <meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623145029034.png">
-<meta property="article:published_time" content="2022-06-19T09:17:10.000Z">
-<meta property="article:modified_time" content="2022-06-23T06:54:41.085Z">
+<meta property="article:published_time" content="2022-06-23T09:03:10.000Z">
+<meta property="article:modified_time" content="2022-06-23T09:04:02.745Z">
 <meta property="article:author" content="RUiN">
 <meta property="article:tag" content="计算机视觉">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620145833790.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-    <link rel="stylesheet" href="/css/style.css?v=1655967297694">
+    <link rel="stylesheet" href="/css/style.css?v=1655975054953">
      
     
-    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1655967297694">
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1655975054953">
     
 <meta name="generator" content="Hexo 6.0.0"></head>
 
@@ -233,11 +233,11 @@
       <ul>
         
           <li>
-            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-6%EF%BC%9A%E5%8A%A8%E6%80%81NeRF-DNeRF/">NeRF学习#6：动态NeRF——D-NeRF</a>
+            <a href="/2022/06/23/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/">NeRF学习#7：Nerfies与HyperNeRF</a>
           </li>
         
           <li>
-            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/">NeRF学习#7：Nerfies与HyperNeRF</a>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-6%EF%BC%9A%E5%8A%A8%E6%80%81NeRF-DNeRF/">NeRF学习#6：动态NeRF——D-NeRF</a>
           </li>
         
           <li>
@@ -279,7 +279,7 @@
       
       
       <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
-    <a><i class="nexmoefont icon-calendar-fill"></i>2022年06月19日</a>
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年06月23日</a>
     <a><i class="nexmoefont icon-areachart"></i>3.5k 字</a>
     <a><i class="nexmoefont icon-time-circle-fill"></i>大概 15 分钟</a>
 </div>
@@ -421,7 +421,7 @@
       
     <div class="nexmoe-post-copyright">
         <strong>Author：</strong>RUiN<br>
-        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;19&#x2F;NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;19&#x2F;NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF&#x2F;</a><br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/06/23/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;23&#x2F;NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;23&#x2F;NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF&#x2F;</a><br>
         
             <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
         
@@ -503,10 +503,10 @@
 
  
 
-<script async src="/js/app.js?v=1655967297717"></script>
+<script async src="/js/app.js?v=1655975054973"></script>
 
 
-	<script async src="/js/search.js?v=1655967297717"></script>
+	<script async src="/js/search.js?v=1655975054973"></script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
