@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NeRF学习#7：Nerfies与HyperNeRF - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：Nerfies     HyperNeRF 改进方向：利用手机拍摄的视频真实地重建可变形场景。动态NeRF。  Nerfies  概述 Nerfies的名字来源于Selfies，显然，这是期望从手机自拍的一系列照片中重建三维场景。这项工作有以下挑战：  非刚性：无法保持完全禁止 头发、耳环、眼镜等材料重建的复杂程度  为了对非刚性变形场建模，引入了一个附加组件来推广NeRF：canoni">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NeRF学习#7：Nerfies与HyperNeRF">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：Nerfies     HyperNeRF 改进方向：利用手机拍摄的视频真实地重建可变形场景。动态NeRF。  Nerfies  概述 Nerfies的名字来源于Selfies，显然，这是期望从手机自拍的一系列照片中重建三维场景。这项工作有以下挑战：  非刚性：无法保持完全禁止 头发、耳环、眼镜等材料重建的复杂程度  为了对非刚性变形场建模，引入了一个附加组件来推广NeRF：canoni">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620145833790.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620150029537.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620152424285.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620153656229.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620153736004.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620153813147.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620155426270.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620155644089.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620160440706.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620161808639.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620161616172.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621082611406.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621084525905.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621083441945.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621084730732.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621084815236.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621085447558.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623134900314.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623134928694.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135121741.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135218331.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135600231.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135732994.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623141732958.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623143521674.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623144151938.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623144517307.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623145029034.png">
+<meta property="article:published_time" content="2022-06-19T09:17:10.000Z">
+<meta property="article:modified_time" content="2022-06-23T06:54:41.085Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620145833790.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1655967297694">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1655967297694">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>51</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>6</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-6%EF%BC%9A%E5%8A%A8%E6%80%81NeRF-DNeRF/">NeRF学习#6：动态NeRF——D-NeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/">NeRF学习#7：Nerfies与HyperNeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN/">NeRF学习#5：pi-GAN</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-4%EF%BC%9AFastNeRF/">NeRF学习#4：FastNeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/18/NeRF%E5%AD%A6%E4%B9%A0-3%EF%BC%9AMip-NeRF/">NeRF学习#3：Mip-NeRF</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623145029034.png" data-sizes="auto" alt="NeRF学习#7：Nerfies与HyperNeRF" class="lazyload">
+              <h1>NeRF学习#7：Nerfies与HyperNeRF</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年06月19日</a>
+    <a><i class="nexmoefont icon-areachart"></i>3.5k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 15 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://nerfies.github.io/">Nerfies</a>     <a target="_blank" rel="noopener" href="https://hypernerf.github.io/">HyperNeRF</a></p>
+<p>改进方向：利用手机拍摄的视频真实地重建<strong>可变形场景</strong>。动态NeRF。</p>
+<h1 id="nerfies"><a class="markdownIt-Anchor" href="#nerfies"></a> Nerfies</h1>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>Nerfies的名字来源于Selfies，显然，这是期望从手机自拍的一系列照片中重建三维场景。这项工作有以下挑战：</p>
+<ul>
+<li>非刚性：无法保持完全禁止</li>
+<li>头发、耳环、眼镜等材料重建的复杂程度</li>
+</ul>
+<p>为了对非刚性变形场建模，引入了一个附加组件来推广NeRF：canonical NeRF（规范NeRF）作为所有观测的模板，并为每个观测结果补充一个形变场，通过形变将观测参考框架中的3D点扭曲到规范模型的参考框架。从这一点来说，这个思路与D-NeRF极其相似。</p>
+<p>Nerfies的优化在于，采用了弹性能公式类似的办法，防止了变形场的扭曲和过拟合，并通过自动微分简化正则化，快速计算变形场的雅可比矩阵。同时，提出了一套从粗到细的优化方案，通过频率调制变形场网络输入位置编码的分量。</p>
+<p>总结本文贡献：</p>
+<ul>
+<li>NeRF的扩展——优化形变场；</li>
+<li>使用与神经网络定义的形变场的刚度先验；</li>
+<li>自动从粗到细的正则化方法；</li>
+<li>一套系统。</li>
+</ul>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620145833790.png" alt="image-20220620145833790" class="lazyload"></p>
+<h2 id="原理"><a class="markdownIt-Anchor" href="#原理"></a> 原理</h2>
+<h3 id="整体框架"><a class="markdownIt-Anchor" href="#整体框架"></a> 整体框架</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620150029537.png" alt="image-20220620150029537" class="lazyload"></p>
+<p>整个流程和D-NeRF非常相似，有几个不同：</p>
+<ul>
+<li>变形到标准空间的时候，D-NeRF输入的参数是时间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span><span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">t</span></span></span></span>，而此处输入的是latent deformation code（潜在变形编码）<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ω</mi></mrow><annotation encoding="application/x-tex">\omega</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span></span></span>。</li>
+<li>最后NeRF计算的时候加入了一个latent appearance code（潜在外观编码）<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ψ</mi></mrow><annotation encoding="application/x-tex">\psi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span></span></span></span>。</li>
+</ul>
+<h3 id="神经辐射场nerf"><a class="markdownIt-Anchor" href="#神经辐射场nerf"></a> 神经辐射场NeRF</h3>
+<p>比起原始NeRF，Nerfies的NeRF加入了外观编码，所以可以将映射函数记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>:</mo><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><mi mathvariant="bold">d</mi><mo separator="true">,</mo><msub><mi>ψ</mi><mi>i</mi></msub><mo>)</mo><mo>→</mo><mo>(</mo><mi mathvariant="bold">c</mi><mo separator="true">,</mo><mi>σ</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">F:(\bold x,\bold d,\psi_i)\to(\bold c,\sigma)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="mrel">:</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord mathbf">d</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class="mopen">(</span><span class="mord mathbf">c</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mclose">)</span></span></span></span>。实践中使用的PE也是一样的，定义<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>γ</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\gamma(\bold x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05556em;">γ</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span>为类似傅里叶的高频展开形式。</p>
+<p>外观编码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\psi_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的思路来源于NeRF in Wild这篇文章，对于每个观察帧<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi><mo>∈</mo><mrow><mn>1</mn><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><mi>n</mi></mrow></mrow><annotation encoding="application/x-tex">i\in{1,...,n}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">i</span><span class="mrel">∈</span><span class="mord textstyle uncramped"><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord mathit">n</span></span></span></span></span>，用来调节颜色输出以处理输入帧之间的外观变化，例如曝光和白平衡。</p>
+<h3 id="神经形变场nedf"><a class="markdownIt-Anchor" href="#神经形变场nedf"></a> 神经形变场NeDF</h3>
+<p>这一步也没有什么太大的问题，对于每一帧进行observation-to-canonical变形，定义映射为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>T</mi><mi>i</mi></msub><mo>:</mo><mi mathvariant="bold">x</mi><mo>→</mo><msup><mi mathvariant="bold">x</mi><mrow><mi mathvariant="normal">′</mi></mrow></msup></mrow><annotation encoding="application/x-tex">T_i:\bold x\to\bold x&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:0.901892em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">T</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">:</span><span class="mord mathbf">x</span><span class="mrel">→</span><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，将每一个观测空间的坐标映射到对应的标准空间的坐标。这一步加入了潜在变形编码，将映射可以记为：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi><mo>:</mo><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>)</mo><mo>→</mo><msup><mi mathvariant="bold">x</mi><mrow><mi mathvariant="normal">′</mi></mrow></msup></mrow><annotation encoding="application/x-tex">T:(\bold x,\omega_i)\to\bold x&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:1.001892em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span><span class="mrel">:</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，以每帧学习的潜在变形代码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为条件。每个潜在代码对帧i中的场景状态进行编码。</p>
+<p>给定规范空间辐射场为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">F</span></span></span></span>，观测到的正则映射<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>，可得到观测空间辐射场：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620152424285.png" alt="image-20220620152424285" class="lazyload">
+<p>还记得D-NeRF中我们说过，直接给当前帧加上形变量到达正则帧，这个过程过于粗暴简单。因此本文采用了一种刚度先验的方法来加以优化。通过李代数的方式获得了旋转轴<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">S</mi><mo>=</mo><mo>(</mo><mi mathvariant="bold">r</mi><mo separator="true">;</mo><mi mathvariant="bold">v</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\mathcal S=(\bold r;\bold v)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.075em;">S</span><span class="mrel">=</span><span class="mopen">(</span><span class="mord mathbf">r</span><span class="mpunct">;</span><span class="mord mathbf" style="margin-right:0.01597em;">v</span><span class="mclose">)</span></span></span></span>，其中前者标注了一个旋转，根据罗德里格斯公式，可以得到旋转矩阵：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620153656229.png" alt="image-20220620153656229" class="lazyload"></p>
+<p>同理，可以得到平移矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">p</mi><mo>=</mo><mrow><mi mathvariant="bold">G</mi><mi mathvariant="bold">v</mi></mrow></mrow><annotation encoding="application/x-tex">\bold p=\bold {Gv}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.8805499999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">p</span><span class="mrel">=</span><span class="mord textstyle uncramped"><span class="mord mathbf">G</span><span class="mord mathbf" style="margin-right:0.01597em;">v</span></span></span></span></span>，其中：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620153736004.png" alt="image-20220620153736004" class="lazyload"></p>
+<p>那么就可以得到变形后的点（刚性变换表示）：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620153813147.png" alt="image-20220620153813147" class="lazyload">
+<p>最后，将形变场利用MLP网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>W</mi><mo>:</mo><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>)</mo><mo>→</mo><mo>(</mo><mi mathvariant="bold">r</mi><mo separator="true">,</mo><mi mathvariant="bold">v</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">W:(\bold x,\omega_i)\to(\bold r,\bold v)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">W</span><span class="mrel">:</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class="mopen">(</span><span class="mord mathbf">r</span><span class="mpunct">,</span><span class="mord mathbf" style="margin-right:0.01597em;">v</span><span class="mclose">)</span></span></span></span>，其中的潜在变形编码通过一个embedding层来优化。</p>
+<p>特殊地，由于李代数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="fraktur">s</mi><mi mathvariant="fraktur">e</mi></mrow><mo>(</mo><mn>3</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">\mathfrak{se}(3)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord textstyle uncramped"><span class="mord mathfrak">s</span><span class="mord mathfrak">e</span></span><span class="mopen">(</span><span class="mord mathrm">3</span><span class="mclose">)</span></span></span></span>的形式，当<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">S</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mathcal S=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.075em;">S</span><span class="mrel">=</span><span class="mord mathrm">0</span></span></span></span>时，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>e</mi><mrow><mi mathvariant="script">S</mi></mrow></msup></mrow><annotation encoding="application/x-tex">e^{\mathcal S}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8413309999999999em;"></span><span class="strut bottom" style="height:0.8413309999999999em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">e</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathcal" style="margin-right:0.075em;">S</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是单位矩阵，即恒等变换，因此将MLP的最后一层权重初始化为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">U</mi><mo>(</mo><mo>−</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>5</mn></mrow></msup><mo separator="true">,</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>5</mn></mrow></msup><mo>)</mo></mrow><annotation encoding="application/x-tex">\mathcal U(-10^{-5},10^{-5})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8141079999999999em;"></span><span class="strut bottom" style="height:1.064108em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.09931em;">U</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathrm">1</span><span class="mord"><span class="mord mathrm">0</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord">−</span><span class="mord mathrm">5</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mord"><span class="mord mathrm">0</span><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord">−</span><span class="mord mathrm">5</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span></span></span></span>，使得初始化的变形场接近恒等变换。</p>
+<h3 id="弹性正则变换"><a class="markdownIt-Anchor" href="#弹性正则变换"></a> 弹性正则变换</h3>
+<p>变形场的映射的雅可比矩阵<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="bold">J</mi><mi>T</mi></msub><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\bold J_T(\bold x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord mathbf">J</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span>描述了该变换的最佳线性近似。因此，可以通过雅可比矩阵来控制变形的局部行为。</p>
+<p>本文的一个贡献在于，使用连续公式，允许通过MLP的自动微分直接计算雅可比矩阵。</p>
+<p>首先对于雅可比矩阵的奇异值分解：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620155426270.png" alt="image-20220620155426270" class="lazyload">
+<p>奇异值的对数对同一因子的收缩和膨胀赋予了同等的权重，文章研究发现它的性能更好。本文通过限制<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Σ</mi></mrow><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Σ</span></span></span></span>的F范数平方来保证接近刚性，即限制弹性度。损失为下：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620155644089.png" alt="image-20220620155644089" class="lazyload">
+<p>另外，还定义了鲁棒性损失：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620160440706.png" alt="image-20220620160440706" class="lazyload">
+<p>其中下式为Geman-McClure鲁棒误差损失函数。超参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>c</mi><mo>=</mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>0</mn><mn>3</mn></mrow><annotation encoding="application/x-tex">c=0.03</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">c</span><span class="mrel">=</span><span class="mord mathrm">0</span><span class="mord mathrm">.</span><span class="mord mathrm">0</span><span class="mord mathrm">3</span></span></span></span>。这个鲁棒核的效果是限制梯度不要过大，在有outlier的时候不会影响训练。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620161808639.png" alt="image-20220620161808639" class="lazyload"></p>
+<h3 id="背景正则化"><a class="markdownIt-Anchor" href="#背景正则化"></a> 背景正则化</h3>
+<p>变形场不受约束，因此一切都可以自由移动。我们可以选择添加一个正则化项，以防止背景移动。给定场景中一组我们知道应该是静态的3D点，我们可以惩罚这些点上的任何变形。</p>
+<p>例如，使用“运动结构”（Structure from Motion）的摄影机注册会生成一组三维特征点，这些特征点在至少一组观测值上表现出刚性。</p>
+<p>给定静态3D点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><msub><mi mathvariant="bold">x</mi><mn>1</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi mathvariant="bold">x</mi><mi>K</mi></msub></mrow></mrow><annotation encoding="application/x-tex">{\bold x_1,...,\bold x_K}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.63888em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord textstyle uncramped"><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class=""><span class="mord mathbf">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.07153em;">K</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span></span>（即背景部分固定不动），惩罚运动损失：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220620161616172.png" alt="image-20220620161616172" class="lazyload">
+<p>除了防止背景点移动外，这种正则化还有将观测坐标系与正则坐标系对齐的好处。</p>
+<h3 id="粗到细变形正则"><a class="markdownIt-Anchor" href="#粗到细变形正则"></a> 粗到细变形正则</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621082611406.png" alt="image-20220621082611406" class="lazyload"></p>
+<p>注意到在PE的时候会取高阶的阶数作为参数。以抬头和微笑两个情况作为例子，本文的实验显示，当取的阶数较小的时候，前者情况更好，而后者较差；当取的阶数较大的时候，恰好相反。这两个情况对应了coarse和fine的变化。因此Nerfies提出了一种结合结构化变化和细节变化都可以感知到的方法coarse-to-fine（c2f）。</p>
+<p>位置编码可以用NeRF的MLP的“神经切线核”（Neural Tangent Kernel，NTK）来解释。这是一个平稳的插值核，其中的参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">m</span></span></span></span>可以调节该核函数的“带宽”。小频率会导致较宽的核，从而导致数据拟合不足，而大频率会导致较窄的核，使得拟合过渡。因此Nerfies使用了一个引入参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.0037em;">α</span></span></span></span>来平滑退火NTK贷款的方法。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621084525905.png" alt="image-20220621084525905" class="lazyload"></p>
+<p>对于每个频率带<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span>，定义其权重如下：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621083441945.png" alt="image-20220621083441945" class="lazyload"></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi><mo>∈</mo><mo>[</mo><mn>0</mn><mo separator="true">,</mo><mi>m</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">\alpha\in[0,m]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.0037em;">α</span><span class="mrel">∈</span><span class="mopen">[</span><span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord mathit">m</span><span class="mclose">]</span></span></span></span>是一个线性退火的参数，可以理解为一个滑动窗口。注意到其中的clamp函数，其实就是一个截断，也可以理解为窗口滑动的过程，<em>或者简单当作训练的轮次？</em>。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi><mo>−</mo><mi>j</mi></mrow><annotation encoding="application/x-tex">\alpha-j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span><span class="strut bottom" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.0037em;">α</span><span class="mbin">−</span><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span>做了一个截取的范围。当频率很高的时候，会被裁剪掉，也就是设为0，不去使用这部分。随着<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi><mi>l</mi><mi>p</mi><mi>h</mi><mi>a</mi></mrow><annotation encoding="application/x-tex">alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">a</span><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mord mathit">p</span><span class="mord mathit">h</span><span class="mord mathit">a</span></span></span></span>的增加，这一部分的权重逐渐增大。</p>
+<p><strong>也就是有条件地使用PE</strong>。</p>
+<h2 id="nerfies随意的自由视点自拍系统"><a class="markdownIt-Anchor" href="#nerfies随意的自由视点自拍系统"></a> Nerfies：随意的自由视点自拍系统</h2>
+<p>下面分析文章提出的工作的应用场景，这有助于我们了解这个工作的适用情况和局限性。</p>
+<ul>
+<li>先决条件：需要一个有比较丰富纹理的静态背景，被拍摄对象需要尽量保持静止，不要有大的结构性变化，自拍者在45°的锥体内移动手机，大约20s的捕捉就足够了。</li>
+<li>相机注册：相机外参的标定是通过静态的背景来标定的，使用了COLMAP。</li>
+<li>前景分割：SfM的方法有时会导致背景部分显著的误匹配。因此使用前景分割网络检测到一些主题图像上的特征并将其丢弃，防止与背景匹配到。</li>
+</ul>
+<h2 id="效果与总结"><a class="markdownIt-Anchor" href="#效果与总结"></a> 效果与总结</h2>
+<p>本文的重建效果和系统的提出都是非常具有创意和实践可操作性的。同时利用了计算摄影学的方法减少了输入复杂参数的情况，重建的效果也非常好，对于精细物体甚至也有很好的表现。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621084730732.png" alt="image-20220621084730732" class="lazyload"></p>
+<p>最后说一下本文工作的一些局限性。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621084815236.png" alt="image-20220621084815236" class="lazyload"></p>
+<p>本文的方法难以处理拓扑变化，例如上图中嘴巴的开合，并且有可能对于快速运动的视频视角，难以处理某些帧。另外，由于变形本身不受约束，很可能出现静态区域的移动，这也导致了PSNR和LPIPS指标的不足。当然，SfM和相机标定的质量也决定了效果。</p>
+<p>针对其中拓扑变化的捕捉，这个团队又提出了HyperNeRF。</p>
+<h1 id="hypernerf"><a class="markdownIt-Anchor" href="#hypernerf"></a> HyperNeRF</h1>
+<h2 id="概述-2"><a class="markdownIt-Anchor" href="#概述-2"></a> 概述</h2>
+<p>HyperNeRF解决的一大问题就是Nerfies中的拓扑变化。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220621085447558.png" alt="image-20220621085447558" class="lazyload"></p>
+<p>从这张图中可以大概看出，这篇工作构建了一个Hyper-space（超空间），也就是对NeRF的高维提升，通过每个单独输入图像对应的5D辐射场表示为超空间的切片来进行进一步限制。</p>
+<h2 id="动机与思想"><a class="markdownIt-Anchor" href="#动机与思想"></a> 动机与思想</h2>
+<h3 id="level-set水平集方法"><a class="markdownIt-Anchor" href="#level-set水平集方法"></a> Level-Set（水平集）方法</h3>
+<p>水平集方法将曲面隐式建模为辅助函数的零水平集（zero-level set）。更形象地来说，水平集方法提供了一种将一系列拓扑变化形状建模为高维辅助函数切片的方法。</p>
+<p>例如下图的几个形状：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623134900314.png" alt="image-20220623134900314" class="lazyload"></p>
+<p>可以通过以下图形的截面来得到</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623134928694.png" alt="image-20220623134928694" class="lazyload">
+<p>因此，我们可以通过沿不同的维度进行切片截面，自然地对拓扑变化的形状进行建模。</p>
+<h3 id="可变形截面"><a class="markdownIt-Anchor" href="#可变形截面"></a> 可变形截面</h3>
+<p>考虑如下几个图案：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135121741.png" alt="image-20220623135121741" class="lazyload"></p>
+<p>一般的水平集方法的想法是，通过建模以下的图形，使用不同维度的水平截面来得到结果：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135218331.png" alt="image-20220623135218331" class="lazyload">
+<p>这意味着高维形状必须包含相同形状的副本，因为每个排列必须沿z轴的单个直切片排列。如果我们让切片平面弯曲，它会产生一个更干净的模板形状：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135600231.png" alt="image-20220623135600231" class="lazyload">
+<p>以上两种方法可以被称为AP（Axis-aligned Slicing Plane）和DS（Deformable Slicing Surface）。</p>
+<h2 id="原理-2"><a class="markdownIt-Anchor" href="#原理-2"></a> 原理</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623135732994.png" alt="image-20220623135732994" class="lazyload"></p>
+<p>HyperNeRF体系结构是对Nerfies的直接扩展。关键区别在于，模板NeRF以附加的高维坐标为条件，其中高维坐标由“环境切片表面”给出，可以将其视为变形场的高维模拟。</p>
+<h3 id="超空间nerf"><a class="markdownIt-Anchor" href="#超空间nerf"></a> 超空间NeRF</h3>
+<p>变形场可以有效地对保留拓扑的变化进行建模，然而对于拓扑结构发生较大变化的情况，效果不是很好，因为拓扑结构的变化必然涉及变形场的不连续性。我们的变形场是连续的，因为它被编码在MLP的权重中，MLP表现为平滑插值器，因此不能表示这种不连续性。</p>
+<p>本文工作将NeRF扩展到更加高维的空间，在这种情况下，由相交的高维切片曲面得到的完整的3D-NeRF。光线投射和体渲染的方式与正常的NeRF相同。</p>
+<p>本文将NeRF模板的范围扩展到高维空间(\bold x,\bold w)\in\R^{3+W}，其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>W</mi></mrow><annotation encoding="application/x-tex">W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">W</span></span></span></span>是更高维度的数量。NeRF的MLP的公式依然不变：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>:</mo><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><mi mathvariant="bold">w</mi><mo separator="true">,</mo><mi mathvariant="bold">d</mi><mo separator="true">,</mo><msub><mi>ψ</mi><mi>i</mi></msub><mo>)</mo><mo>→</mo><mo>(</mo><mi mathvariant="bold">c</mi><mo separator="true">,</mo><mi>σ</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">F:(\bold x,\bold w,\bold d,\psi_i)\to(\bold c,\sigma)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="mrel">:</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord mathbf" style="margin-right:0.01597em;">w</span><span class="mpunct">,</span><span class="mord mathbf">d</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class="mopen">(</span><span class="mord mathbf">c</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="mclose">)</span></span></span></span>。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623141732958.png" alt="image-20220623141732958" class="lazyload">
+<p>如图是一个超空间模板的可视化示例，除了3D的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo separator="true">,</mo><mi>z</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">(x,y,z)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="mclose">)</span></span></span></span>坐标外，还增加了两个“环境维度”<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><msub><mi>w</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>w</mi><mn>2</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">(w_1,w_2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span></span></span></span>，在这个空间中，每一个环境维度坐标下对应的位置是一个完整的NeRF模型。</p>
+<p>至于截面方式，如前文提到的两种AP或DS：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623143521674.png" alt="image-20220623143521674" class="lazyload"></p>
+<ol>
+<li>AP：我们可以为每个观察关联模板的特定切片i通过直接优化环境坐标{wi}与变形和外观代码一样。此方法强制观测的所有光线采样共享相同的环境坐标，要求在单个环境坐标下显式建模所有观测状态。因为场景的空间距离部分中发生的拓扑变化必须跨多个子空间复制，以表示不同的状态组合（如上图的b）</li>
+<li>DS：允许将不同的空间位置沿环境尺寸映射到不同的坐标，可以更有效地适用环境维度坐标，产生更好的重建质量和平滑插值。</li>
+</ol>
+<p>更形象地表现如下图：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623144151938.png" alt="image-20220623144151938" class="lazyload"></p>
+<p>AP必须对每个场景状态进行整体建模，并在眼睛、嘴巴和下巴中产生伪影。DS可以更有效地使用模板，因为场景的每个部分都可以引用模板的不同部分，从而产生更清晰的细节。</p>
+<p>本文对可变形切片曲面场也适用MLP进行了建模。每一个观测空间的采样点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>通过映射<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>H</mi><mo>:</mo><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>)</mo><mo>→</mo><mi mathvariant="bold">w</mi></mrow><annotation encoding="application/x-tex">H:(\bold x,\omega_i)\to\bold w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.08125em;">H</span><span class="mrel">:</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class="mord mathbf" style="margin-right:0.01597em;">w</span></span></span></span>，其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是潜在变形编码（latent deformation code），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">w</mi></mrow><annotation encoding="application/x-tex">\bold w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf" style="margin-right:0.01597em;">w</span></span></span></span>是环境坐标空间中的一个点，它定义了样本的横截面子空间。已知NeRF模板<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">F</span></span></span></span>，空间变形场<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.13889em;">T</span></span></span></span>，截面空间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.08125em;">H</span></span></span></span>，观测空间的辐射场可以通过如下方法估计：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623144517307.png" alt="image-20220623144517307" class="lazyload">
+<p>其中的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi><mo separator="true">,</mo><mi mathvariant="bold">d</mi></mrow><annotation encoding="application/x-tex">\bold x,\bold d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord mathbf">d</span></span></span></span>以及<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">w</mi></mrow><annotation encoding="application/x-tex">\bold w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf" style="margin-right:0.01597em;">w</span></span></span></span>分别进行PE。</p>
+<h2 id="效果与总结-2"><a class="markdownIt-Anchor" href="#效果与总结-2"></a> 效果与总结</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220623145029034.png" alt="image-20220623145029034" class="lazyload"></p>
+<p>比起Nerfies有很好的改进和提升。</p>
+<p>至于本文研究的局限性，与所有NeRF一样，相机配准严重影响重建质量，而且无法重建训练数据中捕捉的不好的角度和力矩，对于快速运动的情况捕捉也较差。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;19&#x2F;NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;06&#x2F;19&#x2F;NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/NeRF/">NeRF</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#nerfies"><span class="toc-number">1.</span> <span class="toc-text"> Nerfies</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text"> 原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E6%A1%86%E6%9E%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text"> 整体框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A5%9E%E7%BB%8F%E8%BE%90%E5%B0%84%E5%9C%BAnerf"><span class="toc-number">1.2.2.</span> <span class="toc-text"> 神经辐射场NeRF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A5%9E%E7%BB%8F%E5%BD%A2%E5%8F%98%E5%9C%BAnedf"><span class="toc-number">1.2.3.</span> <span class="toc-text"> 神经形变场NeDF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%B9%E6%80%A7%E6%AD%A3%E5%88%99%E5%8F%98%E6%8D%A2"><span class="toc-number">1.2.4.</span> <span class="toc-text"> 弹性正则变换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%E6%AD%A3%E5%88%99%E5%8C%96"><span class="toc-number">1.2.5.</span> <span class="toc-text"> 背景正则化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B2%97%E5%88%B0%E7%BB%86%E5%8F%98%E5%BD%A2%E6%AD%A3%E5%88%99"><span class="toc-number">1.2.6.</span> <span class="toc-text"> 粗到细变形正则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nerfies%E9%9A%8F%E6%84%8F%E7%9A%84%E8%87%AA%E7%94%B1%E8%A7%86%E7%82%B9%E8%87%AA%E6%8B%8D%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.3.</span> <span class="toc-text"> Nerfies：随意的自由视点自拍系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C%E4%B8%8E%E6%80%BB%E7%BB%93"><span class="toc-number">1.4.</span> <span class="toc-text"> 效果与总结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#hypernerf"><span class="toc-number">2.</span> <span class="toc-text"> HyperNeRF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0-2"><span class="toc-number">2.1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%9C%BA%E4%B8%8E%E6%80%9D%E6%83%B3"><span class="toc-number">2.2.</span> <span class="toc-text"> 动机与思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#level-set%E6%B0%B4%E5%B9%B3%E9%9B%86%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.1.</span> <span class="toc-text"> Level-Set（水平集）方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E5%8F%98%E5%BD%A2%E6%88%AA%E9%9D%A2"><span class="toc-number">2.2.2.</span> <span class="toc-text"> 可变形截面</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86-2"><span class="toc-number">2.3.</span> <span class="toc-text"> 原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B6%85%E7%A9%BA%E9%97%B4nerf"><span class="toc-number">2.3.1.</span> <span class="toc-text"> 超空间NeRF</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C%E4%B8%8E%E6%80%BB%E7%BB%93-2"><span class="toc-number">2.4.</span> <span class="toc-text"> 效果与总结</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1655967297717"></script>
+
+
+	<script async src="/js/search.js?v=1655967297717"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
