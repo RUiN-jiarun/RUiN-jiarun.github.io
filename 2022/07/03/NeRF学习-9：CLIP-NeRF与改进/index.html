@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NeRF学习#9：CLIP-NeRF与改进 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="这一篇blog的主题也是可编辑NeRF，是两篇2022年的工作，后一篇在前者基础上进行了改进 文章来源：  CLIP-NeRF: Text-and-Image Driven Manipulation of Neural Radiance Fields (cassiepython.github.io) Decomposing NeRF for Editing via Feature Field Di">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NeRF学习#9：CLIP-NeRF与改进">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/07/03/NeRF%E5%AD%A6%E4%B9%A0-9%EF%BC%9ACLIP-NeRF%E4%B8%8E%E6%94%B9%E8%BF%9B/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="这一篇blog的主题也是可编辑NeRF，是两篇2022年的工作，后一篇在前者基础上进行了改进 文章来源：  CLIP-NeRF: Text-and-Image Driven Manipulation of Neural Radiance Fields (cassiepython.github.io) Decomposing NeRF for Editing via Feature Field Di">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://openaiassets.blob.core.windows.net/$web/clip/draft/20210104b/overview-a.svg">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702144921809.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20201212120837670.gif">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702145150278.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/teaser.gif">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702201853956.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702202201933.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702205901560.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702214506770.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703095245105.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702145702217.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100142377.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100646922.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100839996.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100916925.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703101055628.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703102136100.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703102147286.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703103037877.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703214947125.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703215335429.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703215514717.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703215726036.png">
+<meta property="article:published_time" content="2022-07-03T13:59:10.000Z">
+<meta property="article:modified_time" content="2022-07-03T14:00:00.480Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://openaiassets.blob.core.windows.net/$web/clip/draft/20210104b/overview-a.svg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1656856815854">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1656856815854">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>53</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>6</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">9</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/07/03/NeRF%E5%AD%A6%E4%B9%A0-9%EF%BC%9ACLIP-NeRF%E4%B8%8E%E6%94%B9%E8%BF%9B/">NeRF学习#9：CLIP-NeRF与改进</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/30/NeRF%E5%AD%A6%E4%B9%A0-8%EF%BC%9A%E5%8F%AF%E7%BC%96%E8%BE%91NeRF-2021/">NeRF学习#8：可编辑NeRF-2021</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/23/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/">NeRF学习#7：Nerfies与HyperNeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-6%EF%BC%9A%E5%8A%A8%E6%80%81NeRF-DNeRF/">NeRF学习#6：动态NeRF——D-NeRF</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/19/NeRF%E5%AD%A6%E4%B9%A0-5%EF%BC%9Api-GAN/">NeRF学习#5：pi-GAN</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703102136100.png" data-sizes="auto" alt="NeRF学习#9：CLIP-NeRF与改进" class="lazyload">
+              <h1>NeRF学习#9：CLIP-NeRF与改进</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年07月03日</a>
+    <a><i class="nexmoefont icon-areachart"></i>3.1k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 13 分钟</a>
+</div>
+
+      
+
+      <p>这一篇blog的主题也是可编辑NeRF，是两篇2022年的工作，后一篇在前者基础上进行了改进</p>
+<p>文章来源：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://cassiepython.github.io/clipnerf/">CLIP-NeRF: Text-and-Image Driven Manipulation of Neural Radiance Fields (cassiepython.github.io)</a></li>
+<li><a target="_blank" rel="noopener" href="https://pfnet-research.github.io/distilled-feature-fields/">Decomposing NeRF for Editing via Feature Field Distillation (pfnet-research.github.io)</a></li>
+</ol>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>Contrastive Language-Image Pre-Training（CLIP，对比语言图像预训练）。CLIP-NeRF在此基础上，提出了一个框架，可以让用户以短文本的提示或者示例图像来操作NeRF，进行编辑与修改。回忆我们之前一篇的学习，关于Edit-NeRF，重要的编辑对象其实就是形状与外观（颜色）。对此，这两篇工作进行了实现的研究与分析。</p>
+<p>CLIP-NeRF提出了一种<strong>分离的条件辐射场</strong>架构，允许对形状和外观进行单独控制。这是通过将学习的变形场应用于位置编码并将颜色调节推迟到体积渲染阶段来执行形状调节来实现的。另外，CLIP-NeRF设计了两个编码映射器（code mapper），将分离的潜在表示与CLIP embedding联系起来，将CLIP embedding作为输入，更新潜在编码以进行目标编辑。同时CLIP-NeRF提出了一种逆优化（inverse optimization）方法，将输入图像准确地投影到潜在代码以进行操作，从而能够在真实图像上进行编辑。</p>
+<p>在此基础上的Disilled Feature Fields（蒸馏特征场）的工作也解决了NeRF的语义场景分解问题，以实现对表示的三维场景的基于查询的局部编辑。这篇工作将自监督二维图像提取工具（如CLIP-LSeg或DINO）的知识提取到与辐射场并行优化的三维特征场中。用户通过文本、图像补丁或点击选择进行模式查询，三维特征场在语义上直接分解三维空间，不需要重新训练，并使我们能够在语义上选择和编辑辐射场中的区域。</p>
+<h2 id="相关工作"><a class="markdownIt-Anchor" href="#相关工作"></a> 相关工作</h2>
+<h3 id="clip与零镜头zero-shot语义分割"><a class="markdownIt-Anchor" href="#clip与零镜头zero-shot语义分割"></a> CLIP与零镜头（zero-shot）语义分割</h3>
+<p><a target="_blank" rel="noopener" href="https://openai.com/blog/clip/">CLIP: Connecting Text and Images (openai.com)</a></p>
+<p>CLIP等方法针对是以下这个问题：视觉数据集是劳动密集型的（创建成本高，只能够学习到一组狭窄的视觉概念）。CLIP提出了一种神经网络，能够在各种各样的图像上进行训练，具有各种各样的自然语言监控，用自然语言知识网络执行各种分类基准，无需直接优化基准性能。</p>
+<p>这个模型拥有很强大的迁移能力，只用了一个简单的预训练任务，即预测哪个文本描述对应当前图像，从互联网上搜集的4亿个图像文本对的数据集上可以取得SOTA的图像表征。预训练完毕后，该模型可以在下游任务直接进行zero-shot transfer。在30个不同类型的下游视觉识别任务上进行了基准测试，显示该模型根本不需要任何额外的数据也能够与完全监督的模型有同样效果甚至更好。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://openaiassets.blob.core.windows.net/$web/clip/draft/20210104b/overview-a.svg" alt="img" class="lazyload">
+<p>CLIP的预训练模型如上图所示。一个batch里有N对(image, text)的对，然后进行对称的对比学习（contrasive learning）。</p>
+<blockquote>
+<p>对比学习是自监督学习的一种，其思想在于将正样本和负样本在特征空间对比，学习样本的特征表示。</p>
+<p>关于监督学习、无监督学习、自监督学习，下图的展示非常形象：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702144921809.png" alt="image-20220702144921809" class="lazyload"></p>
+<p>对比学习首先学习未标记数据集上图像的通用表示形式，然后是用少量标记图像进行微调以提升性能。对比学习在不同样本之间比较来学习，可以在“相似”输入的正样本和“不同”输入的负样本之间进行比较与学习。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/20201212120837670.gif" alt="对比学习" class="lazyload"></p>
+</blockquote>
+<p>一旦CLIP的预训练好了，就可以进行zero-shot prediction了：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702145150278.png" alt="image-20220702145150278" class="lazyload"></p>
+<p>思路如下：</p>
+<ul>
+<li>Sample所有N个class，得到N个input text，都经过text encoder编码得到对应的N个class text embedding（之所以叫embedding而不叫representation是想说明这个特征是经过encoding和projection得到的）；</li>
+<li>Sample一个要预测的image，得到其image embedding；</li>
+<li>以N个text embedding为key，以当前image embedding为query，算cosine相似度，相似度最高的即为Top-1的prediction class。</li>
+</ul>
+<blockquote>
+<p>来源：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/486857682">【CLIP系列Paper解读】CLIP: Learning Transferable Visual Models From Natural Language Supervision - 知乎 (zhihu.com)</a></p>
+</blockquote>
+<h3 id="clip驱动的图像生成与操作"><a class="markdownIt-Anchor" href="#clip驱动的图像生成与操作"></a> CLIP驱动的图像生成与操作</h3>
+<p>在CLIP模型的支持下，提出了一些以文本驱动的图像生成和处理办法，包括结合StyleGAN等方法。它实现了与基于GAN的图像处理方法相当的性能，具有很大的模式覆盖和训练稳定性的优势。</p>
+<p>在Distilled这篇文章中，作者对于zero-shot语义分割任务进行了更深的讨论。在这个挑战中，模型必须在没有类别先验信息的情况下预测图像中像素的语义标签。该工作试图将其扩展到3D场上进行语义分割，而无需3D语义监控。</p>
+<h2 id="clip-nerf"><a class="markdownIt-Anchor" href="#clip-nerf"></a> CLIP-NeRF</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/teaser.gif" alt="CLIP-NeRF supports editing a conditional model using text or image guidance via their CLIP embeddings." class="lazyload"></p>
+<h3 id="非纠缠条件辐射场disentangled-conditional-nerf"><a class="markdownIt-Anchor" href="#非纠缠条件辐射场disentangled-conditional-nerf"></a> 非纠缠条件辐射场（Disentangled Conditional NeRF）</h3>
+<p>回顾条件辐射场的概念，是对一个特定对象类别进行生成模型，以专门控制形状和外观的潜在向量作为条件。然而普通的条件辐射场收到形状和外观条件之间的互相干扰，操纵形状编码也可能导致颜色变化。因此本文提出了非纠缠条件辐射场架构，通过适当地解开条件极值来实现对形状和外观的分别控制。</p>
+<p><strong>条件形变</strong>。该文方法通过对输入位置进行显式体积变形来制定形状条件，而不是将潜在形状编码直接连接到编码的位置特征。这种办法可以提高操作的鲁棒性并尽可能保留原始形状细节，并完全隔离了形状对于外观的影响。在此思想上，该文提出了一个形变网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">T</mi><mo>:</mo><mo>(</mo><mi>x</mi><mo separator="true">,</mo><msub><mi>z</mi><mi>s</mi></msub><mo>)</mo><mo>→</mo><mi mathvariant="normal">Δ</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\mathcal T:(x,z_s)\to\Delta x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.25417em;">T</span><span class="mrel">:</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class="mord mathrm">Δ</span><span class="mord mathit">x</span></span></span></span>，将位置和输入的形状编码投射到位移矢量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\Delta x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Δ</span><span class="mord mathit">x</span></span></span></span>对应于位置编码的每一个频带上。</p>
+<p>形变位置编码：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702201853956.png" alt="image-20220702201853956" class="lazyload"></p>
+<p>这个变形网络也受到了Nerfies的启发，但其主要区别在于：Nerfies中的变形网络采用潜在变形代码来变形单个固定对象或场景的局部体积场，而这里使用形状代码来变形可由条件NeRF生成的各种对象实例的全局体积场。</p>
+<p><strong>延迟外观条件</strong>。这里的思路与Edit-NeRF有点类似。同时延迟了外观条件，将外观代码与视图方向连接起来，作为辐射度预测网络的输入，从而允许在不接触形状信息（密度）的情况下修改外观。</p>
+<p>总结，非纠缠条件辐射场可以抽象为下式：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702202201933.png" alt="image-20220702202201933" class="lazyload"></p>
+<h3 id="clip驱动的操纵"><a class="markdownIt-Anchor" href="#clip驱动的操纵"></a> CLIP驱动的操纵</h3>
+<p>给定了输入文本的提示<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span><span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">t</span></span></span></span>和初始形状/外观编码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>z</mi><mi>s</mi><mrow><mi mathvariant="normal">′</mi></mrow></msubsup><mi mathvariant="normal">/</mi><msubsup><mi>z</mi><mi>a</mi><mrow><mi mathvariant="normal">′</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">z_s&#x27;/z_a&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:1.001892em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.247em;margin-left:-0.04398em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord mathrm">/</span><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.247em;margin-left:-0.04398em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，训练了形状映射器<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="script">M</mi><mi>s</mi></msub></mrow><annotation encoding="application/x-tex">\mathcal M_s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord mathcal">M</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和外观映射器<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="script">M</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">\mathcal M_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord mathcal">M</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>来更新这两个编码：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702205901560.png" alt="image-20220702205901560" class="lazyload"></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mover accent="true"><mrow><mrow><mi mathvariant="script">E</mi></mrow></mrow><mo>^</mo></mover><mrow><mi>t</mi></mrow></msub><mo>(</mo><mo>⋅</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\hat{\mathcal{E}}_{t}(\cdot)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9467699999999999em;"></span><span class="strut bottom" style="height:1.19677em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord accent"><span class="vlist"><span style="top:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="mord textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathcal" style="margin-right:0.08944em;">E</span></span></span></span><span style="top:-0.25233em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="accent-body"><span>^</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord">⋅</span><span class="mclose">)</span></span></span></span>是预训练的CLIP文本编码器，能够将文本投影到CLIP embedded的特征空间，两个映射器将该CLIP embedding映射到更新原始形状和外观代码的位移向量。</p>
+<p>此外，我们知道CLIP包含了一个图像编码器和一个文本编码器，他们映射到一个联合的embedding中，定义<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>D</mi><mrow><mtext><mi mathvariant="normal">C</mi><mi mathvariant="normal">L</mi><mi mathvariant="normal">I</mi><mi mathvariant="normal">P</mi></mtext></mrow></msub><mo>(</mo><mo>⋅</mo><mo separator="true">,</mo><mo>⋅</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">D_{\text{CLIP}}(\cdot,\cdot)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">D</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">C</span><span class="mord mathrm">L</span><span class="mord mathrm">I</span><span class="mord mathrm">P</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord">⋅</span><span class="mpunct">,</span><span class="mord">⋅</span><span class="mclose">)</span></span></span></span>是一个跨模型的<strong>CLIP距离函数</strong>，能够测量输入文本和渲染图像patch之间的embedding的相似性：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702214506770.png" alt="image-20220702214506770" class="lazyload"></p>
+<p>类似地，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mover accent="true"><mrow><mrow><mi mathvariant="script">E</mi></mrow></mrow><mo>^</mo></mover><mrow><mi>i</mi></mrow></msub><mo>(</mo><mo>⋅</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\hat{\mathcal{E}}_{i}(\cdot)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9467699999999999em;"></span><span class="strut bottom" style="height:1.19677em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord accent"><span class="vlist"><span style="top:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="mord textstyle cramped"><span class="mord textstyle cramped"><span class="mord mathcal" style="margin-right:0.08944em;">E</span></span></span></span><span style="top:-0.25233em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="accent-body"><span>^</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">i</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord">⋅</span><span class="mclose">)</span></span></span></span>是预训练的CLIP图像编码器，公式的后半部分是余弦相似度。</p>
+<p>假设操作控制来自文本提示<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span><span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">t</span></span></span></span>。当然，这个距离也可以扩展到测量两个图像或者两个文本提示之间的相似性。因此也可以使用图像示例进行编辑。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703095245105.png" alt="image-20220703095245105" class="lazyload"></p>
+<p>下面讨论一个问题：CLIP特征在不同视点之间是否稳定，以及能否区分对象类别差异。为此对于两个不同对象，测量他们同一对象的不同视图以及不同对象的统一视图之间的承兑CLIP空间余弦距离。如上图所示，发现距离对小物体差异比大视角变化更敏感。这表明预先训练的CLIP模型能够支持3D感知应用程序的视图一致性表示。</p>
+<h3 id="网络结构与训练"><a class="markdownIt-Anchor" href="#网络结构与训练"></a> 网络结构与训练</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220702145702217.png" alt="image-20220702145702217" class="lazyload"></p>
+<p>CLIP-NeRF有两个阶段，首先是训练非纠缠条件NeRF，包含了一个条件NeRF生成器和一个变形网络。然后，对生成器的权重进行微调并训练CLIP驱动的操纵网络，包含形状和外观映射器。</p>
+<p>条件NeRF生成器与变形网络同时训练，使用了non-saturating GAN objective与判别器D。这里的训练与GAN的思路是类似的。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100142377.png" alt="image-20220703100142377" class="lazyload"></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>−</mo><mi>log</mi><mo>(</mo><mn>1</mn><mo>+</mo><mi>exp</mi><mo>(</mo><mo>−</mo><mi>x</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">f(x)=-\log(1+\exp(-x))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord">−</span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mopen">(</span><span class="mord mathrm">1</span><span class="mbin">+</span><span class="mop">exp</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathit">x</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span>，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">\lambda_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">λ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是正则权重。假设真实图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">I</mi></mrow><annotation encoding="application/x-tex">\bold I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68611em;"></span><span class="strut bottom" style="height:0.68611em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">I</span></span></span></span>的数据分布呈<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">d</span></span></span></span>，分别从<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>Z</mi><mi>s</mi></msub><mo separator="true">,</mo><msub><mi>Z</mi><mi>a</mi></msub><mo separator="true">,</mo><msub><mi>Z</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">Z_s,Z_a,Z_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">Z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">Z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">Z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>中采样形状编码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mi>s</mi></msub></mrow><annotation encoding="application/x-tex">z_s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>、外观编码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">z_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和相机位姿。其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>Z</mi><mi>s</mi></msub><mo separator="true">,</mo><msub><mi>Z</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">Z_s,Z_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">Z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">Z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>符合正态分布，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>Z</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">Z_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">Z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是相机坐标系的上半球。</p>
+<p>对于CLIP操纵子，对两个映射器使用如下的损失进行训练：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100646922.png" alt="image-20220703100646922" class="lazyload"></p>
+<p>接下来，还进行了反向操作来进行优化。</p>
+<p>在每一次迭代中，首先优化相机位姿<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span></span>，同时保持<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mi>s</mi></msub><mo separator="true">,</mo><msub><mi>z</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">z_s,z_a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">s</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>保持固定，使用以下损失函数：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100839996.png" alt="image-20220703100839996" class="lazyload"></p>
+<p>然后保持<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mi>a</mi></msub><mo separator="true">,</mo><mi>v</mi></mrow><annotation encoding="application/x-tex">z_a,v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">a</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span></span>，使下式损失函数最小化，更新形状编码：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703100916925.png" alt="image-20220703100916925" class="lazyload"></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">z_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">n</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>是在某个步骤中采样的一个随机的标准高斯噪声向量，以提高优化的鲁棒性，并且使用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">\lambda_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">λ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">n</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>控制整个优化，从1线性衰减到0。</p>
+<p>更新外观编码的方法类似：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703101055628.png" alt="image-20220703101055628" class="lazyload"></p>
+<h2 id="distilled-feature-fields"><a class="markdownIt-Anchor" href="#distilled-feature-fields"></a> Distilled Feature Fields</h2>
+<p>“蒸馏特征场”这篇文章对语义分割进行了进一步的讨论。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703102136100.png" alt="image-20220703102136100" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703102147286.png" alt="image-20220703102147286" class="lazyload"></p>
+<h3 id="体渲染蒸馏基础模块到3d特征场"><a class="markdownIt-Anchor" href="#体渲染蒸馏基础模块到3d特征场"></a> 体渲染蒸馏基础模块到3D特征场</h3>
+<p>之前也有一些工作使用语义分支来为具有ground truth语义标签的图像进行监督训练，并可以从新的视图中预测RGB和语义分割mask，有助于数据扩充。当然，标注ground truth图像的成本是很高的，而且对于复杂场景效率和效果都很低。</p>
+<p>在这些思想的基础上，该工作使用开放集文本标签或其他特征查询执行NeRF的3D zero-shot分割。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703103037877.png" alt="image-20220703103037877" class="lazyload"></p>
+<p>与执行闭集分类不同，该方法提出添加一个特征分支，该分支输出特征向量本身。这个分支对描述每个空间点语义的3D特征场进行建模。通过预训练像素级图像编码器<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="bold">f</mi><mrow><mi>i</mi><mi>m</mi><mi>g</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\bold f_{img}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord mathbf" style="margin-right:0.10903em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">i</span><span class="mord mathit">m</span><span class="mord mathit" style="margin-right:0.03588em;">g</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>作为教师网络监控特征场。特征场输出特征向量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">f</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\bold f(\bold x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathbf" style="margin-right:0.10903em;">f</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span>。特征场的体绘制可以表示为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703214947125.png" alt="image-20220703214947125" class="lazyload"></p>
+<p>优化<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">f</mi></mrow><annotation encoding="application/x-tex">\bold f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf" style="margin-right:0.10903em;">f</span></span></span></span>的方法是最小化渲染特征<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi mathvariant="bold">F</mi></mrow><mo>^</mo></mover><mo>(</mo><mi mathvariant="bold">r</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\hat{\bold F}(\bold r)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9495499999999999em;"></span><span class="strut bottom" style="height:1.19955em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord accent"><span class="vlist"><span style="top:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="mord textstyle cramped"><span class="mord mathbf">F</span></span></span><span style="top:-0.25511em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="accent-body"><span>^</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathbf">r</span><span class="mclose">)</span></span></span></span>和教师特征<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="bold">f</mi><mrow><mi>i</mi><mi>m</mi><mi>g</mi></mrow></msub><mo>(</mo><mi>I</mi><mo separator="true">,</mo><mi>r</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\bold f_{img}(I,r)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord mathbf" style="margin-right:0.10903em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">i</span><span class="mord mathit">m</span><span class="mord mathit" style="margin-right:0.03588em;">g</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mclose">)</span></span></span></span>的距离。在实践中，通过可微渲染将2D教师网络蒸馏到3D学生网络中，将改名模型称为特征场蒸馏（Distilled Feature Field，DFF）。这个优化目标可以被表示为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>L</mi><mi>f</mi></msub></mrow><annotation encoding="application/x-tex">L_f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">L</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，弥补原始NeRF的photometric（光度）损失（或者说是辐射度损失），记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>L</mi><mi>p</mi></msub></mrow><annotation encoding="application/x-tex">L_p</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">L</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">p</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703215335429.png" alt="image-20220703215335429" class="lazyload"></p>
+<h3 id="基于查询的目标分解与编辑"><a class="markdownIt-Anchor" href="#基于查询的目标分解与编辑"></a> 基于查询的目标分解与编辑</h3>
+<p>经过训练的DFF模型可以通过其特征场<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">f</mi></mrow><annotation encoding="application/x-tex">\bold f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf" style="margin-right:0.10903em;">f</span></span></span></span>和查询编码器<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi mathvariant="bold">f</mi><mi>q</mi></msub></mrow><annotation encoding="application/x-tex">\bold f_q</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class=""><span class="mord mathbf" style="margin-right:0.10903em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.03588em;">q</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>进行3D zero-shot分割。3D空间中点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>的标签<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi></mrow><annotation encoding="application/x-tex">l</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.01968em;">l</span></span></span></span>的概率如下计算：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703215514717.png" alt="image-20220703215514717" class="lazyload"></p>
+<p>使用查询条件分割识别特定的3D区域并进行编辑。</p>
+<p>这种编辑甚至可以推广到两个NeRF场景的合并，效果如下图所示。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220703215726036.png" alt="image-20220703215726036" class="lazyload"></p>
+<p>更复杂的变形与编辑，可以与CLIP-NeRF结合。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/07/03/NeRF%E5%AD%A6%E4%B9%A0-9%EF%BC%9ACLIP-NeRF%E4%B8%8E%E6%94%B9%E8%BF%9B/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;07&#x2F;03&#x2F;NeRF%E5%AD%A6%E4%B9%A0-9%EF%BC%9ACLIP-NeRF%E4%B8%8E%E6%94%B9%E8%BF%9B&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;07&#x2F;03&#x2F;NeRF%E5%AD%A6%E4%B9%A0-9%EF%BC%9ACLIP-NeRF%E4%B8%8E%E6%94%B9%E8%BF%9B&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/NeRF/">NeRF</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text"> 相关工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#clip%E4%B8%8E%E9%9B%B6%E9%95%9C%E5%A4%B4zero-shot%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2"><span class="toc-number">2.1.</span> <span class="toc-text"> CLIP与零镜头（zero-shot）语义分割</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#clip%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%9B%BE%E5%83%8F%E7%94%9F%E6%88%90%E4%B8%8E%E6%93%8D%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text"> CLIP驱动的图像生成与操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#clip-nerf"><span class="toc-number">3.</span> <span class="toc-text"> CLIP-NeRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E7%BA%A0%E7%BC%A0%E6%9D%A1%E4%BB%B6%E8%BE%90%E5%B0%84%E5%9C%BAdisentangled-conditional-nerf"><span class="toc-number">3.1.</span> <span class="toc-text"> 非纠缠条件辐射场（Disentangled Conditional NeRF）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#clip%E9%A9%B1%E5%8A%A8%E7%9A%84%E6%93%8D%E7%BA%B5"><span class="toc-number">3.2.</span> <span class="toc-text"> CLIP驱动的操纵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E4%B8%8E%E8%AE%AD%E7%BB%83"><span class="toc-number">3.3.</span> <span class="toc-text"> 网络结构与训练</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#distilled-feature-fields"><span class="toc-number">4.</span> <span class="toc-text"> Distilled Feature Fields</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%93%E6%B8%B2%E6%9F%93%E8%92%B8%E9%A6%8F%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9D%97%E5%88%B03d%E7%89%B9%E5%BE%81%E5%9C%BA"><span class="toc-number">4.1.</span> <span class="toc-text"> 体渲染蒸馏基础模块到3D特征场</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E6%9F%A5%E8%AF%A2%E7%9A%84%E7%9B%AE%E6%A0%87%E5%88%86%E8%A7%A3%E4%B8%8E%E7%BC%96%E8%BE%91"><span class="toc-number">4.2.</span> <span class="toc-text"> 基于查询的目标分解与编辑</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1656856815878"></script>
+
+
+	<script async src="/js/search.js?v=1656856815878"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
