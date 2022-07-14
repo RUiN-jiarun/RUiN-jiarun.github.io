@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>PhySG论文阅读 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：PhySG: Inverse Rendering with Spherical Gaussians for Physics-based Material Editing and Relighting (kai-46.github.io) 题目翻译：基于物理的材料编辑和重照明的球面高斯逆向渲染 关键词：逆向渲染 可编辑渲染  概述 在阅读之前首先了解一些名词，比如逆向渲染（inverse">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PhySG论文阅读">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/07/14/PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：PhySG: Inverse Rendering with Spherical Gaussians for Physics-based Material Editing and Relighting (kai-46.github.io) 题目翻译：基于物理的材料编辑和重照明的球面高斯逆向渲染 关键词：逆向渲染 可编辑渲染  概述 在阅读之前首先了解一些名词，比如逆向渲染（inverse">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712081357455.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220713101235411.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712082348483.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712083107910.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712083419480.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712083645938.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712084125082.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220713103625444.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090214024.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714085810101.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090436503.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090620339.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090943897.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714091007795.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714093022970.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714093528486.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714094301244.png">
+<meta property="article:published_time" content="2022-07-14T12:30:10.000Z">
+<meta property="article:modified_time" content="2022-07-14T12:31:35.421Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712081357455.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1657801921607">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1657801921607">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>55</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>7</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/CV-CG/">CV&amp;CG</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 10px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">35</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">20</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/07/14/PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">PhySG论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/07/07/NeRF-pytorch%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">NeRF-pytorch源码阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/07/03/NeRF%E5%AD%A6%E4%B9%A0-9%EF%BC%9ACLIP-NeRF%E4%B8%8E%E6%94%B9%E8%BF%9B/">NeRF学习#9：CLIP-NeRF与改进</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/30/NeRF%E5%AD%A6%E4%B9%A0-8%EF%BC%9A%E5%8F%AF%E7%BC%96%E8%BE%91NeRF-2021/">NeRF学习#8：可编辑NeRF-2021</a>
+          </li>
+        
+          <li>
+            <a href="/2022/06/23/NeRF%E5%AD%A6%E4%B9%A0-7%EF%BC%9ANerfies%E4%B8%8EHyperNeRF/">NeRF学习#7：Nerfies与HyperNeRF</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712084125082.png" data-sizes="auto" alt="PhySG论文阅读" class="lazyload">
+              <h1>PhySG论文阅读</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年07月14日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.3k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 9 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://kai-46.github.io/PhySG-website/">PhySG: Inverse Rendering with Spherical Gaussians for Physics-based Material Editing and Relighting (kai-46.github.io)</a></p>
+<p>题目翻译：基于物理的材料编辑和重照明的球面高斯逆向渲染</p>
+<p>关键词：逆向渲染 可编辑渲染</p>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>在阅读之前首先了解一些名词，比如逆向渲染（inverse rendering）。逆向渲染的目的是从图像中估计场景的物理属性，例如反射率、几何形状和照明情况等等。简单来说，就是一个从图像到图形的过程。显然近年来的神经渲染方法（neural rendering）有了集大成的贡献。这些神经渲染方法采用物理方法、神经网络或者两者混合的场景表示以及基于神经网络的渲染器。</p>
+<p>传统的NeRF及其派生方法适用于新视图的生成，以及近年来有一些简单的外观、形状编辑操作算法，但对于材质编辑和照明的改变，还不是很适用。因此本文提出了PhySG，在不假设扫描几何体的情况下，在具有挑战性的正常RGB输入图像共享静态照明设置下处理多视图逆向渲染问题。</p>
+<p>PhySG是一种端到端的基于物理的可差分渲染管线，用于从镜面反射对象的多视图图像中联合估计照明、材质、几何形状和曲面法线。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712081357455.png" alt="image-20220712081357455" class="lazyload"></p>
+<p>在这个管线中，使用<strong>符号距离函数（signed distance functions, SDF）<strong>来表示形状。此外，使用</strong>球面高斯近似照明（spherical Gaussians, SG）<strong>和镜面反射方程</strong>BRDF</strong>来有效近似评估光线传输。这样，仅从一系列2D图像，该方法可以联合重建形状、照明和材料，并进行后续基于物理的外观操作，如材料编辑、重新照明。</p>
+<h2 id="相关知识"><a class="markdownIt-Anchor" href="#相关知识"></a> 相关知识</h2>
+<h3 id="sdf"><a class="markdownIt-Anchor" href="#sdf"></a> SDF</h3>
+<p>符号距离函数SDF是定义形状的一种方式，不使用硬编码的条件语句，而是定义一个函数，可以得知空间中任何一个点距离目标形状的距离。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220713101235411.png" alt="image-20220713101235411" class="lazyload">
+<p>上式为SDF的形式定义。其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">d</span></span></span></span>为距离计算函数，表示到边界的最小距离，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Ω</mi></mrow><annotation encoding="application/x-tex">\Omega</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Ω</span></span></span></span>为度量空间，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">∂</mi><mi mathvariant="normal">Ω</mi></mrow><annotation encoding="application/x-tex">\partial\Omega</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathrm" style="margin-right:0.05556em;">∂</span><span class="mord mathrm">Ω</span></span></span></span>表示边界区域。</p>
+<p>一个直观的认识或者定义认为，SDF&gt;0则在物体外，SDF&lt;0则在物体内。</p>
+<h3 id="渲染方程"><a class="markdownIt-Anchor" href="#渲染方程"></a> 渲染方程</h3>
+<p>渲染方程：Kajiya等人基于物理的能量守恒提出了渲染方程。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712082348483.png" alt="image-20220712082348483" class="lazyload">
+<p>解释：对于表面上的一个点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>和表面法线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">n</mi></mrow><annotation encoding="application/x-tex">\bold n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">n</span></span></span></span>，假设<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>L</mi><mi>i</mi></msub><mo>(</mo><msub><mi>ω</mi><mi>i</mi></msub><mo separator="true">;</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">L_i(\omega_i;\bold x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">L</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">;</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span>是沿<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>方向的位置<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>处入射光的强度，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mi>r</mi></msub><mo>(</mo><msub><mi>ω</mi><mn>0</mn></msub><mo separator="true">,</mo><msub><mi>ω</mi><mi>i</mi></msub><mo separator="true">;</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">f_r(\omega_0,\omega_i;\bold x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">;</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span>是入射光方向<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和观察方向<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\omega_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的位置<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>处的BRDF（材料反射系数），那么观察到的光线强度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>L</mi><mn>0</mn></msub><mo>(</mo><msub><mi>ω</mi><mn>0</mn></msub><mo separator="true">;</mo><mi mathvariant="bold">x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">L_0(\omega_0;\bold x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">L</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">;</span><span class="mord mathbf">x</span><span class="mclose">)</span></span></span></span>可以用上式得到，是在<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Ω</mi><mo>=</mo><mo>{</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>:</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>⋅</mo><mi mathvariant="bold">n</mi><mo>&gt;</mo><mn>0</mn><mo>}</mo></mrow><annotation encoding="application/x-tex">\Omega=\{\omega_i:\omega_i\cdot\bold n\gt0\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Ω</span><span class="mrel">=</span><span class="mopen">{</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">:</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">⋅</span><span class="mord mathbf">n</span><span class="mrel">&gt;</span><span class="mord mathrm">0</span><span class="mclose">}</span></span></span></span>半球上的积分</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712083107910.png" alt="image-20220712083107910" class="lazyload">
+<h3 id="brdf"><a class="markdownIt-Anchor" href="#brdf"></a> BRDF</h3>
+<p>BRDF（双向反射分布函数）描述的是表面入射光和反射光的干系。对于一个方向的入射光，表面会将光反射到表面上半球的各个方向，且不同方向比例不同。BRDF指定的就是这个比例关系，定义为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712083419480.png" alt="image-20220712083419480" class="lazyload">
+<p>即为微分辐射率和表面微分辐照度的比值。图形学中将VRDF表示为RGB向量，三个分量各自有BRDF值。</p>
+<p>当然，对于球面，更多通过角度来表示。那么有：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712083645938.png" alt="image-20220712083645938" class="lazyload">
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>F</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">F_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">F</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.13889em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为反射率，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02778em;">D</span></span></span></span>为微表面积中朝向为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>h</mi></msub></mrow><annotation encoding="application/x-tex">\omega_h</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">h</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的比例，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">G</span></span></span></span>为集合衰减因子。</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/21376124">基于物理着色：BRDF - 知乎 (zhihu.com)</a></p>
+<h2 id="physg管线"><a class="markdownIt-Anchor" href="#physg管线"></a> PhySG管线</h2>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220712084125082.png" alt="image-20220712084125082" class="lazyload">
+<p>使用sphere tracing来找到光线与几何体的交点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>，其形式为符号距离函数SDF，使用一个MLP网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><mi mathvariant="normal">Θ</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">S(\bold x,\Theta)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord mathrm">Θ</span><span class="mclose">)</span></span></span></span>来表示。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>处曲面法线为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">n</mi></mrow><annotation encoding="application/x-tex">\bold n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">n</span></span></span></span>，作为SDF梯度计算。空间变化漫反射反照率albedo记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">a</mi></mrow><annotation encoding="application/x-tex">\bold a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">a</span></span></span></span>，使用一个MLP网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">a</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo separator="true">,</mo><mi mathvariant="normal">Φ</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\bold a(\bold x,\Phi)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">a</span><span class="mopen">(</span><span class="mord mathbf">x</span><span class="mpunct">,</span><span class="mord mathrm">Φ</span><span class="mclose">)</span></span></span></span>来计算。</p>
+<p>给定曲面法线、反照率和观测方向，通过球面高斯渲染器渲染RGB，然后使用SGs表示环境贴图envmap和镜面反射BRDF。然后，可以通过图像重建损耗将渲染图像与GT进行比较，以联合优化未知数：几何体和曲面法线、空间变化的漫反射反照率、镜面反射BRDF和环境贴图。</p>
+<h3 id="几何体建模"><a class="markdownIt-Anchor" href="#几何体建模"></a> 几何体建模</h3>
+<p>几何体建模的原理和思想借鉴于SDF。SDF MLP的结构是由8个宽度为512的非线性层组成，在第4层有一个跳跃连接。同时，使用了6个频率分量来进行位置编码。</p>
+<p>为了渲染相机射线得到的像素颜色，首先从光线与对象包围盒bbox的交点开始，通过球面跟踪沿光线进行，每个步长的大小是当前位置的SDF距离。然后外观编码与建模部分将根据位置和发现进行渲染。为了优化几何结构，梯度必须通过<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">n</mi></mrow><annotation encoding="application/x-tex">\bold n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">n</span></span></span></span>反向传播到SDF的参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Θ</mi></mrow><annotation encoding="application/x-tex">\Theta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Θ</span></span></span></span>。</p>
+<p>参考：Multiview neural surface reconstruction with implicit lighting and material</p>
+<h3 id="外观建模"><a class="markdownIt-Anchor" href="#外观建模"></a> 外观建模</h3>
+<p>有两个可优化部分：环境贴图和BRDF。渲染方程中的半球积分通常没有闭合形式的表达式，因此需要使用昂贵的蒙特卡洛方法进行数值计算。然而，在我们的光泽材料和远距离直接照明设置中，我们可以利用球面高斯（SGs）有效地以闭合形式近似渲染方程。</p>
+<p>n-维SG的形式如下：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220713103625444.png" alt="image-20220713103625444" class="lazyload">
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ν</mi></mrow><annotation encoding="application/x-tex">\nu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.06366em;">ν</span></span></span></span>是函数输入（2D），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\xi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.04601em;">ξ</span></span></span></span>是lobe轴（中心方向），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>λ</mi></mrow><annotation encoding="application/x-tex">\lambda</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">λ</span></span></span></span>是lobe锐度（胖瘦），<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">μ</span></span></span></span>是lobe振幅（大小）。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090214024.png" alt="image-20220714090214024" class="lazyload">
+<p>环境入射光强度用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi><mo>=</mo><mn>1</mn><mn>2</mn><mn>8</mn></mrow><annotation encoding="application/x-tex">M=128</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="mrel">=</span><span class="mord mathrm">1</span><span class="mord mathrm">2</span><span class="mord mathrm">8</span></span></span></span>的SG混合表示：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714085810101.png" alt="image-20220714085810101" class="lazyload"></p>
+<p>使用MLP将表面点映射到颜色向量，并使用位置编码来拟合高频纹理细节，以表示空间变化的漫反射反照率（diffuse albedo）。Diffuse Albedo MLP的结构是一个具有4个宽度为512的非线性曾MLP，使用10个频率进行位置编码。</p>
+<p>对于共享镜面反射分量，使用了简化的Disney BRDF模型：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090436503.png" alt="image-20220714090436503" class="lazyload"></p>
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">h</mi><mo>=</mo><mo>(</mo><msub><mi>ω</mi><mn>0</mn></msub><mo>+</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>)</mo><mi mathvariant="normal">/</mi><mi mathvariant="normal">∣</mi><mi mathvariant="normal">∣</mi><msub><mi>ω</mi><mn>0</mn></msub><mo>+</mo><msub><mi>ω</mi><mi>i</mi></msub><mi mathvariant="normal">∣</mi><msub><mi mathvariant="normal">∣</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\bold h=(\omega_0+\omega_i)/||\omega_0+\omega_i||_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">h</span><span class="mrel">=</span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mord mathrm">/</span><span class="mord mathrm">∣</span><span class="mord mathrm">∣</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mord mathrm">∣</span><span class="mord"><span class="mord mathrm">∣</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">M</mi></mrow><annotation encoding="application/x-tex">\mathcal M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathcal">M</span></span></span></span>表示菲涅尔效应和阴影效应，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">D</mi></mrow><annotation encoding="application/x-tex">\mathcal D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.02778em;">D</span></span></span></span>是归一化分布函数。使用单个SG来表示<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">D</mi></mrow><annotation encoding="application/x-tex">\mathcal D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.02778em;">D</span></span></span></span>：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090620339.png" alt="image-20220714090620339" class="lazyload"></p>
+<p>由<strong>各向同性的镜面反射BRDF假设</strong>，认为这里的球面高斯函数的轴<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\xi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.04601em;">ξ</span></span></span></span>与表面法线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">n</mi></mrow><annotation encoding="application/x-tex">\bold n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">n</span></span></span></span>一致，由<strong>单色假设</strong>使<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">μ</span></span></span></span>中的三个数字相同。</p>
+<p>另外，为了在沿<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\omega_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>方向观察表面法线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">n</mi></mrow><annotation encoding="application/x-tex">\bold n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">n</span></span></span></span>处的点<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>评估渲染方程，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">D</mi></mrow><annotation encoding="application/x-tex">\mathcal D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathcal" style="margin-right:0.02778em;">D</span></span></span></span>必须是球形翘曲的，而<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="script">M</mi></mrow><annotation encoding="application/x-tex">\mathcal M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathcal">M</span></span></span></span>需要在<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>处使用常数近似：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714090943897.png" alt="image-20220714090943897" class="lazyload"></p>
+<p>综上，得到此处的BRDF值：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714091007795.png" alt="image-20220714091007795" class="lazyload"></p>
+<p>这样一来，渲染方程中的入射光和BRDF都已经用SG来表示了。剩下的一项也可以用SG来近似拟合：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714093022970.png" alt="image-20220714093022970" class="lazyload"></p>
+<p>到此，整个渲染方程都可以用SG来计算来得到观察颜色。</p>
+<p>整个过程中可以优化的参数包括：</p>
+<ol>
+<li>入射光SG中的128套参数</li>
+<li><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>λ</mi><mo separator="true">,</mo><mi>μ</mi></mrow><annotation encoding="application/x-tex">\lambda,\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">λ</span><span class="mpunct">,</span><span class="mord mathit">μ</span></span></span></span></li>
+<li>MLP中的参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Φ</mi></mrow><annotation encoding="application/x-tex">\Phi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathrm">Φ</span></span></span></span></li>
+</ol>
+<h3 id="前向渲染"><a class="markdownIt-Anchor" href="#前向渲染"></a> 前向渲染</h3>
+<p>前向渲染的过程在本节开始的图中已经描述了。注意整个渲染管线是完全可微的。</p>
+<h3 id="损失函数"><a class="markdownIt-Anchor" href="#损失函数"></a> 损失函数</h3>
+<p>为了优化给定一组图像的参数，我们从与输入图像相同的视点渲染图像，并计算L1图像重建损失。</p>
+<p>同时，需要沿着由对象分割mask指示的非对象像素射线强制执行非负最小SDF值，将SDF的梯度正则化为单位范数。具体而言，在每次训练迭代中，随机采样一批像素，既包含有物体的像素（以及其gt值）也包含无物体的像素。然后渲染这两批像素的颜色，并同时通过取均匀位于对象bbox内光线段上的100个点中的最小SDF值。</p>
+<p>完整损失函数如下：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714093528486.png" alt="image-20220714093528486" class="lazyload"></p>
+<p>其中第二项的求和符右边是一个对于水平翻转的ReLU的平滑近似。</p>
+<p>实践中，采用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>=</mo><mn>1</mn><mn>0</mn><mn>0</mn><mo separator="true">,</mo><msub><mi>β</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>1</mn><mo separator="true">,</mo><msub><mi>N</mi><mrow><mi>o</mi><mi>b</mi><mi>j</mi></mrow></msub><mo>+</mo><msub><mi>N</mi><mrow><mi>n</mi><mi>o</mi><mi>b</mi><mi>j</mi></mrow></msub><mo>=</mo><mn>2</mn><mn>0</mn><mn>4</mn><mn>8</mn><mo separator="true">,</mo><msub><mi>N</mi><mi>x</mi></msub><mo>=</mo><mn>1</mn><mn>0</mn><mn>2</mn><mn>4</mn></mrow><annotation encoding="application/x-tex">\beta_1=100,\beta_2=0.1,N_{obj}+N_{nobj}=2048,N_x=1024</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05278em;">β</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05278em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">1</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.05278em;">β</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05278em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">0</span><span class="mord mathrm">.</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">o</span><span class="mord mathit">b</span><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="mord mathit">n</span><span class="mord mathit">o</span><span class="mord mathit">b</span><span class="mord mathit" style="margin-right:0.05724em;">j</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">2</span><span class="mord mathrm">0</span><span class="mord mathrm">4</span><span class="mord mathrm">8</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10903em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">x</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">=</span><span class="mord mathrm">1</span><span class="mord mathrm">0</span><span class="mord mathrm">2</span><span class="mord mathrm">4</span></span></span></span>。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.0037em;">α</span></span></span></span>平滑增长，从50到1600。</p>
+<h2 id="实验效果"><a class="markdownIt-Anchor" href="#实验效果"></a> 实验效果</h2>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220714094301244.png" alt="image-20220714094301244" class="lazyload"></p>
+<p>在<a target="_blank" rel="noopener" href="https://github.com/zju3dv/InvRender">zju3dv/InvRender: Code for “Modeling Indirect Illumination for Inverse Rendering”, CVPR 2022 (github.com)</a>提供的Synthetic4Relight上进行测试，PSNR值基本可以达到24左右。</p>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>PSNR mean</th>
+<th>PSNR std</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>air_baloons</td>
+<td>24.96</td>
+<td>1.12</td>
+</tr>
+<tr>
+<td>chair</td>
+<td>24.14</td>
+<td>1.07</td>
+</tr>
+<tr>
+<td>hotdog</td>
+<td>20.14</td>
+<td>3.32</td>
+</tr>
+<tr>
+<td>jugs</td>
+<td>29.36</td>
+<td>1.59</td>
+</tr>
+</tbody>
+</table>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/07/14/PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;07&#x2F;14&#x2F;PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;07&#x2F;14&#x2F;PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/CV-CG/">CV&CG</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86"><span class="toc-number">2.</span> <span class="toc-text"> 相关知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sdf"><span class="toc-number">2.1.</span> <span class="toc-text"> SDF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E6%96%B9%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text"> 渲染方程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#brdf"><span class="toc-number">2.3.</span> <span class="toc-text"> BRDF</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#physg%E7%AE%A1%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text"> PhySG管线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%A0%E4%BD%95%E4%BD%93%E5%BB%BA%E6%A8%A1"><span class="toc-number">3.1.</span> <span class="toc-text"> 几何体建模</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E8%A7%82%E5%BB%BA%E6%A8%A1"><span class="toc-number">3.2.</span> <span class="toc-text"> 外观建模</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E5%90%91%E6%B8%B2%E6%9F%93"><span class="toc-number">3.3.</span> <span class="toc-text"> 前向渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc-number">3.4.</span> <span class="toc-text"> 损失函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E6%95%88%E6%9E%9C"><span class="toc-number">4.</span> <span class="toc-text"> 实验效果</span></a></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1657801921630"></script>
+
+
+	<script async src="/js/search.js?v=1657801921630"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
