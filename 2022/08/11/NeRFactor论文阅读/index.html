@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>NeRFactor论文阅读 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：NeRFactor (xiuming.info) 题目翻译：NeRFactor：未知光照下形状和反射率的神经因子分解 关键词：逆向渲染 形状估计 反射率估计 照明估计 视图合成 重新照明 材质编辑  概述 该文章是Google在2021年发表的文章，旨在解决在未知照明条件的情况下从多视图图像以及相机位姿恢复对象的形状以及空间变化反射率的问题，进而可以在任意照明环境下渲染对象的新视图并编辑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NeRFactor论文阅读">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/08/11/NeRFactor%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：NeRFactor (xiuming.info) 题目翻译：NeRFactor：未知光照下形状和反射率的神经因子分解 关键词：逆向渲染 形状估计 反射率估计 照明估计 视图合成 重新照明 材质编辑  概述 该文章是Google在2021年发表的文章，旨在解决在未知照明条件的情况下从多视图图像以及相机位姿恢复对象的形状以及空间变化反射率的问题，进而可以在任意照明环境下渲染对象的新视图并编辑">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811092656173.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811144458460.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811145524026.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811145545331.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150001124.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150351551.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150454314.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150825973.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811151543093.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811151923536.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811171408759.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811171538244.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172109085.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172128560.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172428568.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172535002.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811173339186.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811173347813.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811173402152.png">
+<meta property="article:published_time" content="2022-08-11T09:38:30.000Z">
+<meta property="article:modified_time" content="2022-08-11T09:38:36.294Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811092656173.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1660210728392">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1660210728392">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>59</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>7</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">11</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/逆向渲染/">逆向渲染</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 12px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">21</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/11/NeRFactor%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeRFactor论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/06/InvRender%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">InvRender论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/01/NeuMesh%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeuMesh论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/07/14/PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">PhySG论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/07/07/NeRF-pytorch%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">NeRF-pytorch源码阅读</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811092656173.png" data-sizes="auto" alt="NeRFactor论文阅读" class="lazyload">
+              <h1>NeRFactor论文阅读</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年08月11日</a>
+    <a><i class="nexmoefont icon-areachart"></i>3k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 12 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://xiuming.info/projects/nerfactor/">NeRFactor (xiuming.info)</a></p>
+<p>题目翻译：NeRFactor：未知光照下形状和反射率的神经因子分解</p>
+<p>关键词：逆向渲染 形状估计 反射率估计 照明估计 视图合成 <strong>重新照明</strong> 材质编辑</p>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>该文章是Google在2021年发表的文章，旨在解决在未知照明条件的情况下从多视图图像以及相机位姿恢复对象的<strong>形状</strong>以及<strong>空间变化反射率</strong>的问题，进而可以在任意照明环境下渲染对象的新视图并编辑材质。该方法被称为NeRFactor，<strong>神经辐射因子分解</strong>。</p>
+<p>NeRFactor以NeRF为蓝本，将NeRF表示的几何体提取为曲面表示，然后再求解空间变化反射率和环境光照的同时联合优化几何体。它可以在无监督情况下恢复normal、visibility、albedo和BRDF信息【表面法线、光可见性、反照率（移除阴影）和双向反射分布函数】。</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811092656173.png" alt="image-20220811092656173" class="lazyload"></p>
+<p>本文主要工作内容可以被概括为：</p>
+<ul>
+<li>一种用于将未知照明条件下的对象图像分解为形状、反射率和照明的方法，从而支持自由视点重新照明（带阴影）和材质编辑。</li>
+<li>将NeRF估计体积密度提取为表面几何体（具有法线和光可见性）的策略，以在改进几何体和恢复反射率时用作初始化。</li>
+<li>通过在实际测量的BRDF上训练潜在代码模型，预先学习了一种新的数据驱动BRDF。</li>
+</ul>
+<h3 id="假设"><a class="markdownIt-Anchor" href="#假设"></a> 假设</h3>
+<p>NeRFactor将对象视为由每个光线具有单个交点的硬表面组成，因此不会对散射、透明度和半透明等体积光传输效果进行建模。另外，本方法仅对直接照明建模。反射率模型考虑了具有非彩色镜面反射率的材料，因此不对金属材质建模。</p>
+<h2 id="相关工作对比"><a class="markdownIt-Anchor" href="#相关工作对比"></a> 相关工作对比</h2>
+<ul>
+<li>NeRV需要多种已知照明条件。</li>
+<li>NeRF没有对光可见度和阴影进行建模，即阴影与反照率分离。另外NeRD使用分析型BRDF，而NeRFactor使用学习型BRDFs对先验进行编码。</li>
+<li>PhySG没有对光可见度和阴影进行建模，并使用分析性BRDF。另外，PhySG假设反射率不随空间变化。</li>
+</ul>
+<p>简单来说，NeRFactor依然使用最新的这些方法的基本思路：<strong>将传统形状表示替换为几何表示或参数函数的MLP</strong>。这些MLP通过从3D坐标映射到该位置的对象或场景的属性（如体积密度、占用率或符号距离），优化为近似连续3D几何体。</p>
+<h2 id="原理"><a class="markdownIt-Anchor" href="#原理"></a> 原理</h2>
+<h3 id="概述-2"><a class="markdownIt-Anchor" href="#概述-2"></a> 概述</h3>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811144458460.png" alt="image-20220811144458460" class="lazyload">
+<p>这张图可以看出NeRFactor的整体框架。首先，几何体的表示是基于NeRF的，渲染方式与之前几个学习的逆向渲染的方式有根本不同——仅使用<strong>表面上的点</strong>进行渲染，而非体渲染。</p>
+<p>对于<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span></span></span>，可以理解为NeRF中估计的物体空间分布。对于每个表面点坐标<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mrow><mtext><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">f</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">x_{\text {surf}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">s</span><span class="mord mathrm">u</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>、表面法线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">n</span></span></span></span>、光照可见度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span></span>、漫反射辐照度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">a</span></span></span></span>、BRDF潜在编码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mrow><mtext><mi mathvariant="normal">B</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">D</mi><mi mathvariant="normal">F</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">z_{\text{BRDF}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">B</span><span class="mord mathrm">R</span><span class="mord mathrm">D</span><span class="mord mathrm">F</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>以及光照条件，进行了全面的编码与MLP建模。其中对于BRDF的建模较为关键，除了一个先验的预训练BRDF MLP之外，还用了几个训练时更新的参数来辅助建模。其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为光线方向，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>o</mi></msub></mrow><annotation encoding="application/x-tex">\omega_o</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">o</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为观测方向，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ϕ</mi><mi>d</mi></msub><mo separator="true">,</mo><msub><mi>θ</mi><mi>h</mi></msub><mo separator="true">,</mo><msub><mi>θ</mi><mi>d</mi></msub></mrow><annotation encoding="application/x-tex">\phi_d,\theta_h,\theta_d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">ϕ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">d</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">θ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">h</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.02778em;">θ</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02778em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">d</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>代表了Rusinkiewicz坐标。</p>
+<h3 id="形状估计"><a class="markdownIt-Anchor" href="#形状估计"></a> 形状估计</h3>
+<h4 id="表面点"><a class="markdownIt-Anchor" href="#表面点"></a> 表面点</h4>
+<p>几何体的建模依赖于物体表面点的建模。对于已知的摄相机位姿和训练好的NeRF场，通过该相机出发的射线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>r</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>o</mi><mo>+</mo><mi>t</mi><mi>d</mi></mrow><annotation encoding="application/x-tex">r(t)=o+td</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord mathit">o</span><span class="mbin">+</span><span class="mord mathit">t</span><span class="mord mathit">d</span></span></span></span>以及密度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span></span></span>来进行物体表面建模：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811145524026.png" alt="image-20220811145524026" class="lazyload">
+<p>其中：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811145545331.png" alt="image-20220811145545331" class="lazyload">
+<p>是光线在距离<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span><span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">t</span></span></span></span>上传播被阻挡的概率。也是NeRF的核心公式之一。</p>
+<p>这种方法将几何体固定在从优化的NeRF提取的曲面上。这使得在训练和推理过程中能够更有效地重新照明，因为我们可以仅在每个相机光线的预期终止位置计算出输出辐射，而不是沿每个相机光线计算出每个点。</p>
+<h4 id="表面法线"><a class="markdownIt-Anchor" href="#表面法线"></a> 表面法线</h4>
+<p>表面法线用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>n</mi><mrow><mtext><mi mathvariant="normal">a</mi></mtext></mrow></msub><mo>(</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">n_{\text a}(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">n</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">a</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span></span></span></span>表示。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150001124.png" alt="image-20220811150001124" class="lazyload">
+<p>上图例子中可以看出，一般的表面法线贴图上充满了噪声。因此使用一个MLP<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi><mo>:</mo><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">n</mi></mtext></mrow></msub><mo>:</mo><msub><mi>x</mi><mrow><mtext><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">f</mi></mtext></mrow></msub><mo>→</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">n:f_{\text n}:x_{\text{surf}}\to n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">n</span><span class="mrel">:</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">n</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">:</span><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">s</span><span class="mord mathrm">u</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">→</span><span class="mord mathit">n</span></span></span></span>来从法线信息中减少噪声。在训练中，该MLP的目标包括：</p>
+<ol>
+<li>输出与预训练NeRF的法线信息尽量一致；</li>
+<li>输出在3D空间里尽量平滑；</li>
+<li>重新根据此生成物体表面信息。</li>
+</ol>
+<p>近似和平滑的损失函数为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150351551.png" alt="image-20220811150351551" class="lazyload">
+<p>其中(2)即物体通过神经网络预测得到的法线，要与物体表面的法线尽可能接近；(3)为物体的表面经过eps的扰动之后，也要与之前尽可能接近，即达到平滑的目的。</p>
+<h4 id="光照可见度"><a class="markdownIt-Anchor" href="#光照可见度"></a> 光照可见度</h4>
+<p>光照可见度用<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span></span>表示。同样，NeRf会在每个光照点上获得密度<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span></span></span>，但是此体密度充满噪声。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150454314.png" alt="image-20220811150454314" class="lazyload">
+<p>使用一个MLP<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi><mo>:</mo><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">v</mi></mtext></mrow></msub><mo>:</mo><mo>(</mo><msub><mi>x</mi><mrow><mtext><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">f</mi></mtext></mrow></msub><mo separator="true">,</mo><msub><mi>ω</mi><mi>i</mi></msub><mo>)</mo><mo>→</mo><mi>v</mi></mrow><annotation encoding="application/x-tex">v:f_{\text v}:(x_{\text{surf}},\omega_i)\to v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mrel">:</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm" style="margin-right:0.01389em;">v</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">:</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">s</span><span class="mord mathrm">u</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">)</span><span class="mrel">→</span><span class="mord mathit" style="margin-right:0.03588em;">v</span></span></span></span>来进行学习。训练过程满足下列要求：</p>
+<ol>
+<li>输出结果尽可能接近NeRf获得的可见度信息；</li>
+<li>尽可能空间光滑；</li>
+<li>重新根据此生成物体表面信息。</li>
+</ol>
+<p>同理，其近似于平滑的损失函数为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811150825973.png" alt="image-20220811150825973" class="lazyload">
+<p>上面所提到的两个MLP对应框架图中的两个绿色MLP。他们属于“预训练+联合优化”的部分。 在实践中，在我们的模型完全优化之前，我们<strong>独立地预训练可见性和法线MLP</strong>，以仅从NeRF中再现可见性和法线值𝜎-没有任何平滑度正则化或重新渲染损失的体积。这为可见性贴图提供了合理的初始化，从而防止albedo或BRDF MLP错误地试图将阴影解释为“绘制”反射变化。</p>
+<h3 id="brdf估计"><a class="markdownIt-Anchor" href="#brdf估计"></a> BRDF估计</h3>
+<p>整个BRDF模型<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>R</mi></mrow><annotation encoding="application/x-tex">R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.00773em;">R</span></span></span></span>包括了漫反射（albedo <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">a</span></span></span></span>）和镜面反射（specular SVBRDF <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">r</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">f_{\text r}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">r</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>）。模型如下：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811151543093.png" alt="image-20220811151543093" class="lazyload">
+<p>NeRFactor没有假设分析的BRDF，而是从一个学习的反射函数开始，该函数经过预训练以再现大量经验观测的真实世界BRDF并同时学习这些真实世界BRDF的潜在空间。通过这样做，我们了解了真实世界BRDF上的数据驱动先验，这些先验鼓励优化以恢复可启动的反射函数。这种先验的使用是至关重要的：因为我们所有的观测图像都是在一个（未知）照明下拍摄的，所以我们的问题是高度不适定的，所以先验对于从所有可能的因子分解集中消除场景的最可能因子分解是必要的。</p>
+<h4 id="albedo"><a class="markdownIt-Anchor" href="#albedo"></a> Albedo</h4>
+<p>漫反射反照率albedo的学习有一个MLP<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">a</mi></mtext></mrow></msub><mo>:</mo><msub><mi>x</mi><mrow><mtext><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">f</mi></mtext></mrow></msub><mo>→</mo><mi>a</mi></mrow><annotation encoding="application/x-tex">f_{\text a}:x_{\text{surf}}\to a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">a</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">:</span><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">s</span><span class="mord mathrm">u</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">→</span><span class="mord mathit">a</span></span></span></span>来学习。由于没有对反照率的直接监督，并且模型只能观察一种照明条件，因此我们依靠简单的<strong>空间平滑度先验</strong>（和光可见性）来消除“包含阴影的白色绘制表面”和“黑白绘制表面”之间的歧义。</p>
+<p>描述平滑度的损失函数为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811151923536.png" alt="image-20220811151923536" class="lazyload">
+<h4 id="specular"><a class="markdownIt-Anchor" href="#specular"></a> Specular</h4>
+<p>对于BRDF的镜面反射分量，我们寻求学习真实世界BRDF和成对的decoder的潜在空间，这种解码器在学习空间中将每个潜在代码<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mrow><mtext><mi mathvariant="normal">B</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">D</mi><mi mathvariant="normal">F</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">z_{\text{BRDF}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">B</span><span class="mord mathrm">R</span><span class="mord mathrm">D</span><span class="mord mathrm">F</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>翻译到完整的4D BRDF。</p>
+<p>本文使用了<strong>生成潜在优化方法</strong>（Generative Latent Optimization，GLO）。镜面反射分量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">r</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">f_{\text r}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">r</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>使用MERL数据集进行预训练。MERL数据集假设材料为各向同性的，因此将输入和输出方向参数化为Rusinkiewicz坐标，有3个自由度。这种坐标转换方式可以被写为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811171408759.png" alt="image-20220811171408759" class="lazyload">
+<p>然后训练一种关于<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">r</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">f_{\text r}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">r</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的重参数化函数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>f</mi><mrow><mtext><mi mathvariant="normal">r</mi></mtext></mrow><mrow><mi mathvariant="normal">′</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">f_{\text r}&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:0.998892em;vertical-align:-0.247em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.247em;margin-left:-0.10764em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">r</span></span></span></span></span><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle uncramped"><span class="mord scriptstyle uncramped"><span class="mord mathrm">′</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>，从潜在代码的串联映射而来的一系列参数得到消色差反射率（achromatic reflectance）<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span></span>：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811171538244.png" alt="image-20220811171538244" class="lazyload">
+<p>训练这个模型时，优化了MLP和潜在代码集的权重以再现一组真实世界的BRDF。在高动态范围（HDR）反射率值的对数上计算均方误差来训练。</p>
+<p>BRDF MLP是预训练的，在整个模型的联合优化过程中，BRDF MLP的权重被冻结，我们仅预测每个<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mrow><mtext><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">f</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">x_{\text {surf}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">s</span><span class="mord mathrm">u</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>z</mi><mrow><mtext><mi mathvariant="normal">B</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">D</mi><mi mathvariant="normal">F</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">z_{\text{BRDF}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">B</span><span class="mord mathrm">R</span><span class="mord mathrm">D</span><span class="mord mathrm">F</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。这是通过一个<strong>BRDF身份MLP</strong>来训练的：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mrow><mtext><mi mathvariant="normal">z</mi></mtext></mrow></msub><mo>:</mo><msub><mi>x</mi><mrow><mtext><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">f</mi></mtext></mrow></msub><mo>→</mo><msub><mi>z</mi><mrow><mtext><mi mathvariant="normal">B</mi><mi mathvariant="normal">R</mi><mi mathvariant="normal">D</mi><mi mathvariant="normal">F</mi></mtext></mrow></msub></mrow><annotation encoding="application/x-tex">f_{\text z}:x_{\text{surf}}\to z_{\text{BRDF}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">z</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">:</span><span class="mord"><span class="mord mathit">x</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">s</span><span class="mord mathrm">u</span><span class="mord mathrm">r</span><span class="mord mathrm" style="margin-right:0.07778em;">f</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mrel">→</span><span class="mord"><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.04398em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord scriptstyle cramped"><span class="text mord scriptstyle cramped"><span class="mord mathrm">B</span><span class="mord mathrm">R</span><span class="mord mathrm">D</span><span class="mord mathrm">F</span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。优化了BRDF标识MLP的目标是以最小化重新渲染损失和与反照率相同的空间平滑度：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172109085.png" alt="image-20220811172109085" class="lazyload"></p>
+<p>综上，整体的BRDF可以表示为：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172128560.png" alt="image-20220811172128560" class="lazyload"></p>
+<p>在这种假设中，镜面高光颜色为白色。</p>
+<h3 id="光照估计"><a class="markdownIt-Anchor" href="#光照估计"></a> 光照估计</h3>
+<p>光照的表示使用了简单而直接的HDR光照探测图像。与之前的使用球面高斯来进行近似的表示不同，这种方式允许模型表示详细的高频照明，因此支持硬投射阴影。当然这种方法也面临巨大挑战：包含大量参数，因为每个参数都可以独立于所有其他参数而变化，即逐像素的。通过使用光照可见度MLP可以改善此问题，即通过visibility快速评估曲面上的点对于光探测器的所有像素的可见性。</p>
+<p>为了鼓励更平滑的照明，对光照预测应用了一个简单的ℓ2梯度惩罚，这个惩罚对于光探测器像素上𝑳沿水平和垂直方向进行计算：</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172428568.png" alt="image-20220811172428568" class="lazyload"></p>
+<h3 id="渲染"><a class="markdownIt-Anchor" href="#渲染"></a> 渲染</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811172535002.png" alt="image-20220811172535002" class="lazyload"></p>
+<p>这个庞大的公式对应了最终的渲染方程。其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>R</mi></mrow><annotation encoding="application/x-tex">R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.00773em;">R</span></span></span></span>表示所有的反射参数，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">L</span></span></span></span>表示所有的光照参数，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">n</span></span></span></span>表示表面法向。(12)表示所有光源照射到物体方向在物体表面的反射的积分。(14)将<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>R</mi></mrow><annotation encoding="application/x-tex">R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.00773em;">R</span></span></span></span>分解为漫反射和镜面反射。</p>
+<p>整个网络训练由几个损失函数共同作用，联合优化：</p>
+<ul>
+<li>形状重建损失</li>
+<li>法线损失</li>
+<li>光照可见度损失</li>
+<li>漫反射损失</li>
+<li>BRDF损失</li>
+<li>光源损失</li>
+</ul>
+<h2 id="实验与结果"><a class="markdownIt-Anchor" href="#实验与结果"></a> 实验与结果</h2>
+<h3 id="训练细节"><a class="markdownIt-Anchor" href="#训练细节"></a> 训练细节</h3>
+<p>除了NeRF使用默认架构外，其他的MLP都使用了如下架构：</p>
+<ul>
+<li>四层</li>
+<li>在输入和第二层之间有一个跳跃连接</li>
+<li>对输入3D坐标使用10频带位置编码，对方向信息使用4频带位置编码</li>
+</ul>
+<p>整个训练可以分为三个阶段：</p>
+<ol>
+<li>先用训练好的NeRF在MERL数据集上训练BRDF MLP。此时，其他的MLP是被固定的，NeRF只是提供一个形状初始化。BRDF的MLP用于提供潜在的空间信息。</li>
+<li>运用NeRF优化法线MLP和可见度MLP，此过程中暂时没有平滑的loss。</li>
+<li>联合优化albedo MLP、BRDF identity MLP以及光照探测像素，同时也对法线MLP和可见度MLP进行优化。</li>
+</ol>
+<h3 id="效果"><a class="markdownIt-Anchor" href="#效果"></a> 效果</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811173339186.png" alt="image-20220811173339186" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811173347813.png" alt="image-20220811173347813" class="lazyload"></p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220811173402152.png" alt="image-20220811173402152" class="lazyload"></p>
+<h3 id="局限性"><a class="markdownIt-Anchor" href="#局限性"></a> 局限性</h3>
+<ol>
+<li>光探测器图像分辨率限制太低，只有16x32，因此对于物体被高频照明照亮时，反照率古籍中存在镜面反射或阴影残差。</li>
+<li>对于快速渲染无法正确考虑间接照明结果。</li>
+<li>虽然使用了NeRf初始化集合估计，但仍可能失败，有可能估计出比较差的几何体。</li>
+</ol>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/08/11/NeRFactor%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;08&#x2F;11&#x2F;NeRFactor%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;08&#x2F;11&#x2F;NeRFactor%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E9%80%86%E5%90%91%E6%B8%B2%E6%9F%93/">逆向渲染</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%87%E8%AE%BE"><span class="toc-number">1.1.</span> <span class="toc-text"> 假设</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E5%AF%B9%E6%AF%94"><span class="toc-number">2.</span> <span class="toc-text"> 相关工作对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text"> 原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0-2"><span class="toc-number">3.1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%A2%E7%8A%B6%E4%BC%B0%E8%AE%A1"><span class="toc-number">3.2.</span> <span class="toc-text"> 形状估计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A1%A8%E9%9D%A2%E7%82%B9"><span class="toc-number">3.2.1.</span> <span class="toc-text"> 表面点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A1%A8%E9%9D%A2%E6%B3%95%E7%BA%BF"><span class="toc-number">3.2.2.</span> <span class="toc-text"> 表面法线</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%89%E7%85%A7%E5%8F%AF%E8%A7%81%E5%BA%A6"><span class="toc-number">3.2.3.</span> <span class="toc-text"> 光照可见度</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#brdf%E4%BC%B0%E8%AE%A1"><span class="toc-number">3.3.</span> <span class="toc-text"> BRDF估计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#albedo"><span class="toc-number">3.3.1.</span> <span class="toc-text"> Albedo</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#specular"><span class="toc-number">3.3.2.</span> <span class="toc-text"> Specular</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%89%E7%85%A7%E4%BC%B0%E8%AE%A1"><span class="toc-number">3.4.</span> <span class="toc-text"> 光照估计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93"><span class="toc-number">3.5.</span> <span class="toc-text"> 渲染</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%8E%E7%BB%93%E6%9E%9C"><span class="toc-number">4.</span> <span class="toc-text"> 实验与结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E7%BB%86%E8%8A%82"><span class="toc-number">4.1.</span> <span class="toc-text"> 训练细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%88%E6%9E%9C"><span class="toc-number">4.2.</span> <span class="toc-text"> 效果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">4.3.</span> <span class="toc-text"> 局限性</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1660210728409"></script>
+
+
+	<script async src="/js/search.js?v=1660210728409"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
