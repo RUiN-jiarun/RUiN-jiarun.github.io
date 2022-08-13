@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    
+    <title>IRON论文阅读 - RUiN&#39;s Blog</title>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    
+    
+
+    <link rel="shortcut icon" href="https://ruin-typora.oss-cn-beijing.aliyuncs.com/newlogo.png" type="image/png" />
+    <meta name="description" content="论文来源：IRON: Inverse Rendering by Optimizing Neural SDFs and Materials from Photometric Images (kai-46.github.io) 题目翻译：IRON：通过优化来自光度图像的神经SDF和材质进行逆向渲染 关键词：逆向渲染 光度图像 边感知物理渲染  概述 本文作者和PhySG是同一作者。回顾逆向渲染的工作，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IRON论文阅读">
+<meta property="og:url" content="http://blog.ruin.net.cn/2022/08/13/IRON%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="RUiN&#39;s Blog">
+<meta property="og:description" content="论文来源：IRON: Inverse Rendering by Optimizing Neural SDFs and Materials from Photometric Images (kai-46.github.io) 题目翻译：IRON：通过优化来自光度图像的神经SDF和材质进行逆向渲染 关键词：逆向渲染 光度图像 边感知物理渲染  概述 本文作者和PhySG是同一作者。回顾逆向渲染的工作，">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220812212126578.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220812212433105.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813102248614.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813180546984.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181306633.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181506516.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181644907.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181909609.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813182133095.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813182801990.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813182954646.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183306986.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183525471.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183755212.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183814480.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183945351.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813184208008.png">
+<meta property="og:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813184236725.png">
+<meta property="article:published_time" content="2022-08-13T10:45:13.000Z">
+<meta property="article:modified_time" content="2022-08-13T10:45:38.574Z">
+<meta property="article:author" content="RUiN">
+<meta property="article:tag" content="计算机视觉">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220812212126578.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+    <link rel="stylesheet" href="/css/style.css?v=1660387552900">
+     
+    
+    <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1660387552900">
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="mdui-drawer-body-left">
+    
+    <div id="nexmoe-background">
+        <div class="nexmoe-bg" style="background-image: url(https://ruin-typora.oss-cn-beijing.aliyuncs.com/test9_at_iteration_50.png)"></div>
+        <div class="mdui-appbar mdui-shadow-0">
+            <div class="mdui-toolbar">
+                <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+                <div class="mdui-toolbar-spacer"></div>
+                <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+                <a href="/" title="RUiN" class="mdui-btn mdui-btn-icon"><img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN"></a>
+            </div>
+        </div>
+    </div>
+    <div id="nexmoe-header">
+        <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet">
+<div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="RUiN">
+            <img src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/nier.jpg" alt="RUiN" alt="RUiN">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>60</div>
+        <div><span>Tags</span>12</div>
+        <div><span>Categories</span>7</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/about" title="关于博客">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博客
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/friends" title="友情链接">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友情链接
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+    
+    <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://space.bilibili.com/35375664" target="_blank" mdui-tooltip="{content: '哔哩哔哩'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-bilibili"></i>
+        </a><a class="mdui-ripple" href="https://github.com/ruin-jiarun/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/NeRF/">NeRF</a>
+          <span class="category-list-count">11</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/SLAM入门/">SLAM入门</a>
+          <span class="category-list-count">10</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/UE5学习/">UE5学习</a>
+          <span class="category-list-count">7</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/Vulkan/">Vulkan</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/软件供应链/">软件供应链</a>
+          <span class="category-list-count">3</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/逆向渲染/">逆向渲染</a>
+          <span class="category-list-count">4</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/风格迁移/">风格迁移</a>
+          <span class="category-list-count">5</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/HCI/" style="font-size: 10px;">HCI</a> <a href="/tags/VR%E6%8A%80%E6%9C%AF/" style="font-size: 12px;">VR技术</a> <a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" style="font-size: 10px;">图像处理</a> <a href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/" style="font-size: 18px;">图形学</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 16px;">机器学习</a> <a href="/tags/%E6%B8%B8%E6%88%8F/" style="font-size: 10px;">游戏</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/" style="font-size: 10px;">计算机动画</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%89%E5%85%A8/" style="font-size: 14px;">计算机安全</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" style="font-size: 20px;">计算机视觉</a> <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">软件工程</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 12px;">随笔</a> <a href="/tags/%E9%9F%B3%E4%B9%90/" style="font-size: 10px;">音乐</a>
+    </div>
+    
+  </div>
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">39</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">21</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+    
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/13/IRON%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">IRON论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/11/NeRFactor%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeRFactor论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/06/InvRender%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">InvRender论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/01/NeuMesh%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">NeuMesh论文阅读</a>
+          </li>
+        
+          <li>
+            <a href="/2022/07/14/PhySG%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">PhySG论文阅读</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 RUiN
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        <br><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2021006932号-1</a>
+    </div>
+</div><!-- .nexmoe-drawer -->
+    </div>
+    <div id="nexmoe-content">
+        <div class="nexmoe-primary">
+            <div class="nexmoe-post">
+
+  <article>
+      
+          <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+              <img data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813102248614.png" data-sizes="auto" alt="IRON论文阅读" class="lazyload">
+              <h1>IRON论文阅读</h1>
+          </div>
+      
+      
+      <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年08月13日</a>
+    <a><i class="nexmoefont icon-areachart"></i>2.4k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 10 分钟</a>
+</div>
+
+      
+
+      <p>论文来源：<a target="_blank" rel="noopener" href="https://kai-46.github.io/IRON-website/">IRON: Inverse Rendering by Optimizing Neural SDFs and Materials from Photometric Images (kai-46.github.io)</a></p>
+<p>题目翻译：IRON：通过优化来自光度图像的神经SDF和材质进行逆向渲染</p>
+<p>关键词：逆向渲染 光度图像 边感知物理渲染</p>
+<h2 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h2>
+<p>本文作者和PhySG是同一作者。回顾逆向渲染的工作，从图形学出发的完全可微蒙特卡洛路径跟踪以及联合优化集合体和三角形网格和纹理材质的BRDF等前言方法已经可以完成非常精细的重建，然而网格很难优化。由辐射场等深度学习方法在视图合成和形状重建中也取得了惊人的效果，但是这些方法会使得材质与灯光相互<strong>纠缠</strong>，无法直接用于重新照明（relighting）或者材质编辑等应用。Nerd、PhySG、NeRFactor等经典方法也存在以下问题：</p>
+<ul>
+<li>限制于简单形状，如Nerd、PhySG；</li>
+<li>具有与标准3D渲染和编辑工具不兼容的神经组分，如NeRFactor。</li>
+</ul>
+<p>本文提出IRON——Inverse Rendering by Optimizing Neural scene components。这些神经场景组分包括符号距离场SDF和材质等。</p>
+<p>IRON接受的输入是光度图像（photometric images）（其实就是手电筒与移动摄像机共同定位捕获的多视图图像），在反向渲染优化中同时允许以网格和材质纹理格式导出优化的3D内容，保证可以被传统图形渲染器或因公用程序接管使用。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220812212126578.png" alt="image-20220812212126578" class="lazyload">
+<p>IRON核心包括四个表示神经SDF和材质的神经网络。在联合优化中，首先，进行体积辐射场优化以恢复对象拓扑，然后进行基于物理的表面渲染以细化几何细节并分离材料和光照。除此之外，IRON引用了图形学界常用的考虑遮挡边界（occlusion boundary）的问题，并提出了一种为神经SDF表示定义的边缘采样算法，显著提高边缘重建的质量。</p>
+<p>【另外，从本文展示结果来看，甚至可以直接导出贴图，与blender这种软件可以无缝衔接，厉害了。】</p>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220812212433105.png" alt="image-20220812212433105" class="lazyload"></p>
+<h2 id="原理"><a class="markdownIt-Anchor" href="#原理"></a> 原理</h2>
+<h3 id="整体框架"><a class="markdownIt-Anchor" href="#整体框架"></a> 整体框架</h3>
+<p><img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813102248614.png" alt="image-20220813102248614" class="lazyload"></p>
+<p>在逆向渲染的过程中，常常结合一些NeRF的insights：</p>
+<ol>
+<li>优化阶段，用神经常来进行形状和外观的表示（上图左）；</li>
+<li>测试阶段，用mesh和material来进行部署（上图中、右）；</li>
+</ol>
+<p>具体而言，用soft shape这种结构来快速建模模，用hard shape来进行物理渲染。</p>
+<p>我们可以直接跳过预处理阶段了——这里有4个MLP，分别是SDF场、diffuse albedo、specular albedo以及roughness。他们都是空间变化的。在初始化阶段，4个MLP被建立，并将在后续过程中被优化。另外，一个标量的光强参数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">L</span></span></span></span>也会被优化。</p>
+<p>接下来是两个阶段，第一个阶段将diffuse albedo MLP看作volumetric radiance field（体积辐射场）来优化SDF MLP以及diffuse albedo MLP，这个阶段的目标是恢复正确的物体拓扑结构。第二个阶段从光照来优化几何细节以及可微材料细节，并联合优化所有的MLP参数，使用了一个<strong>边感知的表面渲染方式</strong>。</p>
+<h3 id="体积辐射场渲染"><a class="markdownIt-Anchor" href="#体积辐射场渲染"></a> 体积辐射场渲染</h3>
+<p>SDF是一个hard几何体表达方式，NeRF则是soft的。诸如NeuS之类的工作在这里进行了一些探索。其基本思想是将每个SDF值过一个类似反转sigmoid的函数，得到每个点的density。然后用采样，对每个点用MLP来预测radiance fields，然后用类似NeRF的方法优化，得到一个大致的几何体。从这个预测结果出发可以很方便地初始化diffuse albedo。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813180546984.png" alt="image-20220813180546984" class="lazyload">
+<h3 id="边缘感知的基于物理的表面渲染"><a class="markdownIt-Anchor" href="#边缘感知的基于物理的表面渲染"></a> 边缘感知的基于物理的表面渲染</h3>
+<p>在进行辐射场建模之后，执行第二个全逆渲染阶段，联合优化来自自测光图像的神经SDF以及材质相关的三个SDF参数。此阶段有两个关键组件：基于微分无力的着色和边缘感知的表面渲染。</p>
+<p>由于光度图像输入具有位于同一位置的光源和相机，因此光线方向与跨越像素位置的视图方向对齐。因此可以将渲染方程简化为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181306633.png" alt="image-20220813181306633" class="lazyload">
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>L</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">L_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">L</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathrm">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为观测光线，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">x</mi></mrow><annotation encoding="application/x-tex">\bold x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">x</span></span></span></span>为表面位置，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="bold">n</mi></mrow><annotation encoding="application/x-tex">\bold n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.44444em;"></span><span class="strut bottom" style="height:0.44444em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathbf">n</span></span></span></span>为表面法线，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>o</mi></msub><mo separator="true">,</mo><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_o,\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">o</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>分别为观测方向与光线方向，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>L</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">L_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit">L</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">i</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为入射光线，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">f_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.10764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.02778em;">r</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>为BRDF。对于白光点光源的计算为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181506516.png" alt="image-20220813181506516" class="lazyload">
+<p>其中<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">L</span></span></span></span>为标量的光强度，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>o</mi></mrow><annotation encoding="application/x-tex">o</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">o</span></span></span></span>为光源位置。分母部分模拟了光强度的平方反比衰减。</p>
+<p>对于BRDF，使用了GGX模型。其中的参数位置、diffuse albedo、specular albedo、roughness都在神经材质的MLP中编码了。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181644907.png" alt="image-20220813181644907" class="lazyload">
+<p>基于物理的渲染时，对于物体表面使用ray tracing，找到交点后估计此处的渲染方程结果。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813181909609.png" alt="image-20220813181909609" class="lazyload">
+<p>但是传统的渲染中忽略了“可见性的不连续性（visibility discontinuities）”这一性质。以下图为例，像素的颜色应该由前景和背景组合的。如果移动前景的部分的话，像素的蓝紫分界线是会移动的。这一部分的深度是有问题的——单个像素中存在多个不连续深度值。这激发了本文的边缘采样算法。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813182133095.png" alt="image-20220813182133095" class="lazyload">
+<p>边缘采样算法有三步：</p>
+<ol>
+<li>通过检测然后投影到2D图像的3D边缘点来定位亚像素精度的2D边缘；</li>
+<li>重新参数化边缘点，以便它们可以在自动差分框架中将梯度反向传播到神经SDF；</li>
+<li>计算边缘像素的着色颜色。</li>
+</ol>
+<p>第一步首先使用sphere tracing检测到光线与曲面的交点，在曲面方向上找到3D边缘点或最大的步长。这一部分算法如下所示：【其中第6行定义了寻找的方向】</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813182801990.png" alt="image-20220813182801990" class="lazyload">
+<p>为了提高效率，仅对深度不连续像素处的光线曲面交点执行“曲面漫游”操作来寻找边缘点，从而减少SDF的评估次数。将这种深度不连续像素识别为深度Sobel梯度幅度高于某一阈值τ的像素。然后，我们将检测到的3D边缘点投影到图像空间，产生亚像素精确边缘位置和边缘掩码，标记包含边缘的像素。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813182954646.png" alt="image-20220813182954646" class="lazyload">
+<p>第二步中需要我们重新参数化边缘点的位置<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span></span></span></span>，使其相对于神经SDF的网络权重可微。因此对于表面内部的点和边缘的点的计算方程分别如下：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183306986.png" alt="image-20220813183306986" class="lazyload">
+<p>第三步进行渲染，回顾这个图中的“边缘像素”，对于绿色投影边缘点的子像素坐标<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>u</mi><mo separator="true">,</mo><mi>v</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[u,v]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord mathit">u</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mclose">]</span></span></span></span>，绿色投影曲面法线<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>d</mi><mi>u</mi><mo separator="true">,</mo><mi>d</mi><mi>v</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[du,dv]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord mathit">d</span><span class="mord mathit">u</span><span class="mpunct">,</span><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mclose">]</span></span></span></span>，则该边缘像素的黑色的中心的坐标为：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><msub><mi>u</mi><mi>c</mi></msub><mo separator="true">,</mo><msub><mi>v</mi><mi>c</mi></msub><mo>]</mo><mo>=</mo><mo>[</mo><mtext><mi mathvariant="normal">f</mi><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">r</mi></mtext><mo>(</mo><mi>u</mi><mo>)</mo><mo separator="true">,</mo><mtext><mi mathvariant="normal">f</mi><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">r</mi></mtext><mo>(</mo><mi>v</mi><mo>)</mo><mo>]</mo><mo>+</mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>5</mn></mrow><annotation encoding="application/x-tex">[u_c,v_c]=[\text{floor}(u),\text{floor}(v)]+0.5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mopen">[</span><span class="mord"><span class="mord mathit">u</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03588em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mclose">]</span><span class="mrel">=</span><span class="mopen">[</span><span class="text mord textstyle uncramped"><span class="mord mathrm" style="margin-right:0.07778em;">f</span><span class="mord mathrm">l</span><span class="mord mathrm">o</span><span class="mord mathrm">o</span><span class="mord mathrm">r</span></span><span class="mopen">(</span><span class="mord mathit">u</span><span class="mclose">)</span><span class="mpunct">,</span><span class="text mord textstyle uncramped"><span class="mord mathrm" style="margin-right:0.07778em;">f</span><span class="mord mathrm">l</span><span class="mord mathrm">o</span><span class="mord mathrm">o</span><span class="mord mathrm">r</span></span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mclose">)</span><span class="mclose">]</span><span class="mbin">+</span><span class="mord mathrm">0</span><span class="mord mathrm">.</span><span class="mord mathrm">5</span></span></span></span>。</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183525471.png" alt="image-20220813183525471" class="lazyload">
+<p>然后使用一个半径为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msqrt><mrow><mn>2</mn></mrow></msqrt><mi mathvariant="normal">/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">\sqrt{2}/2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9072200000000001em;"></span><span class="strut bottom" style="height:1.1572200000000001em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="sqrt mord"><span class="sqrt-sign" style="top:-0.06722000000000006em;"><span class="style-wrap reset-textstyle textstyle uncramped">√</span></span><span class="vlist"><span style="top:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:1em;">​</span></span><span class="mord textstyle cramped"><span class="mord mathrm">2</span></span></span><span style="top:-0.8272200000000001em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:1em;">​</span></span><span class="reset-textstyle textstyle uncramped sqrt-line"></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:1em;">​</span></span>​</span></span></span><span class="mord mathrm">/</span><span class="mord mathrm">2</span></span></span></span>个像素的圆形像素来进行近似。在边界任一侧的圆上拾取二维位置标记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit">A</span></span></span></span>和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.05017em;">B</span></span></span></span>，对这两个位置进行光线跟踪和着色，将阴影颜色记为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>C</mi><mi>A</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">C_A,C_B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">C</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">A</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">C</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.05017em;">B</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>。然后线性组合这两个值，权重与边缘分割的两个区域成比例：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183755212.png" alt="image-20220813183755212" class="lazyload">
+<p>得到的该边缘像素的预测颜色值为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183814480.png" alt="image-20220813183814480" class="lazyload">
+<p>上式中的<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.07153em;">C</span></span></span></span>可以通过<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mi>A</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mi>A</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">w_A,C_A,C_B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">A</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">C</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">A</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">C</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07153em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit" style="margin-right:0.05017em;">B</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>来反向传播到神经SDF中，并且通过权重<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>w</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">w_A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.02691em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="reset-textstyle scriptstyle cramped"><span class="mord mathit">A</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>可以很精细地控制颜色变化。</p>
+<h3 id="训练与测试"><a class="markdownIt-Anchor" href="#训练与测试"></a> 训练与测试</h3>
+<p>整体的损失函数为：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813183945351.png" alt="image-20220813183945351" class="lazyload">
+<p>其中(10)是预测图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>I</mi><mo>^</mo></mover></mrow><annotation encoding="application/x-tex">\hat I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9467699999999999em;"></span><span class="strut bottom" style="height:0.9467699999999999em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord accent"><span class="vlist"><span style="top:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="mord mathit" style="margin-right:0.07847em;">I</span></span><span style="top:-0.25233em;margin-left:0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span><span class="accent-body"><span>^</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">​</span></span>​</span></span></span></span></span></span>和gt图像<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.07847em;">I</span></span></span></span>的高斯金字塔的L2损失，(11)是SSIM损失，(12)是Eikonal损失，用来加强SDF的validity，(13)是粗糙度范围损失，用来激励估计的粗糙度不高于0.5。</p>
+<p>训练完成后，我们将神经SDF和材质转换为三角形网格和纹理贴图，以便在标准图形管道中部署。我们首先使用marching cube算法从优化的神经SDF中提取网格。然后，我们使用Blende计算合理的逐顶点UV映射。最后，为了填充材质纹理图像，我们使用三线性插值uv坐标对三角形网格上的点进行密集采样，然后查询采样曲面点处的材质网络，最后使用插值uv坐标将每点材质参数显示到纹理图像。</p>
+<h2 id="效果与评价"><a class="markdownIt-Anchor" href="#效果与评价"></a> 效果与评价</h2>
+<h3 id="实验结果"><a class="markdownIt-Anchor" href="#实验结果"></a> 实验结果</h3>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813184208008.png" alt="image-20220813184208008" class="lazyload">
+<p>在边缘感知方面的效果：</p>
+<img data-fancybox="gallery" data-sizes="auto" data-src="https://ruin-typora.oss-cn-beijing.aliyuncs.com/image-20220813184236725.png" alt="image-20220813184236725" class="lazyload">
+<h3 id="局限性与展望"><a class="markdownIt-Anchor" href="#局限性与展望"></a> 局限性与展望</h3>
+<p>首先，使用光度图像会导致更复杂的数据采集过程，尽管此类图像由于已知的单点光和最小阴影而简化了逆方法。未来的工作可以探索将我们的工作扩展到手电筒和环境照明的组合。</p>
+<p>其次，不模拟光的多次反弹。这可能导致以显著互反射为特征的凹区域中的材料估计误差。未来的方向包括为神经SDF表示设计计算高效的全局照明渲染算法。</p>
+<p>第三，当前的BRDF模型假设了不透明表面，因此在具有显著折射和次表面散射特征的透明和半透明对象上效果不太好。</p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>RUiN<br>
+        <strong>Link：</strong><a href="http://blog.ruin.net.cn/2022/08/13/IRON%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" title="http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;08&#x2F;13&#x2F;IRON%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;blog.ruin.net.cn&#x2F;2022&#x2F;08&#x2F;13&#x2F;IRON%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+        <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E9%80%86%E5%90%91%E6%B8%B2%E6%9F%93/">逆向渲染</a>
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" rel="tag">计算机视觉</a>
+    
+</div>
+
+  
+      <div class="nexmoe-post-footer">
+          <section class="nexmoe-comment">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.css">
+<div id="gitalk"></div>
+<script src="https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: 'f107122b036187b34c98',
+        clientSecret: '5125c5d93abd2550a98b156ee4c550896330fd81',
+        id: window.location.pathname,
+        repo: 'RUiN-jiarun.github.io',
+        owner: 'RUiN-jiarun',
+        admin: 'RUiN-jiarun'
+    })
+    gitalk.render('gitalk')
+</script>
+</section>
+      </div>
+  
+</div>
+            <div class="nexmoe-post-right">
+              <div class="nexmoe-fixed">
+                  <div class="nexmoe-tool"> 
+                    
+                      
+                        
+                          
+                          
+                              <button class="mdui-fab catalog" style="overflow:unset;">
+                                  <i class="nexmoefont icon-i-catalog"></i>
+                                  <div class="nexmoe-toc">
+                                      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text"> 原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E6%A1%86%E6%9E%B6"><span class="toc-number">2.1.</span> <span class="toc-text"> 整体框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%93%E7%A7%AF%E8%BE%90%E5%B0%84%E5%9C%BA%E6%B8%B2%E6%9F%93"><span class="toc-number">2.2.</span> <span class="toc-text"> 体积辐射场渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%B9%E7%BC%98%E6%84%9F%E7%9F%A5%E7%9A%84%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E8%A1%A8%E9%9D%A2%E6%B8%B2%E6%9F%93"><span class="toc-number">2.3.</span> <span class="toc-text"> 边缘感知的基于物理的表面渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%B5%8B%E8%AF%95"><span class="toc-number">2.4.</span> <span class="toc-text"> 训练与测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C%E4%B8%8E%E8%AF%84%E4%BB%B7"><span class="toc-number">3.</span> <span class="toc-text"> 效果与评价</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">3.1.</span> <span class="toc-text"> 实验结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%99%90%E6%80%A7%E4%B8%8E%E5%B1%95%E6%9C%9B"><span class="toc-number">3.2.</span> <span class="toc-text"> 局限性与展望</span></a></li></ol></li></ol>
+                                  </div>
+                              </button>
+                          
+                          
+                      
+                    
+                      <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+     
+    <div id="nexmoe-search-space">
+        <div class="search-container">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input class="search-input" type="text" placeholder="Search" oninput="sinput();">
+                </div>
+                <a class="search-close" onclick="sclose();">×</a>
+            </div>
+            <div class="search-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1660387552911"></script>
+
+
+	<script async src="/js/search.js?v=1660387552911"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+    
+
+
+
+
+
+</body>
+
+</html>
