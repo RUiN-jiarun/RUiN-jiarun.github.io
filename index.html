@@ -1,574 +1,353 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="en">
 <head>
-  <!-- <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'> -->
-    <title>Jiarun Liu - Homepage</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Homepage of Jiarun Liu">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Jiarun Liu is a senior algorithm engineer working on 3D vision, world models, autonomous driving, and embodied AI.">
+  <meta name="theme-color" content="#f5f8fc">
+  <meta property="og:title" content="Jiarun Liu — 3D Vision Researcher">
+  <meta property="og:description" content="Research, publications, and projects by Jiarun Liu.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/images/profile/avatar.webp">
+  <title>Jiarun Liu — 3D Vision Researcher</title>
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Jiarun Liu",
+    "alternateName": "刘佳润",
+    "jobTitle": "Senior Algorithm Engineer",
+    "affiliation": { "@type": "Organization", "name": "NIO Inc." },
+    "alumniOf": { "@type": "CollegeOrUniversity", "name": "Zhejiang University" },
+    "url": "https://ruin-jiarun.github.io/",
+    "sameAs": [
+      "https://github.com/RUiN-jiarun",
+      "https://scholar.google.com/citations?user=auQUy7AAAAAJ&hl=en"
+    ]
+  }
+  </script>
 </head>
+<body id="top">
+  <a class="skip-link" href="#main-content">Skip to content</a>
 
-<!-- For arrangement -->
-<link rel="stylesheet" href="styles/w3.css">
-<!-- For icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css">
+  <header class="site-header">
+    <nav class="nav container" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Jiarun Liu, home">
+        <span class="brand-name">Jiarun Liu</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#publications">Publications</a></li>
+        <li><a href="#playground">Playground</a></li>
+        <li><a href="#experience">Experience</a></li>
+      </ul>
+    </nav>
+  </header>
 
-<!-- For utilities -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-  integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<!-- <link rel="stylesheet" href="styles/css/bootstrap.min.css"> -->
+  <main id="main-content">
+    <section class="hero" id="about" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="profile-visual" aria-label="Portrait of Jiarun Liu">
+          <div class="avatar-frame">
+            <img src="assets/images/profile/avatar.webp" width="500" height="500" alt="Jiarun Liu" fetchpriority="high">
+          </div>
+          <span class="location-pill">Shanghai, China</span>
+        </div>
 
-<style>
-  body,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: Helvetica;
-    font-weight: 400;
-    color: #000000;
-  }
+        <div class="hero-copy">
+          <h1 id="hero-title">Jiarun Liu <span class="chinese-name" lang="zh-CN">刘佳润</span></h1>
+          <p class="bio">I work on autonomous driving research at <strong>NIO Inc.</strong> Previously, I was an algorithm engineer at <strong>Cainiao, Alibaba Group.</strong></p>
+          <p class="bio">I received my M.S. from the <a href="https://github.com/zju3dv" target="_blank" rel="noopener noreferrer">ZJU3DV group</a>, State Key Lab of CAD&amp;CG, Zhejiang University, advised by <a href="http://www.cad.zju.edu.cn/home/gfzhang/" target="_blank" rel="noopener noreferrer">Prof. Guofeng Zhang</a>. My interests span 3D vision, generative and world models, autonomous driving, and embodied AI.</p>
 
-  li,
-  p {
-    font-family: Helvetica;
-  }
+          <div class="action-row" aria-label="Profile links">
+            <a class="button primary" href="mailto:jiarunliu@zju.edu.cn">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="m4 6 8 7 8-7"/></svg>
+              Email
+            </a>
+            <a class="button" href="https://github.com/RUiN-jiarun" target="_blank" rel="noopener noreferrer">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.23c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.9 10.9 0 0 1 5.76 0c2.19-1.49 3.15-1.18 3.15-1.18.64 1.59.24 2.76.12 3.05.74.8 1.18 1.83 1.18 3.09 0 4.42-2.72 5.39-5.31 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+              GitHub
+            </a>
+            <a class="button" href="https://scholar.google.com/citations?user=auQUy7AAAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-5 9 5-9 5-9-5Z"/><path d="M7 12v5c3 2 7 2 10 0v-5"/></svg>
+              Scholar
+            </a>
+            <a class="button" href="assets/docs/jiarun-liu-cv.pdf" target="_blank" rel="noopener noreferrer">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+              CV
+            </a>
+          </div>
 
-  body,
-  html {
-    height: 100%;
-    /* color: #777; */
-    color: #555;
-    font-size: 16px;
-    line-height: 1.8;
-  }
-
-  .pub-title {
-    /* font-family: monaco; */
-    font-weight: bold;
-    color: #000000;
-  }
-
-  .pub-conference {
-    /* font-family: "Lato"; */
-    font-family: Helvetica;
-    /* font-weight: bold; */
-  }
-
-  .pub-authors {
-    /* font-family: monaco; */
-    /* font-family: "Lato"; */
-    font-family: Helvetica;
-    /* font-style: italic; */
-    color: #000000;
-  }
-
-  .pub-highlight {
-    color: #e83015;
-    font-family: Helvetica;
-  }
-
-  .w3-wide {
-    letter-spacing: 12px;
-    margin-right: -12px;
-  }
-
-  .w3-hover-opacity {
-    cursor: pointer;
-  }
-
-  .pub {
-    font-style: Helvetica;
-  }
-
-  /* Turn off parallax scrolling for tablets and phones */
-  @media only screen and (max-device-width: 1600px) {
-
-    .bgimg-1 {
-      background-attachment: scroll;
-      min-height: 400px;
-    }
-  }
-
-  .hero-overlay .btn {
-    color: #fff;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .btn-primary {
-    border-color: #0095eb !important;
-    background: #0095eb !important;
-  }
-
-  .btn-primary:hover,
-  .btn-primary:active,
-  .btn-primary.active,
-  .btn-primary:visited,
-  .open>.dropdown-toggle.btn-primary {
-    background: #0095eb !important;
-  }
-
-  .btn-light {
-    border-color: #fff !important;
-    background: #fff !important;
-  }
-
-  .btn-light:hover,
-  .btn-light:active,
-  .btn-light.active {
-    background: rgba(0, 0, 0, 0.4) !important;
-  }
-
-  .btn-outline {
-    background-color: transparent !important;
-    color: inherit;
-    transition: all .5s;
-  }
-
-  .btn-primary.btn-outline {
-    color: #0095eb !important;
-    border-color: #0095eb !important;
-  }
-
-  .btn-primary.btn-outline:focus {
-    color: #0095eb !important;
-  }
-
-  .btn-primary.btn-outline:active {
-    color: #fff !important;
-  }
-
-  .btn-light.btn-outline {
-    color: #fff !important;
-    border-color: #fff !important;
-  }
-
-  .btn-light.btn-outline:focus {
-    color: #fff !important;
-  }
-
-  .btn-light.btn-outline:active {
-    color: transparent !important;
-  }
-
-  .btn-success.btn-outline {
-    color: #5cb85c;
-  }
-
-  .btn-info.btn-outline {
-    color: #5bc0de;
-  }
-
-  .btn-warning.btn-outline {
-    color: #f0ad4e;
-  }
-
-  .btn-danger.btn-outline {
-    color: #d9534f;
-  }
-
-  .btn-primary.btn-outline:hover,
-  .btn-light.btn-outline:hover,
-  .btn-success.btn-outline:hover,
-  .btn-info.btn-outline:hover,
-  .btn-warning.btn-outline:hover,
-  .btn-danger.btn-outline:hover {
-    color: #fff !important;
-  }
-
-  video {
-    width: 100%;
-    height: auto;
-    /* max-height: 400px; */
-  }
-</style>
-
-<body>
-
-  <!-- 关于部分 -->
-  <div class="w3-content w3-container w3-padding-16" id="about">
-    <div class="w3-row">
-      <div class="w3-col m3 w3-center w3-padding-large">
-        <img src="materials/avatar.jpg" class="w3-circle w3-image " alt="Photo of Me" width="190" height="190">
-        <div class="w3-large w3-section">
-          <a href="mailto:jiarunliu@zju.edu.cn">Email</a> &nbsp/&nbsp
-          <a href="https://github.com/RUiN-jiarun">GitHub</a>
-          <a href="https://scholar.google.com/citations?user=auQUy7AAAAAJ&hl=en">Google Scholar</a> &nbsp/&nbsp
-          <a href="materials/autoCV.pdf">CV</a>
+          <ul class="interests" aria-label="Research interests">
+            <li>3D Reconstruction</li>
+            <li>Gaussian Splatting</li>
+            <li>World Models</li>
+            <li>Generative Models</li>
+          </ul>
         </div>
       </div>
+    </section>
 
-      <div class="w3-col m9 w3-padding-large">
-        <h2 style="color:#000000;text-align: center">Jiarun Liu</h2>
-        <div style="text-align: center;font-weight: 600; font-size: large;">刘佳润</div>
-        <p>
-          I am a senior algorithm engineer of autonoumous driving research of NIO Inc., Shanghai.
-          Before that, I was an algorithm engineer of Unmanned Vehicle Dept., Cainiao Inc., Alibaba Group.
-          I obtained my M.S. degree from the <a href="https://www.github.com/zju3dv">ZJU3DV group</a> of State Key Lab of CAD&CG, Zhejiang University in 2025, advised by <a
-            href="http://www.cad.zju.edu.cn/home/gfzhang/">Prof. Guofeng Zhang</a>.
-          Before that, I got my bachelor degree from Zhejiang University as well.
-          I am interested in 3D vision and generative models, as well as world models and applications in autonomous driving and embodied AI.
-        </p>
+    <section class="section section-tint" id="publications" aria-labelledby="publications-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Research</p>
+            <h2 id="publications-title">Publications</h2>
+          </div>
+          <p>Recent work on 3D scene representation, reconstruction, generation, and simulation for intelligent driving.</p>
+        </div>
+
+        <div class="publication-list">
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/usr-drive.webp" width="1052" height="511" alt="USR-Drive method overview" loading="eager">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue latest">arXiv</span><span class="pub-year">2026</span></div>
+              <h3>USR-Drive: Unified Driving Scene Representation via Joint Denoising of 3D Gaussians and Boxes</h3>
+              <p class="authors">Li-Heng Chen, Haokai Pang, Chengye Su, <strong>Jiarun Liu</strong>, Qifeng Chen, Ziqian Ni, Jianxin Huang, Shi-Sheng Huang, Hongbo Fu†, Sheng Yang†</p>
+              <div class="pub-actions">
+                <a class="button" href="https://arxiv.org/abs/2608.19036" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/drivemvs.webp" width="771" height="396" alt="DriveMVS architecture" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">CVPR</span><span class="pub-year">2026</span></div>
+              <h3>LiDAR Prompted Spatio-Temporal Multi-View Stereo for Autonomous Driving</h3>
+              <p class="authors">Qihao Sun*, <strong>Jiarun Liu*</strong>, Ziqian Ni*, Jianyun Xu, Tao Xie, Lijun Zhao, Ruifeng Li†, Sheng Yang†</p>
+              <p class="contribution">* Equal contribution</p>
+              <div class="pub-actions">
+                <a class="button" href="http://arxiv.org/abs/2603.03765" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/Akina2001/DriveMVS" target="_blank" rel="noopener noreferrer">Code <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/tigaussian.webp" width="772" height="455" alt="TIGaussian method overview" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">ICLR</span><span class="pub-year">2026</span></div>
+              <h3>TIGaussian: Disentangle Gaussians for Spatial-Awared Text-Image-3D Alignment</h3>
+              <p class="authors"><strong>Jiarun Liu*</strong>, Qifeng Chen*, Yiru Zhao, Minghua Liu, Baorui Ma, Sheng Yang†</p>
+              <p class="contribution">* Equal contribution</p>
+              <div class="pub-actions">
+                <a class="button" href="https://arxiv.org/abs/2601.19247" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/RUiN-jiarun/TIGaussian" target="_blank" rel="noopener noreferrer">Code <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/lidar-gs-plus.webp" width="874" height="360" alt="LiDAR-GS++ pipeline" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">AAAI</span><span class="pub-year">2026</span></div>
+              <h3>LiDAR-GS++: Improving LiDAR Gaussian Reconstruction via Diffusion Priors</h3>
+              <p class="authors">Qifeng Chen, <strong>Jiarun Liu</strong>, Rengan Xie, Tao Tang, Sicong Du, Yiru Zhao, Yuchi Huo, Sheng Yang†</p>
+              <div class="pub-actions">
+                <a class="button" href="https://arxiv.org/abs/2511.12304" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/CN-ADLab/LiDAR_GS_plus" target="_blank" rel="noopener noreferrer">Code <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/gs-roadpatching.webp" width="807" height="300" alt="GS-RoadPatching results" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">SIGGRAPH Asia</span><span class="pub-year">2025</span></div>
+              <h3>GS-RoadPatching: Inpainting Gaussians via 3D Searching and Placing for Driving Scenes</h3>
+              <p class="authors">Guo Chen*, <strong>Jiarun Liu*</strong>, Sicong Du, Chenming Wu, Deqi Li, Shi-Sheng Huang†, Guofeng Zhang, Sheng Yang†</p>
+              <p class="contribution">* Equal contribution</p>
+              <div class="pub-actions">
+                <a class="button" href="https://arxiv.org/abs/2509.19937" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://shanzhaguoo.github.io/GS-RoadPatching/" target="_blank" rel="noopener noreferrer">Project <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/rge-gs.webp" width="870" height="296" alt="RGE-GS method overview" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">ICCV</span><span class="pub-year">2025</span></div>
+              <h3>RGE-GS: Reward-Guided Expansive Driving Scene Reconstruction via Diffusion Priors</h3>
+              <p class="authors">Sicong Du*, <strong>Jiarun Liu*</strong>, Qifeng Chen, Hao-Xiang Chen, Tai-Jiang Mu, Sheng Yang†</p>
+              <p class="contribution">* Equal contribution</p>
+              <div class="pub-actions">
+                <a class="button" href="https://arxiv.org/abs/2506.22800" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/CN-ADLab/RGE-GS" target="_blank" rel="noopener noreferrer">Code <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/sss.webp" width="1157" height="391" alt="Industrial-grade sensor simulation framework" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">IROS</span><span class="pub-year">2025</span></div>
+              <h3>Industrial-Grade Sensor Simulation via Gaussian Splatting: A Modular Framework for Scalable Editing and Full-Stack Validation</h3>
+              <p class="authors">Xianming Zeng*, Sicong Du*, Qifeng Chen*, Lizhe Liu, Haoyu Shu, Jiaxuan Gao, <strong>Jiarun Liu</strong>, Jiulong Xu, Jianyun Xu, Mingxia Chen, Yiru Zhao, Peng Chen, Yapeng Xue, Chunming Zhao, Sheng Yang†, Qiang Li</p>
+              <p class="contribution">* Equal contribution</p>
+              <div class="pub-actions">
+                <a class="button" href="https://arxiv.org/abs/2503.11731" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+
+          <article class="pub-card">
+            <div class="pub-visual">
+              <img src="assets/images/publications/panoindoor.webp" width="945" height="485" alt="PanoIndoor dataset examples" loading="lazy">
+            </div>
+            <div class="pub-content">
+              <div class="pub-meta"><span class="venue">CJIG</span><span class="pub-year">2025</span></div>
+              <h3>Indoor Large-Scale Panoramic Visual Localization Dataset</h3>
+              <p class="authors">Hailin Yu, <strong>Jiarun Liu</strong>, Zhichao Ye, Xinyu Chen, Ruohao Zhan, Yichun Shentu, Zhongyun Lu, Guofeng Zhang†</p>
+              <div class="pub-actions">
+                <a class="button" href="https://www.cjig.cn/zh/article/doi/10.11834/jig.240284/" target="_blank" rel="noopener noreferrer">Paper <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/zju3dv/PanoIndoor" target="_blank" rel="noopener noreferrer">Code <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
+    </section>
+
+    <section class="section" id="playground" aria-labelledby="playground-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Side quests</p>
+            <h2 id="playground-title">Just for fun</h2>
+          </div>
+          <p>A couple of deliberately unserious browser games built for the joy of making things.</p>
+        </div>
+
+        <div class="playground-grid">
+          <article class="fun-card">
+            <div class="fun-image"><img src="assets/images/projects/smart-falcon.webp" width="512" height="366" alt="寄掉飞鹰子 game cover" loading="lazy"></div>
+            <div class="fun-content">
+              <p class="fun-label">Browser game</p>
+              <h3 lang="zh-CN">寄掉飞鹰子</h3>
+              <p lang="zh-CN">一款仿别踩白块写的弱智小游戏。</p>
+              <div class="pub-actions">
+                <a class="button" href="https://ruin-jiarun.github.io/GG-Smart-Falcon/" target="_blank" rel="noopener noreferrer">Play <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/RUiN-jiarun/GG-Smart-Falcon" target="_blank" rel="noopener noreferrer">Code</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="fun-card">
+            <div class="fun-image"><img src="assets/images/projects/gongde-clicker.webp" width="700" height="676" alt="功德点击器 wooden fish" loading="lazy"></div>
+            <div class="fun-content">
+              <p class="fun-label">Clicker game</p>
+              <h3 lang="zh-CN">功德点击器</h3>
+              <p lang="zh-CN">一款仿 Cookie Clicker 的弱智小游戏。</p>
+              <div class="pub-actions">
+                <a class="button" href="https://ruin-jiarun.github.io/GongDe-Clicker/" target="_blank" rel="noopener noreferrer">Play <span aria-hidden="true">↗</span></a>
+                <a class="button" href="https://github.com/RUiN-jiarun/GongDe-Clicker" target="_blank" rel="noopener noreferrer">Code</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-tint" id="experience" aria-labelledby="experience-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Background</p>
+            <h2 id="experience-title">Experience</h2>
+          </div>
+          <p>Industry research and academic training at the intersection of computer vision and autonomous systems.</p>
+        </div>
+
+        <div class="career-grid">
+          <article class="info-card experience">
+            <h3>Work</h3>
+            <ol class="timeline">
+              <li>
+                <img class="org-logo" src="assets/images/logos/nio.png" alt="" aria-hidden="true">
+                <div class="timeline-body">
+                  <span class="time">2026.01 — PRESENT</span>
+                  <strong>Senior Algorithm Engineer · NIO Inc.</strong>
+                  <p>Assisted and Intelligent Driving Department · Shanghai</p>
+                </div>
+              </li>
+              <li>
+                <img class="org-logo" src="assets/images/logos/cainiao.png" alt="" aria-hidden="true">
+                <div class="timeline-body">
+                  <span class="time">2025.04 — 2025.12</span>
+                  <strong>Algorithm Engineer · Cainiao, Alibaba Group</strong>
+                  <p>Unmanned Vehicle Department · Hangzhou</p>
+                </div>
+              </li>
+              <li>
+                <img class="org-logo" src="assets/images/logos/cainiao.png" alt="" aria-hidden="true">
+                <div class="timeline-body">
+                  <span class="time">2024.06 — 2025.03</span>
+                  <strong>Research Intern · Cainiao, Alibaba Group</strong>
+                  <p>Unmanned Vehicle Department · Hangzhou</p>
+                </div>
+              </li>
+              <li>
+                <img class="org-logo" src="assets/images/logos/sensetime.png" alt="" aria-hidden="true">
+                <div class="timeline-body">
+                  <span class="time">2023.03 — 2024.05</span>
+                  <strong>Research Intern · SenseTime</strong>
+                  <p>Digital World Department · Hangzhou</p>
+                </div>
+              </li>
+            </ol>
+          </article>
+
+          <article class="info-card education">
+            <h3>Education</h3>
+            <ul class="clean-list education-list">
+              <li>
+                <img class="org-logo" src="assets/images/logos/zju.svg" alt="" aria-hidden="true">
+                <div><strong>M.S. in Software Engineering</strong><br>State Key Lab of CAD&amp;CG, Zhejiang University · 2022–2025</div>
+              </li>
+              <li>
+                <img class="org-logo" src="assets/images/logos/zju.svg" alt="" aria-hidden="true">
+                <div><strong>B.Eng. in Digital Media</strong><br>College of Computer Science, Zhejiang University · 2018–2022</div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="info-card awards">
+            <h3>Selected awards</h3>
+            <ul class="clean-list">
+              <li>Outstanding Graduate at ZJU</li>
+              <li>Tianzhou Chen Scholarship</li>
+              <li>Yongping Scholarship</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Jiarun Liu · Built with semantic HTML &amp; CSS.</p>
+      <a class="back-to-top" href="#top">Back to top ↑</a>
     </div>
-
-
-
-    <!-- 标志 -->
-    <!-- <div class="w3-row-padding w3-center w3-hide-small">
-      <div class="w3-col m3 w3-center w3-padding-large">
-        <img src="images/logos/ZJU.png" style="width:26%" alt="Zhejiang University">
-      </div>
-      <div class="w3-col m3 w3-center w3-padding-large">
-        <img src="images/logos/cse_zju.png" style="width:36%" alt="Zhejiang University">
-      </div>
-
-      <div class="w3-col m3 w3-center w3-padding-large">
-        <img src="images/logos/ckc.png" style="width:96%" alt="CKC Honor College">
-      </div>
-
-      <div class="w3-col m3 w3-center w3-padding-large">
-        <img src="images/logos/penn.jpg" style="width:80%" alt="University of Pennsylvania">
-      </div>
-
-    </div> -->
-  </div>
-
-  <!-- Publication and Projects 项目 -->
-  <div class="w3-content w3-container w3-padding-12" id="portfolio">
-    <!-- Publication项 -->
-    <h3 class="w3-center" style="color: #000000;">Publication</h3>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="publications/USR-Drive.png" style="width: 100%" alt="DriveMVS">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">USR-Drive: Unified Driving Scene Representation via Joint Denoising of 3D Gaussians and Boxes</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          arXiv 2026
-        </div>
-        <div class="pub-authors">
-          Li-Heng Chen, Haokai Pang, Chengye Su, <b>Jiarun Liu</b>, Qifeng Chen, Ziqian Ni, Jianxin Huang, Shi-Sheng Huang, Hongbo Fu†, Sheng Yang†
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://arxiv.org/abs/2608.19036" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="publications/DriveMVS.png" style="width: 100%" alt="DriveMVS">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">LiDAR Prompted Spatio-Temporal Multi-View Stereo for Autonomous Driving</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          CVPR 2026
-        </div>
-        <div class="pub-authors">
-          Qihao Sun*, <b>Jiarun Liu*</b>, Ziqian Ni*, Jianyun Xu, Tao Xie, Lijun Zhao, Ruifeng Li†, Sheng Yang†
-          <b><br>(equal contribution)</b>
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="http://arxiv.org/abs/2603.03765" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/Akina2001/DriveMVS" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="publications/TIGaussian.png" style="width: 100%" alt="TIGaussian">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">TIGaussian: Disentangle Gaussians for Spatial-Awared Text-Image-3D Alignment</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          ICLR 2026
-        </div>
-        <div class="pub-authors">
-          <b>Jiarun Liu*</b>, Qifeng Chen*, Yiru Zhao, Minghua Liu, Baorui Ma, Sheng Yang†
-          <b><br>(equal contribution)</b>
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://arxiv.org/abs/2601.19247" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/RUiN-jiarun/TIGaussian" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="publications/LiDAR_GS++.png" style="width: 100%" alt="LiDAR-GS++">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">LiDAR-GS++: Improving LiDAR Gaussian Reconstruction via Diffusion Priors</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          AAAI 2026
-        </div>
-        <div class="pub-authors">
-          Qifeng Chen, <b>Jiarun Liu</b>, Rengan Xie, Tao Tang, Sicong Du, Yiru Zhao, Yuchi Huo, Sheng Yang†
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://arxiv.org/abs/2511.12304" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/CN-ADLab/LiDAR_GS_plus" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="publications/GS_RoadPatching.png" style="width: 100%" alt="GS-RoadPatching">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">GS-RoadPatching: Inpainting Gaussians via 3D Searching and Placing for Driving Scenes</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          SIGGRAPH ASIA 2025
-        </div>
-        <div class="pub-authors">
-          Guo Chen*, <b>Jiarun Liu*</b>, Sicong Du, Chenming Wu, Deqi Li, Shi-Sheng Huang†, Guofeng Zhang, Sheng Yang†
-          <b><br>(equal contribution)</b>
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://arxiv.org/abs/2509.19937" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://shanzhaguoo.github.io/GS-RoadPatching/" target="_blank"
-          rel="noopener">
-          Project Page
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="publications/RGE_GS.png" style="width: 100%" alt="RGE-GS">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">RGE-GS: Reward-Guided Expansive Driving Scene Reconstruction via Diffusion Priors</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          ICCV 2025
-        </div>
-        <div class="pub-authors">
-          Sicong Du*, <b>Jiarun Liu*</b>, Qifeng Chen, Hao-Xiang Chen, Tai-Jiang Mu, Sheng Yang†
-          <b><br>(equal contribution)</b>
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://arxiv.org/abs/2506.22800" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/CN-ADLab/RGE-GS" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-          <img src="publications/SSS.png" style="width: 100%" alt="SSS">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">Industrial-Grade Sensor Simulation via Gaussian Splatting: A Modular Framework for Scalable Editing and Full-Stack Validation</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          IROS 2025
-        </div>
-        <div class="pub-authors">
-          Xianming Zeng*, Sicong Du*, Qifeng Chen*, Lizhe Liu, Haoyu Shu, Jiaxuan Gao, <b>Jiarun Liu</b>, Jiulong Xu, Jianyun Xu, Mingxia Chen, Yiru Zhao, Peng Chen, Yapeng Xue, Chunming Zhao, Sheng Yang†, Qiang Li
-          <br>(equal contribution)
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://arxiv.org/abs/2503.11731" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-          <img src="publications/panoindoor.jpg" style="width: 100%" alt="pano_indoor">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">Indoor Large-Scale Panoramic Visual Localization Dataset</div>
-        <!-- red color -->
-        <div class="pub-highlight">
-          CJIG 2025
-        </div>
-        <div class="pub-authors">
-          Hailin Yu, <b>Jiarun Liu</b>, Zhichao Ye, Xinyu Chen, Ruohao Zhan, Yichun Shentu, Zhongyun Lu, Guofeng Zhang†
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://www.cjig.cn/zh/article/doi/10.11834/jig.240284/" target="_blank"
-          rel="noopener">
-          Paper
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/zju3dv/PanoIndoor" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-  <br>
-
-    <div class="w3-content w3-container w3-padding-12" id="portfolio">
-    <!-- Fun -->
-    <h3 class="w3-center" style="color: #000000;">Just for Fun</h3>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="fun/gg.jpg" style="width: 100%" alt="GGSF">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">寄掉飞鹰子</div>
-        <div class="pub-authors">
-          一款仿别踩白块写的弱智小游戏
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://ruin-jiarun.github.io/GG-Smart-Falcon/" target="_blank"
-          rel="noopener">
-          Click to Play
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/RUiN-jiarun/GG-Smart-Falcon" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-    <div class="w3-row-padding  w3-section">
-      <div class="w3-col m6 w3-center">
-        <div style="width: 85%; height: 80%; margin-left: auto; margin-right: auto;">
-            <img src="fun/muyu.png" style="width: 100%" alt="Gongde">
-        </div>
-      </div>
-      <div class="w3-col m6 w3-">
-        <div class="pub-title">功德点击器</div>
-        <div class="pub-authors">
-          一款仿Cookie Clicker的弱智小游戏
-        </div>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://ruin-jiarun.github.io/GongDe-Clicker/" target="_blank"
-          rel="noopener">
-          Click to Play
-        </a>
-        <a class="btn btn-primary btn-outline btn-sm" href="https://github.com/RUiN-jiarun/GongDe-Clicker" target="_blank"
-          rel="noopener">
-          Github Page
-        </a>
-      </div>
-    </div>
-
-    </div>
-
-  <br>
-
-    <!-- <p> -->
-    <div class="w3-content w3-container w3-padding-12" id="portfolio">
-      <h3 class="w3-center" style="color: #000000;">Work Experience</h3>
-      <li>2026.01-now, <b>Senior algorithm engineer</b> at Assisted and Intelligent Driving Dept., <b>NIO Inc.</b>, Shanghai.</li>
-      <li>2025.04-2025.12, <b>Algorithm engineer</b> at Unmanned Vehicle Dept., Cainiao Inc., <b>Alibaba Group</b>, Hangzhou. </li>
-      <li>2024.06-2025.03, <b>Research intern</b> at Unmanned Vehicle Dept., Cainiao Inc., <b>Alibaba Group</b>, Hangzhou.</li>
-      <li>2023.03-2024.05, <b>Research intern</b> at Digital World Dept., <b>Sensetime Group Inc.</b>, Hangzhou.</li>
-    </div>
-
-  <br>
-  
-    <div class="w3-content w3-container w3-padding-12" id="portfolio">
-      <h3 class="w3-center" style="color: #000000;">Education Experience</h3>
-      <li>2022-2025, <b>M.S.</b> in Software Engineering at State Key Lab of CAD&CG of <b>Zhejiang University</b>.</li>
-      <li>2018-2022, <b>B.Eng.</b> in Digital Media at CS&T Department of <b>Zhejiang University</b>.</li>
-    </div>
-
-  <br>
-
-    <!-- <p> -->
-    <div class="w3-content w3-container w3-padding-12" id="portfolio">
-      <h3 class="w3-center" style="color: #000000;">Selected Awards</h3>
-      <li>Outstanding Graduates at ZJU</li>
-      <li>Tianzhou Chen Scholarship</li>
-      <li>Yongping Scholarship</li>
-    </div>
-
-    <!-- </p> -->
-    <!-- Footer -->
-
-    <script>
-      // Modal Image Gallery
-      function onClick(element) {
-        document.getElementById("img01").src = element.src;
-        document.getElementById("modal01").style.display = "block";
-        var captionText = document.getElementById("caption");
-        captionText.innerHTML = element.alt;
-      }
-
-      // Change style of navbar on scroll
-      window.onscroll = function () { myFunction() };
-      function myFunction() {
-        var navbar = document.getElementById("myNavbar");
-        navbar.className = navbar.className.replace(" w3-card w3-animate-top w3-white", "");
-      }
-
-      // Used to toggle the menu on small screens when clicking on the menu button
-      function toggleFunction() {
-        var x = document.getElementById("navDemo");
-        if (x.className.indexOf("w3-show") == -1) {
-          x.className += " w3-show";
-        } else {
-          x.className = x.className.replace(" w3-show", "");
-        }
-      }
-    </script>
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-V09QFKH5V2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      gtag('js', new Date());
-
-      gtag('config', 'G-V09QFKH5V2');
-    </script>
- -->
+  </footer>
 </body>
-
 </html>
